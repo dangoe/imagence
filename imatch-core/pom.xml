@@ -16,7 +16,7 @@
 
     <properties>
         <scala.version>2.11.8</scala.version>
-        <akka.version>2.4.1</akka.version>
+        <akka.version>2.4.8</akka.version>
         <scalatest.version>2.2.6</scalatest.version>
     </properties>
 
