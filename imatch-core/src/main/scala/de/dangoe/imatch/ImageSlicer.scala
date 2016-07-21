@@ -23,6 +23,7 @@ package de.dangoe.imatch
 import java.awt.image.BufferedImage
 
 import scala.annotation.tailrec
+import scala.math.{ceil, min}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -32,33 +33,38 @@ trait SlicingStrategy {
   def slice(image: BufferedImage): Stream[BufferedImage]
 }
 
-class QuadraticSlicing(edgeLengthCalculation: Int => Int) extends SlicingStrategy {
+class PercentageSlicing(factor: Double) extends SlicingStrategy {
 
-  override def slice(image: BufferedImage): Stream[BufferedImage] = {
-    require(image.getWidth == image.getHeight, "Image must be quadratic.")
-    val sliceEdgeLength = edgeLengthCalculation.apply(image.getWidth)
-    require((image.getWidth / sliceEdgeLength.toDouble) % 1 == 0, s"Image edge length is not dividable by $sliceEdgeLength.")
-    slice(image, sliceEdgeLength, 0, 0, image.getWidth / sliceEdgeLength, Seq.empty).toStream
-  }
+  override def slice(image: BufferedImage): Stream[BufferedImage] =
+    slice(image, calculateEdgeLengths(image), 0, 0, Seq.empty).toStream
 
-  @tailrec final def slice(image: BufferedImage,
-                           sliceEdgeLength: Int,
-                           column: Int,
-                           row: Int,
-                           slicesInOneDimension: Int,
-                           slices: Seq[BufferedImage]): Seq[BufferedImage] = {
-    if (row == slicesInOneDimension) {
+  @tailrec private final def slice(image: BufferedImage,
+                                   sliceEdgeLengths: (Int, Int),
+                                   offsetX: Int,
+                                   offsetY: Int,
+                                   slices: Seq[BufferedImage]): Seq[BufferedImage] = {
+    if (offsetY >= image.getHeight) {
       return slices
     }
     slice(image,
-      sliceEdgeLength,
-      if (column < slicesInOneDimension - 1) column + 1 else 0,
-      if (column == slicesInOneDimension - 1) row + 1 else row,
-      slicesInOneDimension,
-      slices :+ image.getSubimage(column * sliceEdgeLength, row * sliceEdgeLength, sliceEdgeLength, sliceEdgeLength)
+      sliceEdgeLengths,
+      if (offsetX + sliceEdgeLengths._1 < image.getWidth) offsetX + sliceEdgeLengths._1 else 0,
+      if (offsetX + sliceEdgeLengths._1 >= image.getWidth) offsetY + sliceEdgeLengths._2 else offsetY,
+      slices :+ image.getSubimage(offsetX, offsetY, min(sliceEdgeLengths._1, image.getWidth - offsetX), min(sliceEdgeLengths._2, image.getHeight - offsetY))
     )
   }
+
+  private def calculateEdgeLengths(image: BufferedImage): (Int, Int) =
+    normalize((ceil(factor * image.getWidth).toInt, ceil(factor * image.getHeight).toInt), image.aspectRatio)
+
+  private def normalize(sliceEdgeLengths: (Int, Int), aspectRatio: Double) = sliceEdgeLengths match {
+    case (width, height) if width < 4 => (4, math.floor(4 * aspectRatio).toInt)
+    case (width, height) if height < 4 => (math.floor(4 * 1 / aspectRatio).toInt, 4)
+    case _ => sliceEdgeLengths
+  }
 }
+
+
 
 class Sliceable(image: BufferedImage) {
   def slice(strategy: SlicingStrategy): Stream[BufferedImage] = strategy.slice(image)
