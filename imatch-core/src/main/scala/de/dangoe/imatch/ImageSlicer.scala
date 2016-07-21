@@ -64,8 +64,6 @@ class PercentageSlicing(factor: Double) extends SlicingStrategy {
   }
 }
 
-
-
 class Sliceable(image: BufferedImage) {
   def slice(strategy: SlicingStrategy): Stream[BufferedImage] = strategy.slice(image)
 }
