@@ -23,7 +23,7 @@ package de.dangoe.imatch
 import java.awt.image.BufferedImage
 
 import scala.annotation.tailrec
-import scala.math.{ceil, min}
+import scala.math.{ceil, floor, min}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -66,8 +66,8 @@ class PercentageSlicing(factor: Double) extends SlicingStrategy {
     normalize((ceil(factor * image.getWidth), ceil(factor * image.getHeight)), image.aspectRatio)
 
   private def normalize(sliceEdgeLengths: (Int, Int), aspectRatio: Double): (Int, Int) = sliceEdgeLengths match {
-    case (width, height) if width < MinEdgeLength => (MinEdgeLength, math.floor(MinEdgeLength * aspectRatio))
-    case (width, height) if height < MinEdgeLength => (math.floor(MinEdgeLength * 1 / aspectRatio), MinEdgeLength)
+    case (width, height) if width < MinEdgeLength => (MinEdgeLength, floor(MinEdgeLength * aspectRatio))
+    case (width, height) if height < MinEdgeLength => (floor(MinEdgeLength * 1 / aspectRatio), MinEdgeLength)
     case _ => sliceEdgeLengths
   }
 
@@ -75,7 +75,6 @@ class PercentageSlicing(factor: Double) extends SlicingStrategy {
 }
 
 object PercentageSlicing {
-
   val MinEdgeLength = 4
 }
 
