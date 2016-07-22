@@ -25,7 +25,7 @@ import javax.imageio.ImageIO
 
 import de.dangoe.imatch.testhelper.Testhelpers._
 import org.scalatest.{Matchers, WordSpec}
-import ImageSlicer._
+import ImageSlicing._
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -43,10 +43,14 @@ class PercentageSlicingTest extends WordSpec with Matchers {
         val slices = quadraticImage.slice(new PercentageSlicing(0.5))
 
         slices.length shouldBe 4
-        slices.head should showTheSameAs(readImage("quadratic_11.png"))
-        slices(1) should showTheSameAs(readImage("quadratic_12.png"))
-        slices(2) should showTheSameAs(readImage("quadratic_21.png"))
-        slices(3) should showTheSameAs(readImage("quadratic_22.png"))
+        slices.head.image should showTheSameAs(readImage("quadratic_11.png"))
+        slices.head.anchor shouldBe(0, 0)
+        slices(1).image should showTheSameAs(readImage("quadratic_12.png"))
+        slices(1).anchor shouldBe(16, 0)
+        slices(2).image should showTheSameAs(readImage("quadratic_21.png"))
+        slices(2).anchor shouldBe(0, 16)
+        slices(3).image should showTheSameAs(readImage("quadratic_22.png"))
+        slices(3).anchor shouldBe(16, 16)
       }
     }
 
@@ -55,10 +59,14 @@ class PercentageSlicingTest extends WordSpec with Matchers {
         val slices = rectangularImage.slice(new PercentageSlicing(0.5))
 
         slices.length shouldBe 4
-        slices.head should showTheSameAs(readImage("rectangular_11.png"))
-        slices(1) should showTheSameAs(readImage("rectangular_12.png"))
-        slices(2) should showTheSameAs(readImage("rectangular_21.png"))
-        slices(3) should showTheSameAs(readImage("rectangular_22.png"))
+        slices.head.image should showTheSameAs(readImage("rectangular_11.png"))
+        slices.head.anchor shouldBe(0, 0)
+        slices(1).image should showTheSameAs(readImage("rectangular_12.png"))
+        slices(1).anchor shouldBe(64, 0)
+        slices(2).image should showTheSameAs(readImage("rectangular_21.png"))
+        slices(2).anchor shouldBe(0, 32)
+        slices(3).image should showTheSameAs(readImage("rectangular_22.png"))
+        slices(3).anchor shouldBe(64, 32)
       }
     }
 
@@ -67,10 +75,14 @@ class PercentageSlicingTest extends WordSpec with Matchers {
         val slices = rectangularWithOddEdgeLengthsImage.slice(new PercentageSlicing(0.5))
 
         slices.length shouldBe 4
-        slices.head should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))
-        slices(1) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_12.png"))
-        slices(2) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_21.png"))
-        slices(3) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_22.png"))
+        slices.head.image should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))
+        slices.head.anchor shouldBe(0, 0)
+        slices(1).image should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_12.png"))
+        slices(1).anchor shouldBe(64, 0)
+        slices(2).image should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_21.png"))
+        slices(2).anchor shouldBe(0, 32)
+        slices(3).image should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_22.png"))
+        slices(3).anchor shouldBe(64, 32)
       }
     }
   }
@@ -81,8 +93,8 @@ class PercentageSlicingTest extends WordSpec with Matchers {
         val slices = rectangularImage.slice(new PercentageSlicing(0.01))
 
         val firstSlice = slices.head
-        firstSlice.getWidth shouldBe 4
-        firstSlice.getWidth shouldBe 4
+        firstSlice.image.getWidth shouldBe 4
+        firstSlice.image.getWidth shouldBe 4
       }
     }
   }

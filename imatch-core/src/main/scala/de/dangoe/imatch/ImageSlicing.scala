@@ -30,21 +30,21 @@ import scala.math.{ceil, floor, min}
   * @since 15.07.16
   */
 trait SlicingStrategy {
-  def slice(image: BufferedImage): Stream[BufferedImage]
+  def slice(image: BufferedImage): Stream[Slice]
 }
 
 class PercentageSlicing(factor: Double) extends SlicingStrategy {
 
   import PercentageSlicing._
 
-  override def slice(image: BufferedImage): Stream[BufferedImage] =
+  override def slice(image: BufferedImage): Stream[Slice] =
     slice(image, calculateEdgeLengths(image), 0, 0, Seq.empty).toStream
 
   @tailrec private final def slice(image: BufferedImage,
                                    sliceEdgeLengths: (Int, Int),
                                    offsetX: Int,
                                    offsetY: Int,
-                                   slices: Seq[BufferedImage]): Seq[BufferedImage] = {
+                                   slices: Seq[Slice]): Seq[Slice] = {
     if (offsetY >= image.getHeight) {
       return slices
     }
@@ -53,11 +53,14 @@ class PercentageSlicing(factor: Double) extends SlicingStrategy {
       sliceEdgeLengths,
       if (offsetX + sliceEdgeLengths._1 < image.getWidth) offsetX + sliceEdgeLengths._1 else 0,
       if (offsetX + sliceEdgeLengths._1 >= image.getWidth) offsetY + sliceEdgeLengths._2 else offsetY,
-      slices :+ image.getSubimage(
-        offsetX,
-        offsetY,
-        min(sliceEdgeLengths._1, image.getWidth - offsetX),
-        min(sliceEdgeLengths._2, image.getHeight - offsetY)
+      slices :+ Slice(
+        image.getSubimage(
+          offsetX,
+          offsetY,
+          min(sliceEdgeLengths._1, image.getWidth - offsetX),
+          min(sliceEdgeLengths._2, image.getHeight - offsetY)
+        ),
+        (offsetX, offsetY)
       )
     )
   }
@@ -78,10 +81,12 @@ object PercentageSlicing {
   val MinEdgeLength = 4
 }
 
+case class Slice(image: BufferedImage, anchor: (Int, Int))
+
 class Sliceable(image: BufferedImage) {
-  def slice(strategy: SlicingStrategy): Stream[BufferedImage] = strategy.slice(image)
+  def slice(strategy: SlicingStrategy): Stream[Slice] = strategy.slice(image)
 }
 
-object ImageSlicer {
+object ImageSlicing {
   implicit def toSliceable(image: BufferedImage): Sliceable = new Sliceable(image)
 }
