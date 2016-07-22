@@ -30,15 +30,15 @@ import scala.math.{ceil, floor, min}
   * @since 15.07.16
   */
 trait SlicingStrategy {
-  def slice(image: BufferedImage): Stream[Slice]
+  def slice(image: BufferedImage): Seq[Slice]
 }
 
 class PercentageSlicing(factor: Double) extends SlicingStrategy {
 
   import PercentageSlicing._
 
-  override def slice(image: BufferedImage): Stream[Slice] =
-    slice(image, calculateEdgeLengths(image), 0, 0, Seq.empty).toStream
+  override def slice(image: BufferedImage): Seq[Slice] =
+    slice(image, calculateEdgeLengths(image), 0, 0, Seq.empty)
 
   @tailrec private final def slice(image: BufferedImage,
                                    sliceEdgeLengths: (Int, Int),
@@ -84,7 +84,7 @@ object PercentageSlicing {
 case class Slice(image: BufferedImage, anchor: (Int, Int))
 
 class Sliceable(image: BufferedImage) {
-  def slice(strategy: SlicingStrategy): Stream[Slice] = strategy.slice(image)
+  def slice(strategy: SlicingStrategy): Seq[Slice] = strategy.slice(image)
 }
 
 object ImageSlicing {
