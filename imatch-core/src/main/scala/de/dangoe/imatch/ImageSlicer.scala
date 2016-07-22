@@ -35,6 +35,8 @@ trait SlicingStrategy {
 
 class PercentageSlicing(factor: Double) extends SlicingStrategy {
 
+  import PercentageSlicing._
+
   override def slice(image: BufferedImage): Stream[BufferedImage] =
     slice(image, calculateEdgeLengths(image), 0, 0, Seq.empty).toStream
 
@@ -46,22 +48,35 @@ class PercentageSlicing(factor: Double) extends SlicingStrategy {
     if (offsetY >= image.getHeight) {
       return slices
     }
-    slice(image,
+    slice(
+      image,
       sliceEdgeLengths,
       if (offsetX + sliceEdgeLengths._1 < image.getWidth) offsetX + sliceEdgeLengths._1 else 0,
       if (offsetX + sliceEdgeLengths._1 >= image.getWidth) offsetY + sliceEdgeLengths._2 else offsetY,
-      slices :+ image.getSubimage(offsetX, offsetY, min(sliceEdgeLengths._1, image.getWidth - offsetX), min(sliceEdgeLengths._2, image.getHeight - offsetY))
+      slices :+ image.getSubimage(
+        offsetX,
+        offsetY,
+        min(sliceEdgeLengths._1, image.getWidth - offsetX),
+        min(sliceEdgeLengths._2, image.getHeight - offsetY)
+      )
     )
   }
 
   private def calculateEdgeLengths(image: BufferedImage): (Int, Int) =
-    normalize((ceil(factor * image.getWidth).toInt, ceil(factor * image.getHeight).toInt), image.aspectRatio)
+    normalize((ceil(factor * image.getWidth), ceil(factor * image.getHeight)), image.aspectRatio)
 
-  private def normalize(sliceEdgeLengths: (Int, Int), aspectRatio: Double) = sliceEdgeLengths match {
-    case (width, height) if width < 4 => (4, math.floor(4 * aspectRatio).toInt)
-    case (width, height) if height < 4 => (math.floor(4 * 1 / aspectRatio).toInt, 4)
+  private def normalize(sliceEdgeLengths: (Int, Int), aspectRatio: Double): (Int, Int) = sliceEdgeLengths match {
+    case (width, height) if width < MinEdgeLength => (MinEdgeLength, math.floor(MinEdgeLength * aspectRatio))
+    case (width, height) if height < MinEdgeLength => (math.floor(MinEdgeLength * 1 / aspectRatio), MinEdgeLength)
     case _ => sliceEdgeLengths
   }
+
+  private implicit def doubleToInt(value: Double): Int = value.toInt
+}
+
+object PercentageSlicing {
+
+  val MinEdgeLength = 4
 }
 
 class Sliceable(image: BufferedImage) {
