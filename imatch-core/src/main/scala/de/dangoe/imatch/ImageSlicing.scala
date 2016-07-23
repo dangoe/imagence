@@ -89,4 +89,5 @@ class Sliceable(image: BufferedImage) {
 
 object ImageSlicing {
   implicit def toSliceable(image: BufferedImage): Sliceable = new Sliceable(image)
+  implicit def toBufferedImage(slice: Slice): BufferedImage = slice.image
 }
