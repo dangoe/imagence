@@ -25,6 +25,8 @@ import javax.imageio.ImageIO
 
 import org.scalatest.{Matchers, WordSpec}
 
+import scala.math.BigDecimal.RoundingMode
+
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
@@ -49,8 +51,56 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
 
-        result.deviation > 0 shouldBe true
+        result.deviation shouldBe 0.0140625
         result.deviantPixelCount shouldBe 84
+      }
+    }
+
+    "calculate a deviation of one" when {
+      "if the image is completely white and the reference image is completely black." in {
+        val image = readImage("white.png")
+        val referenceImage = readImage("black.png")
+
+        val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
+
+        result.deviation shouldBe 1
+        result.deviantPixelCount shouldBe 4096
+      }
+    }
+
+    "calculate a deviation of one" when {
+      "if the image is completely black and the reference image is completely white." in {
+        val image = readImage("white.png")
+        val referenceImage = readImage("black.png")
+
+        val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
+
+        result.deviation shouldBe 1
+        result.deviantPixelCount shouldBe 4096
+      }
+    }
+
+    "calculate a deviation of one half" when {
+      "if the image is completely white and the reference image is completely grey." in {
+        val image = readImage("white.png")
+        val referenceImage = readImage("grey.png")
+
+        val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
+
+        BigDecimal.valueOf(result.deviation).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
+        result.deviantPixelCount shouldBe 4096
+      }
+    }
+
+    "calculate a deviation of one half" when {
+      "if the image is completely grey and the reference image is completely white." in {
+        val image = readImage("grey.png")
+        val referenceImage = readImage("black.png")
+
+        val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
+
+        BigDecimal.valueOf(result.deviation).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
+        result.deviantPixelCount shouldBe 4096
       }
     }
   }

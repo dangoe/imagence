@@ -22,7 +22,6 @@ package de.dangoe.imatch
 
 import java.awt.image.BufferedImage
 
-import scala.concurrent.Future
 import scala.math.abs
 
 /**
@@ -47,8 +46,8 @@ object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchin
     val pixelDeviation = for (x <- 0 until image.getWidth;
                               y <- 0 until image.getHeight) yield luminance(x, y, image) - luminance(x, y, reference)
     val absoluteDeviation = abs(pixelDeviation.sum)
-    val maxDeviation = 128d * image.getWidth * image.getHeight
-    SimpleDifferenceMatchingResult(if (absoluteDeviation > 0) absoluteDeviation / maxDeviation / 100.0 else 0, pixelDeviation.count(_ > 0))
+    val maxDeviation = 255d * image.getWidth * image.getHeight
+    SimpleDifferenceMatchingResult(if (absoluteDeviation > 0) absoluteDeviation / maxDeviation else 0, pixelDeviation.count(_ > 0))
   }
 
   private def luminance(x: Int, y: Int, image: BufferedImage): Int = ((image.getRGB(x, y) & 0x00ff0000) >> 16) - 128

@@ -32,5 +32,4 @@ package object imatch {
 
     def aspectRatio: Double = bufferedImage.getWidth.toDouble / bufferedImage.getHeight.toDouble
   }
-
 }
