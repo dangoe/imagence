@@ -21,8 +21,8 @@
 package de.dangoe.imatch
 
 import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
 
+import Testhelpers._
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -36,19 +36,15 @@ class MatchingStrategyTest extends WordSpec with Matchers {
   }
 
   "Any matching strategy" must {
-    "throw an MatchingNotPossible exception" when {
-      "image size differs from reference image size" in {
+    "throw an ImageMatchingException" when {
+      "image size differs from reference image size." in {
         val quadraticImage = readImage("quadratic.png")
         val rectangularImage = readImage("rectangular.png")
 
-        intercept[MatchingNotPossible] {
+        intercept[ImageMatchingException] {
           sut.evaluate(quadraticImage, rectangularImage)
         }
       }
     }
-  }
-
-  private def readImage(resourceName: String): BufferedImage = {
-    ImageIO.read(getClass.getResourceAsStream(resourceName))
   }
 }

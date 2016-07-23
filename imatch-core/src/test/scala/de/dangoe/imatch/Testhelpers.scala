@@ -18,9 +18,10 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imatch.testhelper
+package de.dangoe.imatch
 
 import java.awt.image.BufferedImage
+import javax.imageio.ImageIO
 
 import org.scalatest.matchers.{MatchResult, Matcher}
 
@@ -33,26 +34,19 @@ object Testhelpers {
   case class ImageShowsTheSameMatcher(image: BufferedImage) extends Matcher[BufferedImage] {
 
     def apply(otherImage: BufferedImage): MatchResult = {
-      MatchResult(ofSameSize(otherImage) && sameRGBValuesPerPixel(otherImage),
+      MatchResult(otherImage.isOfSameSizeAs(image) && sameRGBValuesPerPixel(otherImage),
         "Images are not the same!",
         "Images are not the same!")
     }
 
-    private def ofSameSize(otherImage: BufferedImage): Boolean = {
-      image.getWidth == otherImage.getWidth && image.getHeight == otherImage.getHeight
-    }
-
     private def sameRGBValuesPerPixel(otherImage: BufferedImage): Boolean = {
-      for (x <- 0 until otherImage.getWidth) {
-        for (y <- 0 until otherImage.getHeight) {
-          if (image.getRGB(x, y) != otherImage.getRGB(x, y)) {
-            return false
-          }
-        }
-      }
-      true
+      (for (x <- 0 until otherImage.getWidth;
+            y <- 0 until otherImage.getHeight
+      ) yield (x, y)).forall(p => image.getRGB(p._1, p._2) == otherImage.getRGB(p._1, p._2))
     }
   }
 
   def showTheSameAs(image: BufferedImage) = ImageShowsTheSameMatcher(image)
+
+  def readImage(resourceName: String): BufferedImage = ImageIO.read(getClass.getResourceAsStream(resourceName))
 }

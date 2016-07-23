@@ -20,9 +20,7 @@
   */
 package de.dangoe.imatch
 
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
-
+import Testhelpers._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.math.BigDecimal.RoundingMode
@@ -103,9 +101,5 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
         result.deviantPixelCount shouldBe 4096
       }
     }
-  }
-
-  private def readImage(resourceName: String): BufferedImage = {
-    ImageIO.read(getClass.getResourceAsStream(resourceName))
   }
 }

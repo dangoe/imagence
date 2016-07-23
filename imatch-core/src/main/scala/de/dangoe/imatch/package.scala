@@ -31,5 +31,7 @@ package object imatch {
   implicit class RichBufferedImage(bufferedImage: BufferedImage) {
 
     def aspectRatio: Double = bufferedImage.getWidth.toDouble / bufferedImage.getHeight.toDouble
+    def dimension: (Int, Int) = (bufferedImage.getWidth, bufferedImage.getHeight)
+    def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
   }
 }

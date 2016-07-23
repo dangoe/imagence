@@ -20,9 +20,7 @@
   */
 package de.dangoe.imatch
 
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
-
+import Testhelpers._
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -47,7 +45,4 @@ class RichBufferedImageTest extends WordSpec with Matchers {
       }
     }
   }
-
-  private def readImage(resourceName: String): BufferedImage =
-    ImageIO.read(getClass.getResourceAsStream(resourceName))
 }

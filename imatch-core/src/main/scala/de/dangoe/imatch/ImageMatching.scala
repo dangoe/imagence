@@ -29,22 +29,24 @@ import scala.math.abs
   * @since 23.07.16
   */
 abstract class MatchingStrategy[R <: MatchingResult] {
-  final def evaluate(image: BufferedImage, reference: BufferedImage): R = {
-    if ((image.getWidth, image.getHeight) != (reference.getWidth, reference.getHeight)) {
-      throw MatchingNotPossible("Image and reference image are not of same size!")
+  final def evaluate(image: BufferedImage, referenceImage: BufferedImage): R = {
+    if (!image.isOfSameSizeAs(referenceImage)) {
+      throw ImageMatchingException("Image dimension differs from reference image!")
     }
-    evaluateInternal(image, reference)
+    evaluateInternal(image, referenceImage)
   }
 
-  protected def evaluateInternal(image: BufferedImage, reference: BufferedImage): R
+  protected def evaluateInternal(image: BufferedImage, referenceImage: BufferedImage): R
 }
 
 trait MatchingResult
 
+case class ImageMatchingException(message: String) extends RuntimeException(message)
+
 object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchingResult] {
-  override protected def evaluateInternal(image: BufferedImage, reference: BufferedImage): SimpleDifferenceMatchingResult = {
+  override protected def evaluateInternal(image: BufferedImage, referenceImage: BufferedImage): SimpleDifferenceMatchingResult = {
     val pixelDeviation = for (x <- 0 until image.getWidth;
-                              y <- 0 until image.getHeight) yield luminance(x, y, image) - luminance(x, y, reference)
+                              y <- 0 until image.getHeight) yield luminance(x, y, image) - luminance(x, y, referenceImage)
     val absoluteDeviation = abs(pixelDeviation.sum)
     val maxDeviation = 255d * image.getWidth * image.getHeight
     SimpleDifferenceMatchingResult(if (absoluteDeviation > 0) absoluteDeviation / maxDeviation else 0, pixelDeviation.count(_ > 0))
@@ -54,5 +56,3 @@ object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchin
 }
 
 case class SimpleDifferenceMatchingResult(deviation: Double, deviantPixelCount: Int) extends MatchingResult
-
-case class MatchingNotPossible(message: String) extends RuntimeException(message)

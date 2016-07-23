@@ -20,12 +20,9 @@
   */
 package de.dangoe.imatch
 
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
-
-import de.dangoe.imatch.testhelper.Testhelpers._
+import de.dangoe.imatch.ImageSlicing._
+import Testhelpers._
 import org.scalatest.{Matchers, WordSpec}
-import ImageSlicing._
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -97,9 +94,5 @@ class PercentageSlicingTest extends WordSpec with Matchers {
         firstSlice.image.getWidth shouldBe 4
       }
     }
-  }
-
-  private def readImage(resourceName: String): BufferedImage = {
-    ImageIO.read(getClass.getResourceAsStream(resourceName))
   }
 }
