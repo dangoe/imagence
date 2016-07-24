@@ -20,8 +20,9 @@
   */
 package de.dangoe.imatch
 
-import de.dangoe.imatch.ImageSlicing._
+import de.dangoe.imatch.Sliceable._
 import Testhelpers._
+import de.dangoe.imatch.Anchor.PointOfOrigin
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -39,15 +40,21 @@ class PercentageSlicingTest extends WordSpec with Matchers {
       "slice edge length is one-half image edge length." in {
         val slices = quadraticImage.slice(new PercentageSlicing(0.5))
 
+        val expectedDimension = Dimension(16, 16)
+
         slices.length shouldBe 4
         slices.head.image should showTheSameAs(readImage("quadratic_11.png"))
-        slices.head.anchor shouldBe(0, 0)
+        slices.head.region.anchor shouldBe PointOfOrigin
+        slices.head.region.dimension shouldBe expectedDimension
         slices(1).image should showTheSameAs(readImage("quadratic_12.png"))
-        slices(1).anchor shouldBe(16, 0)
+        slices(1).region.anchor shouldBe Anchor(16, 0)
+        slices(1).region.dimension shouldBe expectedDimension
         slices(2).image should showTheSameAs(readImage("quadratic_21.png"))
-        slices(2).anchor shouldBe(0, 16)
+        slices(2).region.anchor shouldBe Anchor(0, 16)
+        slices(2).region.dimension shouldBe expectedDimension
         slices(3).image should showTheSameAs(readImage("quadratic_22.png"))
-        slices(3).anchor shouldBe(16, 16)
+        slices(3).region.anchor shouldBe Anchor(16, 16)
+        slices(3).region.dimension shouldBe expectedDimension
       }
     }
 
@@ -55,15 +62,21 @@ class PercentageSlicingTest extends WordSpec with Matchers {
       "slice edge length is one-half image edge length." in {
         val slices = rectangularImage.slice(new PercentageSlicing(0.5))
 
+        val expectedDimension = Dimension(64, 32)
+
         slices.length shouldBe 4
         slices.head.image should showTheSameAs(readImage("rectangular_11.png"))
-        slices.head.anchor shouldBe(0, 0)
+        slices.head.region.anchor shouldBe PointOfOrigin
+        slices.head.region.dimension shouldBe expectedDimension
         slices(1).image should showTheSameAs(readImage("rectangular_12.png"))
-        slices(1).anchor shouldBe(64, 0)
+        slices(1).region.anchor shouldBe Anchor(64, 0)
+        slices(1).region.dimension shouldBe expectedDimension
         slices(2).image should showTheSameAs(readImage("rectangular_21.png"))
-        slices(2).anchor shouldBe(0, 32)
+        slices(2).region.anchor shouldBe Anchor(0, 32)
+        slices(2).region.dimension shouldBe expectedDimension
         slices(3).image should showTheSameAs(readImage("rectangular_22.png"))
-        slices(3).anchor shouldBe(64, 32)
+        slices(3).region.anchor shouldBe Anchor(64, 32)
+        slices(3).region.dimension shouldBe expectedDimension
       }
     }
 
@@ -73,13 +86,17 @@ class PercentageSlicingTest extends WordSpec with Matchers {
 
         slices.length shouldBe 4
         slices.head.image should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))
-        slices.head.anchor shouldBe(0, 0)
+        slices.head.region.anchor shouldBe PointOfOrigin
+        slices.head.region.dimension shouldBe Dimension(64, 32)
         slices(1).image should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_12.png"))
-        slices(1).anchor shouldBe(64, 0)
+        slices(1).region.anchor shouldBe Anchor(64, 0)
+        slices(1).region.dimension shouldBe Dimension(63, 32)
         slices(2).image should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_21.png"))
-        slices(2).anchor shouldBe(0, 32)
+        slices(2).region.anchor shouldBe Anchor(0, 32)
+        slices(2).region.dimension shouldBe Dimension(64, 31)
         slices(3).image should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_22.png"))
-        slices(3).anchor shouldBe(64, 32)
+        slices(3).region.anchor shouldBe Anchor(64, 32)
+        slices(3).region.dimension shouldBe Dimension(63, 31)
       }
     }
   }

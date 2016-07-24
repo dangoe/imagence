@@ -31,39 +31,44 @@ import scala.math.abs
   * @since 23.07.16
   */
 abstract class MatchingStrategy[R <: MatchingResult] {
-  final def evaluate(image: BufferedImage, referenceImage: BufferedImage): R = {
-    if (!image.isOfSameSizeAs(referenceImage)) {
+  final def evaluate(slice: Slice, reference: Slice): R = {
+    if (!slice.image.isOfSameSizeAs(reference)) {
       throw ImageMatchingException("Image dimension differs from reference image!")
     }
-    evaluateInternal(image, referenceImage)
+    evaluateInternal(slice, reference)
   }
 
-  protected def evaluateInternal(image: BufferedImage, referenceImage: BufferedImage): R
+  protected def evaluateInternal(slice: Slice, reference: Slice): R
 }
 
-trait MatchingResult
+trait MatchingResult {
+  def region: Region
+}
 
 case class ImageMatchingException(message: String) extends RuntimeException(message)
 
 object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchingResult] {
-  override protected def evaluateInternal(image: BufferedImage, referenceImage: BufferedImage): SimpleDifferenceMatchingResult = {
-    val pixelDeviation = for (x <- 0 until image.getWidth;
-                              y <- 0 until image.getHeight) yield luminance(x, y, image) - luminance(x, y, referenceImage)
+  override protected def evaluateInternal(slice: Slice, reference: Slice): SimpleDifferenceMatchingResult = {
+    val pixelDeviation = for (x <- 0 until slice.getWidth;
+                              y <- 0 until slice.getHeight) yield luminance(x, y, slice) - luminance(x, y, reference)
     val absoluteDeviation = abs(pixelDeviation.sum)
-    val maxDeviation = 255d * image.getWidth * image.getHeight
+    val maxDeviation = 255d * slice.getWidth * slice.getHeight
     SimpleDifferenceMatchingResult(
       maxDeviation match {
         case max if max > 0 => PercentageDeviation(absoluteDeviation / max)
         case _ => NoDeviation
       },
-      pixelDeviation.count(_ > 0)
+      pixelDeviation.count(_ > 0),
+      slice.region
     )
   }
 
   private def luminance(x: Int, y: Int, image: BufferedImage): Int = ((image.getRGB(x, y) & 0x00ff0000) >> 16) - 128
 }
 
-case class SimpleDifferenceMatchingResult(deviation: PercentageDeviation, deviantPixelCount: Int) extends MatchingResult
+case class SimpleDifferenceMatchingResult(deviation: PercentageDeviation,
+                                          deviantPixelCount: Int,
+                                          region: Region) extends MatchingResult
 
 case class PercentageDeviation(value: Double) {
   require(value >= 0, "Value must not be smaller than zero.")

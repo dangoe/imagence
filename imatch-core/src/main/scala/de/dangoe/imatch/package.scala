@@ -31,7 +31,23 @@ package object imatch {
   implicit class RichBufferedImage(bufferedImage: BufferedImage) {
 
     def aspectRatio: Double = bufferedImage.getWidth.toDouble / bufferedImage.getHeight.toDouble
-    def dimension: (Int, Int) = (bufferedImage.getWidth, bufferedImage.getHeight)
+    def dimension: Dimension = Dimension(bufferedImage.getWidth, bufferedImage.getHeight)
     def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
   }
+
+  case class Anchor(x: Int, y: Int) {
+    require(x >= 0, "Horizontal shift must not be smaller than zero.")
+    require(y >= 0, "Vertical shift must not be smaller than zero.")
+  }
+
+  object Anchor {
+    val PointOfOrigin = Anchor(0, 0)
+  }
+
+  case class Dimension(width: Int, height: Int) {
+    require(width > 0, "Width must be greater than zero.")
+    require(height > 0, "Height must be greater than zero.")
+  }
+
+  case class Region(anchor: Anchor, dimension: Dimension)
 }

@@ -48,19 +48,18 @@ class PercentageSlicing(factor: Double) extends SlicingStrategy {
     if (offsetY >= image.getHeight) {
       return slices
     }
+    val subimage: BufferedImage = image.getSubimage(
+      offsetX,
+      offsetY,
+      min(sliceEdgeLengths._1, image.getWidth - offsetX),
+      min(sliceEdgeLengths._2, image.getHeight - offsetY)
+    )
     slice(
       image,
       sliceEdgeLengths,
       if (offsetX + sliceEdgeLengths._1 < image.getWidth) offsetX + sliceEdgeLengths._1 else 0,
       if (offsetX + sliceEdgeLengths._1 >= image.getWidth) offsetY + sliceEdgeLengths._2 else offsetY,
-      slices :+ Slice(
-        image.getSubimage(
-          offsetX,
-          offsetY,
-          min(sliceEdgeLengths._1, image.getWidth - offsetX),
-          min(sliceEdgeLengths._2, image.getHeight - offsetY)
-        ),
-        (offsetX, offsetY)
+      slices :+ Slice(subimage, Anchor(offsetX, offsetY)
       )
     )
   }
@@ -81,13 +80,19 @@ object PercentageSlicing {
   val MinEdgeLength = 4
 }
 
-case class Slice(image: BufferedImage, anchor: (Int, Int))
+class Slice private(val image: BufferedImage, val region: Region)
+
+object Slice {
+  def apply(image: BufferedImage, anchor: Anchor): Slice = new Slice(image, Region(anchor, Dimension(image.getWidth, image.getHeight)))
+
+  implicit def toSlice(image: BufferedImage): Slice = Slice(image, Anchor.PointOfOrigin)
+  implicit def extractBufferedImage(slice: Slice): BufferedImage = slice.image
+}
 
 class Sliceable(image: BufferedImage) {
   def slice(strategy: SlicingStrategy): Seq[Slice] = strategy.slice(image)
 }
 
-object ImageSlicing {
+object Sliceable {
   implicit def toSliceable(image: BufferedImage): Sliceable = new Sliceable(image)
-  implicit def toBufferedImage(slice: Slice): BufferedImage = slice.image
 }

@@ -20,7 +20,8 @@
   */
 package de.dangoe.imatch
 
-import Testhelpers._
+import de.dangoe.imatch.Slice._
+import de.dangoe.imatch.Testhelpers._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.math.BigDecimal.RoundingMode
