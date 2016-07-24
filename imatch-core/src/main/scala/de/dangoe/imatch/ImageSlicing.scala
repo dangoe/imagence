@@ -24,56 +24,48 @@ import java.awt.image.BufferedImage
 
 import scala.concurrent.duration.Duration.Inf
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.math.{ceil, floor, min}
+import scala.math.{ceil, min}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
   */
-trait SlicingStrategy {
+trait SliceSize
+
+abstract class SlicingStrategy(minSliceSize: Dimension with SliceSize) {
   def slice(image: BufferedImage): Seq[Slice]
 }
 
-class PercentageSlicing(factor: Double) extends SlicingStrategy {
-
-  import PercentageSlicing._
+class PercentageSlicing(factor: Double, minSliceSize: Dimension with SliceSize = new Dimension(4, 4) with SliceSize) extends SlicingStrategy(minSliceSize) {
 
   implicit val executionContext = ExecutionContext.global
 
   override def slice(image: BufferedImage): Seq[Slice] = {
-    val sliceDimension = calculateSliceDimension(image)
-    val horizontalOffsets = 0 until ceil(image.getWidth.toDouble / sliceDimension.width).toInt map (_ * sliceDimension.width)
-    val verticalOffsets = 0 until ceil(image.getHeight.toDouble / sliceDimension.height).toInt map (_ * sliceDimension.height)
-    Await.result(
-      Future.sequence {
-        for (horizontalOffset <- horizontalOffsets;
-             verticalOffset <- verticalOffsets)
-          yield createSlice(Anchor(horizontalOffset, verticalOffset), sliceDimension, image)
-      },
-      Inf
-    )
+    implicit val sliceSize = calculateSliceSize(image)
+    Await.result(slice(image), Inf)
   }
 
-  private def createSlice(anchor: Anchor, sliceDimension: Dimension, image: BufferedImage): Future[Slice] = Future {
-    val width = min(sliceDimension.width, image.getWidth - anchor.x)
-    val height = min(sliceDimension.height, image.getHeight - anchor.y)
+  def slice(image: BufferedImage)(implicit sliceSize: Dimension with SliceSize) = Future.sequence {
+    for (horizontalOffset <- calculateOffsets(image, _.width);
+         verticalOffset <- calculateOffsets(image, _.height))
+      yield createSlice(Anchor(horizontalOffset, verticalOffset), image)
+  }
+
+  private def calculateOffsets(dimension: Dimension, edgeLength: Dimension => Int)(implicit sliceSize: Dimension with SliceSize) =
+    0 until ceil(edgeLength(dimension).toDouble / edgeLength(sliceSize)).toInt map (_ * edgeLength(sliceSize))
+
+  private def createSlice(anchor: Anchor, image: BufferedImage)(implicit sliceSize: Dimension with SliceSize): Future[Slice] = Future {
+    val width = min(sliceSize.width, image.getWidth - anchor.x)
+    val height = min(sliceSize.height, image.getHeight - anchor.y)
     Slice(image.getSubimage(anchor.x, anchor.y, width, height), Anchor(anchor.x, anchor.y))
   }
 
-  private def calculateSliceDimension(dimension: Dimension): Dimension =
-    normalize(Dimension(ceil(factor * dimension.width), ceil(factor * dimension.height)))
-
-  private def normalize(dimension: Dimension): Dimension = dimension match {
-    case d if d.width < MinEdgeLength => Dimension(MinEdgeLength, floor(MinEdgeLength * dimension.aspectRatio))
-    case d if d.height < MinEdgeLength => Dimension(floor(MinEdgeLength * 1 / dimension.aspectRatio), MinEdgeLength)
-    case _ => dimension
+  private def calculateSliceSize(dimension: Dimension): Dimension with SliceSize = {
+    Dimension(ceil(factor * dimension.width).toInt, ceil(factor * dimension.height).toInt) match {
+      case d if d.width < minSliceSize.width || d.height < minSliceSize.height => minSliceSize
+      case d => new Dimension(d.width, d.height) with SliceSize
+    }
   }
-
-  private implicit def doubleToInt(value: Double): Int = value.toInt
-}
-
-object PercentageSlicing {
-  val MinEdgeLength = 4
 }
 
 class Slice private(val image: BufferedImage, val region: Region)
