@@ -54,8 +54,8 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
 
-        result.deviation.value shouldBe 0.0140625
-        result.deviantPixelCount shouldBe 84
+        BigDecimal.valueOf(result.deviation.value).setScale(2, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(0.47)
+        result.deviantPixelCount shouldBe 169
       }
     }
 
