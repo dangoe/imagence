@@ -22,9 +22,7 @@ package de.dangoe.imatch
 
 import java.awt.image.BufferedImage
 
-import scala.collection.immutable.IndexedSeq
 import scala.concurrent.duration.Duration.Inf
-import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.math.{ceil, floor, min}
 
