@@ -38,7 +38,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         val result = SimpleDifferenceMatching.evaluate(image, image)
 
-        result.deviation shouldBe 0
+        result.deviation.value shouldBe 0
       }
     }
 
@@ -49,7 +49,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
 
-        result.deviation shouldBe 0.0140625
+        result.deviation.value shouldBe 0.0140625
         result.deviantPixelCount shouldBe 84
       }
     }
@@ -61,7 +61,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
 
-        result.deviation shouldBe 1
+        result.deviation.value shouldBe 1
         result.deviantPixelCount shouldBe 4096
       }
     }
@@ -73,7 +73,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
 
-        result.deviation shouldBe 1
+        result.deviation.value shouldBe 1
         result.deviantPixelCount shouldBe 4096
       }
     }
@@ -85,7 +85,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
 
-        BigDecimal.valueOf(result.deviation).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
+        BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
         result.deviantPixelCount shouldBe 4096
       }
     }
@@ -97,7 +97,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
 
-        BigDecimal.valueOf(result.deviation).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
+        BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
         result.deviantPixelCount shouldBe 4096
       }
     }

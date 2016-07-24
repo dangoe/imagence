@@ -22,6 +22,8 @@ package de.dangoe.imatch
 
 import java.awt.image.BufferedImage
 
+import de.dangoe.imatch.PercentageDeviation.NoDeviation
+
 import scala.math.abs
 
 /**
@@ -49,10 +51,26 @@ object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchin
                               y <- 0 until image.getHeight) yield luminance(x, y, image) - luminance(x, y, referenceImage)
     val absoluteDeviation = abs(pixelDeviation.sum)
     val maxDeviation = 255d * image.getWidth * image.getHeight
-    SimpleDifferenceMatchingResult(if (absoluteDeviation > 0) absoluteDeviation / maxDeviation else 0, pixelDeviation.count(_ > 0))
+    SimpleDifferenceMatchingResult(
+      maxDeviation match {
+        case max if max > 0 => PercentageDeviation(absoluteDeviation / max)
+        case _ => NoDeviation
+      },
+      pixelDeviation.count(_ > 0)
+    )
   }
 
   private def luminance(x: Int, y: Int, image: BufferedImage): Int = ((image.getRGB(x, y) & 0x00ff0000) >> 16) - 128
 }
 
-case class SimpleDifferenceMatchingResult(deviation: Double, deviantPixelCount: Int) extends MatchingResult
+case class SimpleDifferenceMatchingResult(deviation: PercentageDeviation, deviantPixelCount: Int) extends MatchingResult
+
+case class PercentageDeviation(value: Double) {
+  require(value >= 0, "Value must not be smaller than zero.")
+  require(value <= 1, "Value must not be larger than one.")
+}
+
+object PercentageDeviation {
+  val NoDeviation = PercentageDeviation(0)
+  val CompleteDeviation = PercentageDeviation(1)
+}
