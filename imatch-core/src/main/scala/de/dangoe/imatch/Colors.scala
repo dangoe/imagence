@@ -20,37 +20,38 @@
   */
 package de.dangoe.imatch
 
-import Testhelpers._
-import de.dangoe.imatch.Anchor.PointOfOrigin
-import de.dangoe.imatch.Deviation.NoDeviation
-import org.scalatest.{Matchers, WordSpec}
+import java.awt.Color
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 23.07.16
+  * @since 24.07.16
   */
-class MatchingStrategyTest extends WordSpec with Matchers {
+object Colors {
 
-  val sut = new MatchingStrategy[MatchingResult] {
-    override protected def evaluateInternal(image: Slice, reference: Slice)(implicit context: ImageProcessingContext): MatchingResult = new MatchingResult {
-      override def context: ImageProcessingContext = context
-      override def deviation: Deviation = NoDeviation
-      override def region: Region = Region(PointOfOrigin, Dimension(image.getWidth, image.getHeight))
-    }
+  object ImplicitConversions {
+    implicit def toRGB(color: Color): Int = color.getRGB
   }
 
-  "Any matching strategy" must {
-    "throw an ImageMatchingException" when {
-      "image size differs from reference image size." in {
-        val quadraticImage = readImage("quadratic.png")
-        val rectangularImage = readImage("rectangular.png")
+  sealed trait RgbChannel {
+    def from(rgb: Int): Int
+  }
+  case object Alpha extends RgbChannel {
+    override def from(rgb: Int): Int = (rgb >> 24) & 0x000000FF
+  }
+  case object Red extends RgbChannel {
+    override def from(rgb: Int): Int = (rgb >> 16) & 0x000000FF
+  }
+  case object Green extends RgbChannel {
+    override def from(rgb: Int): Int = (rgb >> 8) & 0x000000FF
+  }
+  case object Blue extends RgbChannel {
+    override def from(rgb: Int): Int = rgb & 0x000000FF
+  }
 
-        implicit val context = ImageProcessingContext(quadraticImage, rectangularImage)
-
-        intercept[ImageMatchingException] {
-          sut.evaluate(quadraticImage, rectangularImage)
-        }
-      }
+  implicit class RichColor(delegate: Color) {
+    def greyscale = {
+      val average = ((delegate.getRed + delegate.getGreen + delegate.getBlue) / 3d).toInt
+      new Color(average, average, average, delegate.getAlpha)
     }
   }
 }

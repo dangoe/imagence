@@ -20,25 +20,37 @@
   */
 package de.dangoe.imatch
 
-import org.scalatest.{Matchers, WordSpec}
+import java.awt.{AlphaComposite, Color, Graphics2D, Image}
+import java.awt.image.{BufferedImage, ImageObserver}
+import java.io.OutputStream
+import javax.imageio.ImageIO
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 24.07.16
   */
-class PercentageDeviationTest extends WordSpec with Matchers {
+class DeviationImageWriter()(implicit context: ImageProcessingContext) extends ImageObserver {
 
-  "PercentageDeviation" must {
-    "not be smaller than zero." in {
-      intercept[IllegalArgumentException] {
-        PercentageDeviation(-0.5)
-      }
+  def writeTo(results: Seq[MatchingResult], outputStream: OutputStream): Unit = {
+    val resultImage = new BufferedImage(context.reference.getWidth, context.reference.getHeight, BufferedImage.TYPE_INT_ARGB)
+    val g2d = resultImage.getGraphics.asInstanceOf[Graphics2D]
+    g2d.drawImage(context.reference, 0, 0, this)
+
+    results.foreach { r =>
+      val region = r.region
+      val anchor = region.anchor
+      val dimension = region.dimension
+
+      val ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, r.deviation.value.toFloat)
+      g2d.setComposite(ac)
+      g2d.drawImage(context.image.getSubimage(anchor.x, anchor.y, dimension.width, dimension.height), anchor.x, anchor.y, this)
+
+      g2d.setColor(new Color(255, 0, 0))
+      g2d.fillRect(anchor.x, anchor.y, dimension.width, dimension.height)
     }
 
-    "not be larger than one." in {
-      intercept[IllegalArgumentException] {
-        PercentageDeviation(1.5)
-      }
-    }
+    ImageIO.write(resultImage, "png", outputStream)
   }
+
+  override def imageUpdate(img: Image, infoflags: Int, x: Int, y: Int, width: Int, height: Int): Boolean = true
 }

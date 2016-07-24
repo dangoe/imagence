@@ -20,36 +20,24 @@
   */
 package de.dangoe.imatch
 
-import Testhelpers._
-import de.dangoe.imatch.Anchor.PointOfOrigin
-import de.dangoe.imatch.Deviation.NoDeviation
 import org.scalatest.{Matchers, WordSpec}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 23.07.16
+  * @since 24.07.16
   */
-class MatchingStrategyTest extends WordSpec with Matchers {
+class DeviationTest extends WordSpec with Matchers {
 
-  val sut = new MatchingStrategy[MatchingResult] {
-    override protected def evaluateInternal(image: Slice, reference: Slice)(implicit context: ImageProcessingContext): MatchingResult = new MatchingResult {
-      override def context: ImageProcessingContext = context
-      override def deviation: Deviation = NoDeviation
-      override def region: Region = Region(PointOfOrigin, Dimension(image.getWidth, image.getHeight))
+  "PercentageDeviation" must {
+    "not be smaller than zero." in {
+      intercept[IllegalArgumentException] {
+        Deviation(-0.5)
+      }
     }
-  }
 
-  "Any matching strategy" must {
-    "throw an ImageMatchingException" when {
-      "image size differs from reference image size." in {
-        val quadraticImage = readImage("quadratic.png")
-        val rectangularImage = readImage("rectangular.png")
-
-        implicit val context = ImageProcessingContext(quadraticImage, rectangularImage)
-
-        intercept[ImageMatchingException] {
-          sut.evaluate(quadraticImage, rectangularImage)
-        }
+    "not be larger than one." in {
+      intercept[IllegalArgumentException] {
+        Deviation(1.5)
       }
     }
   }

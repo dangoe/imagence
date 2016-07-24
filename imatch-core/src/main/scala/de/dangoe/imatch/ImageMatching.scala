@@ -20,9 +20,11 @@
   */
 package de.dangoe.imatch
 
+import java.awt.Color
 import java.awt.image.BufferedImage
 
-import de.dangoe.imatch.PercentageDeviation.NoDeviation
+import de.dangoe.imatch.Deviation.NoDeviation
+import de.dangoe.imatch.Colors._
 
 import scala.math.abs
 
@@ -43,6 +45,7 @@ abstract class MatchingStrategy[R <: MatchingResult] {
 
 trait MatchingResult {
   def context: ImageProcessingContext
+  def deviation: Deviation
   def region: Region
 }
 
@@ -57,7 +60,7 @@ object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchin
     SimpleDifferenceMatchingResult(
       context,
       maxDeviation match {
-        case max if max > 0 => PercentageDeviation(absoluteDeviation / max)
+        case max if max > 0 => Deviation(absoluteDeviation / max)
         case _ => NoDeviation
       },
       pixelDeviation.count(_ > 0),
@@ -65,20 +68,20 @@ object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchin
     )
   }
 
-  private def luminance(x: Int, y: Int, image: BufferedImage): Int = ((image.getRGB(x, y) & 0x00ff0000) >> 16) - 128
+  private def luminance(x: Int, y: Int, image: BufferedImage): Int = new Color(image.getRGB(x,y)).greyscale.getRed
 }
 
 case class SimpleDifferenceMatchingResult(context: ImageProcessingContext,
-                                          deviation: PercentageDeviation,
+                                          deviation: Deviation,
                                           deviantPixelCount: Int,
                                           region: Region) extends MatchingResult
 
-case class PercentageDeviation(value: Double) {
+case class Deviation(value: Double) {
   require(value >= 0, "Value must not be smaller than zero.")
   require(value <= 1, "Value must not be larger than one.")
 }
 
-object PercentageDeviation {
-  val NoDeviation = PercentageDeviation(0)
-  val CompleteDeviation = PercentageDeviation(1)
+object Deviation {
+  val NoDeviation = Deviation(0)
+  val CompleteDeviation = Deviation(1)
 }
