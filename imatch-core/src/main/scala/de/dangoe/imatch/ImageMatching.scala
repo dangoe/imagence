@@ -31,29 +31,31 @@ import scala.math.abs
   * @since 23.07.16
   */
 abstract class MatchingStrategy[R <: MatchingResult] {
-  final def evaluate(slice: Slice, reference: Slice): R = {
+  final def evaluate(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): R = {
     if (!slice.image.isOfSameSizeAs(reference)) {
       throw ImageMatchingException("Image dimension differs from reference image!")
     }
     evaluateInternal(slice, reference)
   }
 
-  protected def evaluateInternal(slice: Slice, reference: Slice): R
+  protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context:ImageProcessingContext): R
 }
 
 trait MatchingResult {
+  def context: ImageProcessingContext
   def region: Region
 }
 
 case class ImageMatchingException(message: String) extends RuntimeException(message)
 
 object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchingResult] {
-  override protected def evaluateInternal(slice: Slice, reference: Slice): SimpleDifferenceMatchingResult = {
+  override protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): SimpleDifferenceMatchingResult = {
     val pixelDeviation = for (x <- 0 until slice.getWidth;
                               y <- 0 until slice.getHeight) yield luminance(x, y, slice) - luminance(x, y, reference)
     val absoluteDeviation = abs(pixelDeviation.sum)
     val maxDeviation = 255d * slice.getWidth * slice.getHeight
     SimpleDifferenceMatchingResult(
+      context,
       maxDeviation match {
         case max if max > 0 => PercentageDeviation(absoluteDeviation / max)
         case _ => NoDeviation
@@ -66,7 +68,8 @@ object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchin
   private def luminance(x: Int, y: Int, image: BufferedImage): Int = ((image.getRGB(x, y) & 0x00ff0000) >> 16) - 128
 }
 
-case class SimpleDifferenceMatchingResult(deviation: PercentageDeviation,
+case class SimpleDifferenceMatchingResult(context: ImageProcessingContext,
+                                          deviation: PercentageDeviation,
                                           deviantPixelCount: Int,
                                           region: Region) extends MatchingResult
 
