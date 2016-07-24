@@ -22,7 +22,10 @@ package de.dangoe.imatch
 
 import java.awt.image.BufferedImage
 
-import scala.annotation.tailrec
+import scala.collection.immutable.IndexedSeq
+import scala.concurrent.duration.Duration.Inf
+import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.math.{ceil, floor, min}
 
 /**
@@ -37,40 +40,34 @@ class PercentageSlicing(factor: Double) extends SlicingStrategy {
 
   import PercentageSlicing._
 
-  override def slice(image: BufferedImage): Seq[Slice] =
-    slice(image, calculateEdgeLengths(image), 0, 0, Seq.empty)
+  implicit val executionContext = ExecutionContext.global
 
-  @tailrec private final def slice(image: BufferedImage,
-                                   sliceEdgeLengths: (Int, Int),
-                                   offsetX: Int,
-                                   offsetY: Int,
-                                   slices: Seq[Slice]): Seq[Slice] = {
-    if (offsetY >= image.getHeight) {
-      return slices
-    }
-    val subimage: BufferedImage = image.getSubimage(
-      offsetX,
-      offsetY,
-      min(sliceEdgeLengths._1, image.getWidth - offsetX),
-      min(sliceEdgeLengths._2, image.getHeight - offsetY)
-    )
-    slice(
-      image,
-      sliceEdgeLengths,
-      if (offsetX + sliceEdgeLengths._1 < image.getWidth) offsetX + sliceEdgeLengths._1 else 0,
-      if (offsetX + sliceEdgeLengths._1 >= image.getWidth) offsetY + sliceEdgeLengths._2 else offsetY,
-      slices :+ Slice(subimage, Anchor(offsetX, offsetY)
-      )
-    )
+  override def slice(image: BufferedImage): Seq[Slice] = {
+    val sliceDimension = calculateSliceDimension(image)
+    val horizontalOffsets = 0 until ceil(image.getWidth.toDouble / sliceDimension.width).toInt map (_ * sliceDimension.width)
+    val verticalOffsets = 0 until ceil(image.getHeight.toDouble / sliceDimension.height).toInt map (_ * sliceDimension.height)
+    Await.result(
+      Future.sequence {
+        for (horizontalOffset <- horizontalOffsets;
+             verticalOffset <- verticalOffsets) yield Future {
+          createSlice(Anchor(horizontalOffset, verticalOffset), sliceDimension, image)
+        }
+      }, Inf)
   }
 
-  private def calculateEdgeLengths(image: BufferedImage): (Int, Int) =
-    normalize((ceil(factor * image.getWidth), ceil(factor * image.getHeight)), image.aspectRatio)
+  private def createSlice(anchor: Anchor, sliceDimension: Dimension, image: BufferedImage): Slice = {
+    val width = min(sliceDimension.width, image.getWidth - anchor.x)
+    val height = min(sliceDimension.height, image.getHeight - anchor.y)
+    Slice(image.getSubimage(anchor.x, anchor.y, width, height), Anchor(anchor.x, anchor.y))
+  }
 
-  private def normalize(sliceEdgeLengths: (Int, Int), aspectRatio: Double): (Int, Int) = sliceEdgeLengths match {
-    case (width, height) if width < MinEdgeLength => (MinEdgeLength, floor(MinEdgeLength * aspectRatio))
-    case (width, height) if height < MinEdgeLength => (floor(MinEdgeLength * 1 / aspectRatio), MinEdgeLength)
-    case _ => sliceEdgeLengths
+  private def calculateSliceDimension(dimension: Dimension): Dimension =
+    normalize(Dimension(ceil(factor * dimension.width), ceil(factor * dimension.height)))
+
+  private def normalize(dimension: Dimension): Dimension = dimension match {
+    case d if d.width < MinEdgeLength => Dimension(MinEdgeLength, floor(MinEdgeLength * dimension.aspectRatio))
+    case d if d.height < MinEdgeLength => Dimension(floor(MinEdgeLength * 1 / dimension.aspectRatio), MinEdgeLength)
+    case _ => dimension
   }
 
   private implicit def doubleToInt(value: Double): Int = value.toInt
@@ -86,6 +83,7 @@ object Slice {
   def apply(image: BufferedImage, anchor: Anchor): Slice = new Slice(image, Region(anchor, Dimension(image.getWidth, image.getHeight)))
 
   implicit def toSlice(image: BufferedImage): Slice = Slice(image, Anchor.PointOfOrigin)
+
   implicit def extractBufferedImage(slice: Slice): BufferedImage = slice.image
 }
 

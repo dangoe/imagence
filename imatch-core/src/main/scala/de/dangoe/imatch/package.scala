@@ -28,12 +28,14 @@ import java.awt.image.BufferedImage
   */
 package object imatch {
 
-  implicit class RichBufferedImage(bufferedImage: BufferedImage) {
+  implicit class RichBufferedImage(delegate: BufferedImage) {
 
-    def aspectRatio: Double = bufferedImage.getWidth.toDouble / bufferedImage.getHeight.toDouble
-    def dimension: Dimension = Dimension(bufferedImage.getWidth, bufferedImage.getHeight)
+    def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
+    def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)
     def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
   }
+
+  implicit def toDimension(image: BufferedImage): Dimension = image.dimension
 
   case class Anchor(x: Int, y: Int) {
     require(x >= 0, "Horizontal shift must not be smaller than zero.")
@@ -47,6 +49,7 @@ package object imatch {
   case class Dimension(width: Int, height: Int) {
     require(width > 0, "Width must be greater than zero.")
     require(height > 0, "Height must be greater than zero.")
+    def aspectRatio: Double = width.toDouble / height.toDouble
   }
 
   case class Region(anchor: Anchor, dimension: Dimension)
