@@ -47,13 +47,14 @@ class PercentageSlicing(factor: Double) extends SlicingStrategy {
     Await.result(
       Future.sequence {
         for (horizontalOffset <- horizontalOffsets;
-             verticalOffset <- verticalOffsets) yield Future {
-          createSlice(Anchor(horizontalOffset, verticalOffset), sliceDimension, image)
-        }
-      }, Inf)
+             verticalOffset <- verticalOffsets)
+          yield createSlice(Anchor(horizontalOffset, verticalOffset), sliceDimension, image)
+      },
+      Inf
+    )
   }
 
-  private def createSlice(anchor: Anchor, sliceDimension: Dimension, image: BufferedImage): Slice = {
+  private def createSlice(anchor: Anchor, sliceDimension: Dimension, image: BufferedImage): Future[Slice] = Future {
     val width = min(sliceDimension.width, image.getWidth - anchor.x)
     val height = min(sliceDimension.height, image.getHeight - anchor.y)
     Slice(image.getSubimage(anchor.x, anchor.y, width, height), Anchor(anchor.x, anchor.y))
