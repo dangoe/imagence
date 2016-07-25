@@ -33,26 +33,47 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @since 25.07.16
   */
 trait ImagePreprocessor {
-  def preprocess(image: BufferedImage): BufferedImage
+  def process(image: BufferedImage): BufferedImage
 }
 
-abstract class GreyscaleMethod extends (Int => Int) {
-  override final def apply(rgb: Int): Int = {
+trait GreyscaleMethod extends (Int => Int)
+
+abstract class ChannelWeightingGreyscaleMethod extends GreyscaleMethod {
+  override def apply(rgb: Int): Int = {
     val greyscaleValue = math.round((for (channel <- Seq(Red, Green, Blue)) yield channel.extract(rgb) * weight(channel)).sum).toInt
     new Color(greyscaleValue, greyscaleValue, greyscaleValue, Alpha.extract(rgb)).getRGB
   }
   protected def weight(channel: RgbChannel): Double
 }
 
-case object Averaging extends GreyscaleMethod {
+case object Averaging extends ChannelWeightingGreyscaleMethod {
   override protected def weight(channel: RgbChannel): Double = 1d / 3d
+}
+
+case object Desaturation extends GreyscaleMethod {
+  override def apply(rgb: Int): Int = {
+    val red = Red.extract(rgb)
+    val green = Green.extract(rgb)
+    val blue = Blue.extract(rgb)
+    val greyscaleValue = math.round((Seq(red, green, blue).max + Seq(red, green, blue).min) / 2d).toInt
+    new Color(greyscaleValue, greyscaleValue, greyscaleValue, Alpha.extract(rgb)).getRGB
+  }
+}
+
+case object Luma extends ChannelWeightingGreyscaleMethod {
+  override protected def weight(channel: RgbChannel): Double = channel match {
+    case Red => 0.299
+    case Green => 0.587
+    case Blue => 0.114
+    case _ => 0
+  }
 }
 
 class ConvertToGreyscale(greyscaleMethod: GreyscaleMethod) extends ImagePreprocessor {
 
   implicit val executionContext = ExecutionContext.global
 
-  override def preprocess(image: BufferedImage): BufferedImage = {
+  override def process(image: BufferedImage): BufferedImage = {
     val converted = new BufferedImage(image.getWidth, image.getHeight, image.getType)
     val g2d = converted.getGraphics.asInstanceOf[Graphics2D]
     val op = Future.sequence {

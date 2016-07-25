@@ -14,13 +14,31 @@ class ConvertToGreyscaleTest extends WordSpec with Matchers {
   val color = new Color(50, 100, 150, 200)
 
   "Any color" can {
-    "be converted to greyscale using averaging." in {
-      val image = new ConvertToGreyscale(Averaging).preprocess(createTestImage(Dimension(1, 1), color))
+    "be converted to greyscale using averaging method." in {
+      val image = new ConvertToGreyscale(Averaging).process(createTestImage(Dimension(1, 1), color))
       val backgroundColor = image.getRGB(0, 0)
 
       image.dimension shouldBe Dimension(1, 1)
       // TODO Fix rounding problem
       backgroundColor shouldBe -933010589
+    }
+
+    "be converted to greyscale using desaturation method." in {
+      val image = new ConvertToGreyscale(Desaturation).process(createTestImage(Dimension(1, 1), color))
+      val backgroundColor = image.getRGB(0, 0)
+
+      image.dimension shouldBe Dimension(1, 1)
+      // TODO Fix rounding problem
+      backgroundColor shouldBe -933010589
+    }
+
+    "be converted to greyscale using luma method." in {
+      val image = new ConvertToGreyscale(Luma).process(createTestImage(Dimension(1, 1), color))
+      val backgroundColor = image.getRGB(0, 0)
+
+      image.dimension shouldBe Dimension(1, 1)
+      // TODO Fix rounding problem
+      backgroundColor shouldBe -933536933
     }
   }
 
