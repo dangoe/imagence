@@ -50,16 +50,16 @@ case class ImageMatchingException(message: String) extends RuntimeException(mess
 
 object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchingResult] {
   override protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): SimpleDifferenceMatchingResult = {
-    val luminanceDeviationByPixel = for (x <- 0 until slice.getWidth;
+    val deviationByPixel = for (x <- 0 until slice.getWidth;
                                          y <- 0 until slice.getHeight;
                                          deviationOfPixel <- calculateDeviation(x, y, slice, reference).map(d => (x, y, d))) yield deviationOfPixel
-    val deviation = luminanceDeviationByPixel.nonEmpty match {
+    val deviation = deviationByPixel.nonEmpty match {
       case true =>
         val maxDeviation = (255d * 3) * slice.getWidth * slice.getHeight
-        Deviation(luminanceDeviationByPixel.map(_._3).sum / maxDeviation)
+        Deviation(deviationByPixel.map(_._3).sum / maxDeviation)
       case false => NoDeviation
     }
-    val deviantPixelCount = luminanceDeviationByPixel.count(_._3 > 0d)
+    val deviantPixelCount = deviationByPixel.count(_._3 > 0d)
     SimpleDifferenceMatchingResult(context, deviation, deviantPixelCount, slice.region)
   }
 
