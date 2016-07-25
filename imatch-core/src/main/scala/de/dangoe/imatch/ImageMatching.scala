@@ -55,25 +55,25 @@ object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchin
   override protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): SimpleDifferenceMatchingResult = {
     val luminanceDeviationByPixel = for (x <- 0 until slice.getWidth;
                                          y <- 0 until slice.getHeight;
-                                         deviationOfPixel <- luminanceDeviation(x, y, slice, reference).map(d => (x, y, d))) yield deviationOfPixel
+                                         deviationOfPixel <- calculateDeviation(x, y, slice, reference).map(d => (x, y, d))) yield deviationOfPixel
     val deviation = luminanceDeviationByPixel.nonEmpty match {
-      case true => {
-        val maxDeviation = 255d * slice.getWidth * slice.getHeight
+      case true =>
+        val maxDeviation = (255d * 3) * slice.getWidth * slice.getHeight
         Deviation(luminanceDeviationByPixel.map(_._3).sum / maxDeviation)
-      }
       case false => NoDeviation
     }
     val deviantPixelCount = luminanceDeviationByPixel.count(_._3 > 0d)
     SimpleDifferenceMatchingResult(context, deviation, deviantPixelCount, slice.region)
   }
 
-  private def luminanceDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Int] = {
-    val deviation = abs(luminance(x, y, slice) - luminance(x, y, reference))
-    if(deviation > 0) Some(deviation) else None
+  private def calculateDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Int] = {
+    val rgb = slice.getRGB(x, y)
+    val referenceRgb = reference.getRGB(x, y)
+    (for (channel <- Seq(Red, Green, Blue)) yield abs(channel.extract(rgb) - channel.extract(referenceRgb))).sum match {
+      case d if d > 0 => Some(d)
+      case _ => None
+    }
   }
-
-  private def luminance(x: Int, y: Int, image: BufferedImage): Int =
-    new Color(image.getRGB(x, y)).greyscale.getRed
 }
 
 case class SimpleDifferenceMatchingResult(context: ImageProcessingContext,

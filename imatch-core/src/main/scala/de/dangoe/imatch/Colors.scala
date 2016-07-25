@@ -33,19 +33,19 @@ object Colors {
   }
 
   sealed trait RgbChannel {
-    def from(rgb: Int): Int
+    def extract(rgb: Int): Int
   }
   case object Alpha extends RgbChannel {
-    override def from(rgb: Int): Int = (rgb >> 24) & 0x000000FF
+    override def extract(rgb: Int): Int = (rgb >> 24) & 0x000000FF
   }
   case object Red extends RgbChannel {
-    override def from(rgb: Int): Int = (rgb >> 16) & 0x000000FF
+    override def extract(rgb: Int): Int = (rgb >> 16) & 0x000000FF
   }
   case object Green extends RgbChannel {
-    override def from(rgb: Int): Int = (rgb >> 8) & 0x000000FF
+    override def extract(rgb: Int): Int = (rgb >> 8) & 0x000000FF
   }
   case object Blue extends RgbChannel {
-    override def from(rgb: Int): Int = rgb & 0x000000FF
+    override def extract(rgb: Int): Int = rgb & 0x000000FF
   }
 
   implicit class RichColor(delegate: Color) {

@@ -12,6 +12,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>imatch-api</artifactId>
+    <artifactId>imatch-scala-api</artifactId>
 
 </project>

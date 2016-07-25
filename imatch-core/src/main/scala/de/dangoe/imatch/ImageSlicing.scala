@@ -41,13 +41,13 @@ class PercentageSlicing(factor: Double, minSliceSize: Dimension with SliceSize =
   implicit val executionContext = ExecutionContext.global
 
   override def slice(image: BufferedImage): Seq[Slice] = {
-    implicit val sliceSize = calculateSliceSize(image)
+    implicit val sliceSize = calculateSliceSize(image.dimension)
     Await.result(slice(image), Inf)
   }
 
   def slice(image: BufferedImage)(implicit sliceSize: Dimension with SliceSize) = Future.sequence {
-    for (horizontalOffset <- calculateOffsets(image, _.width);
-         verticalOffset <- calculateOffsets(image, _.height))
+    for (horizontalOffset <- calculateOffsets(image.dimension, _.width);
+         verticalOffset <- calculateOffsets(image.dimension, _.height))
       yield createSlice(Anchor(horizontalOffset, verticalOffset), image)
   }
 

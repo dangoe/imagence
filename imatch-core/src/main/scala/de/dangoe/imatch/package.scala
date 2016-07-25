@@ -35,8 +35,6 @@ package object imatch {
     def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
   }
 
-  implicit def toDimension(image: BufferedImage): Dimension = image.dimension
-
   case class Anchor(x: Int, y: Int) {
     require(x >= 0, "Horizontal shift must not be smaller than zero.")
     require(y >= 0, "Vertical shift must not be smaller than zero.")

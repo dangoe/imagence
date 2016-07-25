@@ -36,31 +36,25 @@ class ColorsTest extends WordSpec with Matchers {
 
   "Alpha channel" can {
     "be extracted from an arbitrary RGB value" in {
-      Alpha.from(color) shouldBe 200
+      Alpha.extract(color) shouldBe 200
     }
   }
 
   "Red channel" can {
     "be extracted from an arbitrary RGB value" in {
-      Red.from(color) shouldBe 50
+      Red.extract(color) shouldBe 50
     }
   }
 
   "Green channel" can {
     "be extracted from an arbitrary RGB value" in {
-      Green.from(color) shouldBe 100
+      Green.extract(color) shouldBe 100
     }
   }
 
   "Blue channel" can {
     "be extracted from an arbitrary RGB value" in {
-      Blue.from(color) shouldBe 150
-    }
-  }
-
-  "Any color" can {
-    "be converted to greyscale using averaging." in {
-      color.greyscale shouldBe new Color(100, 100, 100, 200)
+      Blue.extract(color) shouldBe 150
     }
   }
 }
