@@ -37,12 +37,14 @@ abstract class MatchingStrategy[R <: MatchingResult] {
     evaluateInternal(slice, reference)
   }
 
-  protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context:ImageProcessingContext): R
+  protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): R
 }
 
 trait MatchingResult {
   def context: ImageProcessingContext
+
   def deviation: Deviation
+
   def region: Region
 }
 
@@ -51,8 +53,8 @@ case class ImageMatchingException(message: String) extends RuntimeException(mess
 object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchingResult] {
   override protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): SimpleDifferenceMatchingResult = {
     val deviationByPixel = for (x <- 0 until slice.getWidth;
-                                         y <- 0 until slice.getHeight;
-                                         deviationOfPixel <- calculateDeviation(x, y, slice, reference).map(d => (x, y, d))) yield deviationOfPixel
+                                y <- 0 until slice.getHeight;
+                                deviationOfPixel <- calculateDeviation(x, y, slice, reference).map(d => (x, y, d))) yield deviationOfPixel
     val deviation = deviationByPixel.nonEmpty match {
       case true =>
         val maxDeviation = (255d * 3) * slice.getWidth * slice.getHeight
