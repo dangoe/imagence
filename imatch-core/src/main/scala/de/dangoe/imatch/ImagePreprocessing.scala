@@ -32,9 +32,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 25.07.16
   */
-trait ImagePreprocessor {
-  def process(image: BufferedImage): BufferedImage
-}
+trait ImagePreprocessor extends (BufferedImage => BufferedImage)
 
 trait GreyscaleMethod extends (Int => Int)
 
@@ -73,7 +71,7 @@ class ConvertToGreyscale(greyscaleMethod: GreyscaleMethod) extends ImagePreproce
 
   implicit val executionContext = ExecutionContext.global
 
-  override def process(image: BufferedImage): BufferedImage = {
+  override def apply(image: BufferedImage): BufferedImage = {
     val converted = new BufferedImage(image.getWidth, image.getHeight, image.getType)
     val g2d = converted.getGraphics.asInstanceOf[Graphics2D]
     val op = Future.sequence {
