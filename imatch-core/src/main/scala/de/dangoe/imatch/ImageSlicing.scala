@@ -22,10 +22,11 @@ package de.dangoe.imatch
 
 import java.awt.image.BufferedImage
 
+import de.dangoe.imatch.PercentageSlicing._
+
 import scala.concurrent.duration.Duration.Inf
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.math.{ceil, min}
-
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
@@ -36,7 +37,7 @@ abstract class SlicingStrategy(minSliceSize: Dimension with SliceSize) {
   def slice(image: BufferedImage): Seq[Slice]
 }
 
-class PercentageSlicing(factor: Double, minSliceSize: Dimension with SliceSize = new Dimension(4, 4) with SliceSize)(implicit executionContext: ExecutionContext) extends SlicingStrategy(minSliceSize) {
+class PercentageSlicing(factor: Double, minSliceSize: Dimension with SliceSize = MinSliceSize)(implicit executionContext: ExecutionContext) extends SlicingStrategy(minSliceSize) {
 
   override def slice(image: BufferedImage): Seq[Slice] = {
     implicit val sliceSize = calculateSliceSize(image.dimension)
@@ -64,6 +65,10 @@ class PercentageSlicing(factor: Double, minSliceSize: Dimension with SliceSize =
       case d => new Dimension(d.width, d.height) with SliceSize
     }
   }
+}
+
+object PercentageSlicing {
+  val MinSliceSize = new Dimension(4, 4) with SliceSize
 }
 
 class Slice private(val image: BufferedImage, val region: Region)
