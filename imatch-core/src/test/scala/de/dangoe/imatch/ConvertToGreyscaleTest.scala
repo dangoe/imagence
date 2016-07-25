@@ -1,8 +1,9 @@
 package de.dangoe.imatch
 
-import java.awt.{Color, Graphics2D}
 import java.awt.image.BufferedImage
+import java.awt.{Color, Graphics2D}
 
+import de.dangoe.imatch.ImplicitConversions._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext

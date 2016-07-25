@@ -22,6 +22,7 @@ package de.dangoe.imatch
 
 import java.awt.image.BufferedImage
 
+import de.dangoe.imatch.ImplicitConversions._
 import de.dangoe.imatch.PercentageSlicing._
 
 import scala.concurrent.duration.Duration.Inf

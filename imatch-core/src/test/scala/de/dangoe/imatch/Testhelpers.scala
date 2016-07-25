@@ -23,6 +23,7 @@ package de.dangoe.imatch
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
+import de.dangoe.imatch.ImplicitConversions._
 import org.scalatest.matchers.{MatchResult, Matcher}
 
 /**

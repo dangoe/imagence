@@ -22,6 +22,7 @@ package de.dangoe.imatch
 
 import de.dangoe.imatch.Colors._
 import de.dangoe.imatch.Deviation.NoDeviation
+import de.dangoe.imatch.ImplicitConversions._
 
 import scala.math.abs
 

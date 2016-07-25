@@ -28,11 +28,12 @@ import java.awt.image.BufferedImage
   */
 package object imatch {
 
-  implicit class RichBufferedImage(delegate: BufferedImage) {
-
-    def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
-    def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)
-    def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
+  object ImplicitConversions {
+    implicit class RichBufferedImage(delegate: BufferedImage) {
+      def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
+      def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)
+      def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
+    }
   }
 
   case class Anchor(x: Int, y: Int) {
