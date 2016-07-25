@@ -18,32 +18,12 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imatch
+package de.dangoe.imatch.common
 
-import de.dangoe.imatch.ImplicitConversions._
-import de.dangoe.imatch.Testhelpers._
-import org.scalatest.{Matchers, WordSpec}
+import java.awt.image.BufferedImage
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 19.07.16
+  * @since 24.07.16
   */
-class RichBufferedImageTest extends WordSpec with Matchers {
-
-  private val quadraticImage = readImage("quadratic.png")
-  private val rectangularImage = readImage("rectangular.png")
-
-  "Aspect ratio calculation" should {
-    "return 1" when {
-      "the aspect ratio is quadratic." in {
-        quadraticImage.aspectRatio shouldBe 1
-      }
-    }
-
-    "return 2" when {
-      "the width equals 2 * height." in {
-        rectangularImage.aspectRatio shouldBe 2
-      }
-    }
-  }
-}
+case class ImageProcessingContext(image: BufferedImage, reference: BufferedImage)

@@ -18,16 +18,17 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imatch
+package de.dangoe.imatch.matching
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imatch.ImplicitConversions._
-import de.dangoe.imatch.PercentageSlicing._
+import de.dangoe.imatch.matching.ImplicitConversions._
+import de.dangoe.imatch.matching.PercentageSlicing._
 
 import scala.concurrent.duration.Duration.Inf
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.math.{ceil, min}
+
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16

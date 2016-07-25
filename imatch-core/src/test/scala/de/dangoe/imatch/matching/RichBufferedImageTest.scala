@@ -18,38 +18,31 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imatch
+package de.dangoe.imatch.matching
 
-import Testhelpers._
-import de.dangoe.imatch.Anchor.PointOfOrigin
-import de.dangoe.imatch.Deviation.NoDeviation
+import de.dangoe.imatch.Testhelpers._
+import de.dangoe.imatch.matching.ImplicitConversions._
 import org.scalatest.{Matchers, WordSpec}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 23.07.16
+  * @since 19.07.16
   */
-class MatchingStrategyTest extends WordSpec with Matchers {
+class RichBufferedImageTest extends WordSpec with Matchers {
 
-  val sut = new MatchingStrategy[MatchingResult] {
-    override protected def evaluateInternal(image: Slice, reference: Slice)(implicit context: ImageProcessingContext): MatchingResult = new MatchingResult {
-      override def context: ImageProcessingContext = context
-      override def deviation: Deviation = NoDeviation
-      override def region: Region = Region(PointOfOrigin, Dimension(image.getWidth, image.getHeight))
+  private val quadraticImage = readImage("quadratic.png")
+  private val rectangularImage = readImage("rectangular.png")
+
+  "Aspect ratio calculation" should {
+    "return 1" when {
+      "the aspect ratio is quadratic." in {
+        quadraticImage.aspectRatio shouldBe 1
+      }
     }
-  }
 
-  "Any matching strategy" must {
-    "throw an ImageMatchingException" when {
-      "image size differs from reference image size." in {
-        val quadraticImage = readImage("quadratic.png")
-        val rectangularImage = readImage("rectangular.png")
-
-        implicit val context = ImageProcessingContext(quadraticImage, rectangularImage)
-
-        intercept[ImageMatchingException] {
-          sut.evaluate(quadraticImage, rectangularImage)
-        }
+    "return 2" when {
+      "the width equals 2 * height." in {
+        rectangularImage.aspectRatio shouldBe 2
       }
     }
   }

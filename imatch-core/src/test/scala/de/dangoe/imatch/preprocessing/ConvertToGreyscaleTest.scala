@@ -3,8 +3,8 @@ package de.dangoe.imatch.preprocessing
 import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 
-import de.dangoe.imatch.Dimension
-import de.dangoe.imatch.ImplicitConversions._
+import de.dangoe.imatch.matching.Dimension
+import de.dangoe.imatch.matching.ImplicitConversions._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext

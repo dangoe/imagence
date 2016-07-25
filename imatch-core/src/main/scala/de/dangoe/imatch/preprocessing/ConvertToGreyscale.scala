@@ -23,8 +23,8 @@ package de.dangoe.imatch.preprocessing
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 
-import de.dangoe.imatch.Colors.ImplicitConversions._
-import de.dangoe.imatch.Colors._
+import de.dangoe.imatch.common.Colors.ImplicitConversions._
+import de.dangoe.imatch.common.Colors._
 
 import scala.concurrent.duration.Duration._
 import scala.concurrent.{Await, ExecutionContext, Future}

@@ -18,10 +18,11 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imatch
+package de.dangoe.imatch.matching
 
-import de.dangoe.imatch.Slice._
 import de.dangoe.imatch.Testhelpers._
+import de.dangoe.imatch.common.ImageProcessingContext
+import de.dangoe.imatch.matching.Slice._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.math.BigDecimal.RoundingMode

@@ -18,38 +18,40 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe
+package de.dangoe.imatch.matching
 
-import java.awt.image.BufferedImage
+import de.dangoe.imatch.Testhelpers._
+import de.dangoe.imatch.common.ImageProcessingContext
+import de.dangoe.imatch.matching.Anchor._
+import de.dangoe.imatch.matching.Deviation.NoDeviation
+import org.scalatest.{Matchers, WordSpec}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 19.07.16
+  * @since 23.07.16
   */
-package object imatch {
+class MatchingStrategyTest extends WordSpec with Matchers {
 
-  object ImplicitConversions {
-    implicit class RichBufferedImage(delegate: BufferedImage) {
-      def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
-      def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)
-      def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
+  val sut = new MatchingStrategy[MatchingResult] {
+    override protected def evaluateInternal(image: Slice, reference: Slice)(implicit context: ImageProcessingContext): MatchingResult = new MatchingResult {
+      override def context: ImageProcessingContext = context
+      override def deviation: Deviation = NoDeviation
+      override def region: Region = Region(PointOfOrigin, Dimension(image.getWidth, image.getHeight))
     }
   }
 
-  case class Anchor(x: Int, y: Int) {
-    require(x >= 0, "Horizontal shift must not be smaller than zero.")
-    require(y >= 0, "Vertical shift must not be smaller than zero.")
-  }
+  "Any matching strategy" must {
+    "throw an ImageMatchingException" when {
+      "image size differs from reference image size." in {
+        val quadraticImage = readImage("quadratic.png")
+        val rectangularImage = readImage("rectangular.png")
 
-  object Anchor {
-    val PointOfOrigin = Anchor(0, 0)
-  }
+        implicit val context = ImageProcessingContext(quadraticImage, rectangularImage)
 
-  case class Dimension(width: Int, height: Int) {
-    require(width > 0, "Width must be greater than zero.")
-    require(height > 0, "Height must be greater than zero.")
-    def aspectRatio: Double = width.toDouble / height.toDouble
+        intercept[ImageMatchingException] {
+          sut.evaluate(quadraticImage, rectangularImage)
+        }
+      }
+    }
   }
-
-  case class Region(anchor: Anchor, dimension: Dimension)
 }

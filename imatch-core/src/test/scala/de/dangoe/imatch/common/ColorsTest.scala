@@ -18,9 +18,9 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imatch
+package de.dangoe.imatch.common
 
-import de.dangoe.imatch.Colors._
+import de.dangoe.imatch.common.Colors._
 import org.scalatest.{Matchers, WordSpec}
 
 /**

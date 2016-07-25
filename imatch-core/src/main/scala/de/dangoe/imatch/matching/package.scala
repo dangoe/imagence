@@ -24,6 +24,32 @@ import java.awt.image.BufferedImage
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 24.07.16
+  * @since 19.07.16
   */
-case class ImageProcessingContext(image: BufferedImage, reference: BufferedImage)
+package object matching {
+
+  object ImplicitConversions {
+    implicit class RichBufferedImage(delegate: BufferedImage) {
+      def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
+      def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)
+      def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
+    }
+  }
+
+  case class Anchor(x: Int, y: Int) {
+    require(x >= 0, "Horizontal shift must not be smaller than zero.")
+    require(y >= 0, "Vertical shift must not be smaller than zero.")
+  }
+
+  object Anchor {
+    val PointOfOrigin = Anchor(0, 0)
+  }
+
+  case class Dimension(width: Int, height: Int) {
+    require(width > 0, "Width must be greater than zero.")
+    require(height > 0, "Height must be greater than zero.")
+    def aspectRatio: Double = width.toDouble / height.toDouble
+  }
+
+  case class Region(anchor: Anchor, dimension: Dimension)
+}
