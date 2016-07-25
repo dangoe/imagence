@@ -29,6 +29,7 @@ import javax.imageio.ImageIO
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 24.07.16
   */
+@Prototype
 class DeviationImageWriter()(implicit context: ImageProcessingContext) extends ImageObserver {
 
   def writeTo(results: Seq[MatchingResult], outputStream: OutputStream): Unit = {
