@@ -5,11 +5,15 @@ import java.awt.image.BufferedImage
 
 import org.scalatest.{Matchers, WordSpec}
 
+import scala.concurrent.ExecutionContext
+
 /**
   * @author Daniel Götten <daniel.goetten@fashionid.de>
   * @since 25.07.16
   */
 class ConvertToGreyscaleTest extends WordSpec with Matchers {
+
+  implicit val executionContext = ExecutionContext.global
 
   val color = new Color(50, 100, 150, 200)
 

@@ -25,6 +25,8 @@ import Testhelpers._
 import de.dangoe.imatch.Anchor.PointOfOrigin
 import org.scalatest.{Matchers, WordSpec}
 
+import scala.concurrent.ExecutionContext
+
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
@@ -32,6 +34,8 @@ import org.scalatest.{Matchers, WordSpec}
 class PercentageSlicingTest extends WordSpec with Matchers {
 
   import PercentageSlicingTest._
+
+  implicit val executionContext = ExecutionContext.global
 
   val quadraticImage = readImage("quadratic.png")
   val rectangularImage = readImage("rectangular.png")

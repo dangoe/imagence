@@ -36,9 +36,7 @@ abstract class SlicingStrategy(minSliceSize: Dimension with SliceSize) {
   def slice(image: BufferedImage): Seq[Slice]
 }
 
-class PercentageSlicing(factor: Double, minSliceSize: Dimension with SliceSize = new Dimension(4, 4) with SliceSize) extends SlicingStrategy(minSliceSize) {
-
-  implicit val executionContext = ExecutionContext.global
+class PercentageSlicing(factor: Double, minSliceSize: Dimension with SliceSize = new Dimension(4, 4) with SliceSize)(implicit executionContext: ExecutionContext) extends SlicingStrategy(minSliceSize) {
 
   override def slice(image: BufferedImage): Seq[Slice] = {
     implicit val sliceSize = calculateSliceSize(image.dimension)

@@ -41,6 +41,7 @@ abstract class ChannelWeightingGreyscaleMethod extends GreyscaleMethod {
     val greyscaleValue = math.round((for (channel <- Seq(Red, Green, Blue)) yield channel.extract(rgb) * weight(channel)).sum).toInt
     new Color(greyscaleValue, greyscaleValue, greyscaleValue, Alpha.extract(rgb)).getRGB
   }
+
   protected def weight(channel: RgbChannel): Double
 }
 
@@ -67,23 +68,23 @@ case object Luma extends ChannelWeightingGreyscaleMethod {
   }
 }
 
-class ConvertToGreyscale(greyscaleMethod: GreyscaleMethod) extends ImagePreprocessor {
-
-  implicit val executionContext = ExecutionContext.global
+class ConvertToGreyscale(greyscaleMethod: GreyscaleMethod)(implicit executionContext: ExecutionContext) extends ImagePreprocessor {
 
   override def apply(image: BufferedImage): BufferedImage = {
-    val converted = new BufferedImage(image.getWidth, image.getHeight, image.getType)
-    val g2d = converted.getGraphics.asInstanceOf[Graphics2D]
-    val op = Future.sequence {
-      for (x <- 0 until image.getWidth;
-           y <- 0 until image.getHeight) yield Future {
-        val rgb = greyscaleMethod(image.getRGB(x, y))
-        val color = new Color(rgb, Alpha.extract(rgb) < 255)
-        g2d.setColor(color)
-        g2d.fillRect(x, y, 1, 1)
-      }
+    val processed = new BufferedImage(image.getWidth, image.getHeight, image.getType)
+    val g2d = processed.getGraphics.asInstanceOf[Graphics2D]
+    Await.ready(Future.sequence {
+      for (y <- 0 until image.getHeight) yield processLine(image, g2d, y)
+    }, Inf)
+    processed
+  }
+
+  private def processLine(image: BufferedImage, graphics: Graphics2D, y: Int): Future[Unit] = Future {
+    for (x <- 0 until image.getWidth) {
+      val rgb = greyscaleMethod(image.getRGB(x, y))
+      val color = new Color(rgb, Alpha.extract(rgb) < 255)
+      graphics.setColor(color)
+      graphics.fillRect(x, y, 1, 1)
     }
-    Await.ready(op, Inf)
-    converted
   }
 }
