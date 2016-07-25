@@ -18,23 +18,21 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imatch
+package de.dangoe.imatch.preprocessing
 
-import java.awt.image.BufferedImage
 import java.awt.Graphics2D
+import java.awt.image.BufferedImage
 
 import de.dangoe.imatch.Colors.ImplicitConversions._
 import de.dangoe.imatch.Colors._
 
-import scala.concurrent.duration.Duration.Inf
+import scala.concurrent.duration.Duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 25.07.16
   */
-trait ImagePreprocessor extends (BufferedImage => BufferedImage)
-
 trait GreyscaleMethod extends (Color => Color)
 
 abstract class ChannelWeightingGreyscaleMethod extends GreyscaleMethod {
