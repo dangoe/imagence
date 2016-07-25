@@ -42,9 +42,7 @@ abstract class MatchingStrategy[R <: MatchingResult] {
 
 trait MatchingResult {
   def context: ImageProcessingContext
-
   def deviation: Deviation
-
   def region: Region
 }
 
