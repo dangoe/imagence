@@ -20,7 +20,7 @@
   */
 package de.dangoe.imatch
 
-import java.awt.Color
+import java.awt.{Color => JavaColor}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -29,22 +29,49 @@ import java.awt.Color
 object Colors {
 
   object ImplicitConversions {
-    implicit def toRGB(color: Color): Int = color.getRGB
+    implicit def colorFromRgb(rgb: Int): Color = Color(Red.extract(rgb), Green.extract(rgb), Blue.extract(rgb), Alpha.extract(rgb))
+    implicit class ConvertibleToJavaColor(color: Color) {
+      def asJava: JavaColor = new JavaColor(color.toRGB, color.withTransparency)
+    }
+  }
+
+  case class Color(red: Int, green: Int, blue: Int, alpha: Int = 255) {
+    Red.check(red)
+    Green.check(green)
+    Blue.check(blue)
+    Alpha.check(alpha)
+    private val rgb = ((alpha & 0xFF) << 24) | ((red & 0xFF) << 16) | ((green & 0xFF) << 8) | ((blue & 0xFF) << 0)
+    def toRGB: Int = rgb
+    def withTransparency: Boolean = alpha < 255
+  }
+
+  object Color {
+    def fromRGB(rgb: Int): Color = Color(Red.extract(rgb), Green.extract(rgb), Blue.extract(rgb), Alpha.extract(rgb))
+    def greyscale(luminance: Int, alpha: Int): Color = Color(luminance: Int, luminance: Int, luminance: Int, alpha: Int)
   }
 
   sealed trait RgbChannel {
+    def check(luminance: Int): Unit = {
+      require(luminance >= 0, s"$channelName channel value must be greater or equal than zero.")
+      require(luminance <= 255, s"$channelName channel value must be smaller or equal than 255.")
+    }
     def extract(rgb: Int): Int
-  }
-  case object Alpha extends RgbChannel {
-    override def extract(rgb: Int): Int = (rgb >> 24) & 0x000000FF
+    protected def channelName: String
   }
   case object Red extends RgbChannel {
     override def extract(rgb: Int): Int = (rgb >> 16) & 0x000000FF
+    override protected def channelName: String = productPrefix
   }
   case object Green extends RgbChannel {
     override def extract(rgb: Int): Int = (rgb >> 8) & 0x000000FF
+    override protected def channelName: String = productPrefix
   }
   case object Blue extends RgbChannel {
     override def extract(rgb: Int): Int = rgb & 0x000000FF
+    override protected def channelName: String = productPrefix
+  }
+  case object Alpha extends RgbChannel {
+    override def extract(rgb: Int): Int = (rgb >> 24) & 0x000000FF
+    override protected def channelName: String = productPrefix
   }
 }

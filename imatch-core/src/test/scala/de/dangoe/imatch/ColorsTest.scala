@@ -20,9 +20,6 @@
   */
 package de.dangoe.imatch
 
-import java.awt.Color
-
-import de.dangoe.imatch.Colors.ImplicitConversions._
 import de.dangoe.imatch.Colors._
 import org.scalatest.{Matchers, WordSpec}
 
@@ -32,29 +29,110 @@ import org.scalatest.{Matchers, WordSpec}
   */
 class ColorsTest extends WordSpec with Matchers {
 
-  val color = new Color(50, 100, 150, 200)
+  val color = Color(50, 100, 150, 200)
 
-  "Alpha channel" can {
-    "be extracted from an arbitrary RGB value" in {
-      Alpha.extract(color) shouldBe 200
+  "Red channel value" can {
+    "be read." in {
+      color.red shouldBe 50
+    }
+  }
+
+  it must {
+    "not be a negative number." in {
+      intercept[IllegalArgumentException] {
+        Color(-1, 0, 0)
+      }
+    }
+
+    "not be a number greater than 255." in {
+      intercept[IllegalArgumentException] {
+        Color(256, 0, 0)
+      }
+    }
+  }
+
+  "Green channel value" can {
+    "be read." in {
+      color.green shouldBe 100
+    }
+  }
+
+  it must {
+    "not be a negative number." in {
+      intercept[IllegalArgumentException] {
+        Color(0, -1, 0)
+      }
+    }
+
+    "not be a number greater than 255." in {
+      intercept[IllegalArgumentException] {
+        Color(0, 256, 0)
+      }
+    }
+  }
+
+  "Blue channel value" can {
+    "be read." in {
+      color.blue shouldBe 150
+    }
+  }
+
+  it must {
+    "not be a negative number." in {
+      intercept[IllegalArgumentException] {
+        Color(0, 0, -1)
+      }
+    }
+
+    "not be a number greater than 255." in {
+      intercept[IllegalArgumentException] {
+        Color(0, 0, 256)
+      }
+    }
+  }
+
+  "Transparency check" should {
+    "return true" when {
+      "alpha value is smaller than 255." in {
+        for (a <- 0 until 255)
+          Color(0, 0, 0, a).withTransparency shouldBe true
+      }
+    }
+
+    "return false" when {
+      "alpha value is equal to 255." in {
+        Color(0, 0, 0, 255).withTransparency shouldBe false
+      }
+    }
+  }
+
+  "Alpha channel value" can {
+    "be read." in {
+      color.alpha shouldBe 200
     }
   }
 
   "Red channel" can {
-    "be extracted from an arbitrary RGB value" in {
-      Red.extract(color) shouldBe 50
+    "be extracted from an arbitrary RGB value." in {
+      Red.extract(color.toRGB) shouldBe 50
     }
   }
 
   "Green channel" can {
-    "be extracted from an arbitrary RGB value" in {
-      Green.extract(color) shouldBe 100
+    "be extracted from an arbitrary RGB value." in {
+      Green.extract(color.toRGB) shouldBe 100
     }
   }
 
   "Blue channel" can {
-    "be extracted from an arbitrary RGB value" in {
-      Blue.extract(color) shouldBe 150
+    "be extracted from an arbitrary RGB value." in {
+      Blue.extract(color.toRGB) shouldBe 150
+    }
+  }
+
+  "Alpha channel" can {
+    "be extracted from an arbitrary RGB value." in {
+      Alpha.extract(color.toRGB) shouldBe 200
     }
   }
 }

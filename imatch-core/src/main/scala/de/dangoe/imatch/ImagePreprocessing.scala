@@ -21,9 +21,10 @@
 package de.dangoe.imatch
 
 import java.awt.image.BufferedImage
-import java.awt.{Color, Graphics2D}
+import java.awt.Graphics2D
 
-import de.dangoe.imatch.Colors.{Alpha, Blue, Green, Red, RgbChannel}
+import de.dangoe.imatch.Colors.ImplicitConversions._
+import de.dangoe.imatch.Colors._
 
 import scala.concurrent.duration.Duration.Inf
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -34,12 +35,12 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   */
 trait ImagePreprocessor extends (BufferedImage => BufferedImage)
 
-trait GreyscaleMethod extends (Int => Int)
+trait GreyscaleMethod extends (Color => Color)
 
 abstract class ChannelWeightingGreyscaleMethod extends GreyscaleMethod {
-  override def apply(rgb: Int): Int = {
-    val greyscaleValue = math.round((for (channel <- Seq(Red, Green, Blue)) yield channel.extract(rgb) * weight(channel)).sum).toInt
-    new Color(greyscaleValue, greyscaleValue, greyscaleValue, Alpha.extract(rgb)).getRGB
+  override def apply(color: Color): Color = {
+    val luminance = math.round((for (channel <- Seq(Red, Green, Blue)) yield channel.extract(color.toRGB) * weight(channel)).sum).toInt
+    Color.greyscale(luminance, color.alpha)
   }
 
   protected def weight(channel: RgbChannel): Double
@@ -50,12 +51,9 @@ case object Averaging extends ChannelWeightingGreyscaleMethod {
 }
 
 case object Desaturation extends GreyscaleMethod {
-  override def apply(rgb: Int): Int = {
-    val red = Red.extract(rgb)
-    val green = Green.extract(rgb)
-    val blue = Blue.extract(rgb)
-    val greyscaleValue = math.round((Seq(red, green, blue).max + Seq(red, green, blue).min) / 2d).toInt
-    new Color(greyscaleValue, greyscaleValue, greyscaleValue, Alpha.extract(rgb)).getRGB
+  override def apply(color: Color): Color = {
+    val luminance = math.round((Seq(color.red, color.green, color.blue).max + Seq(color.red, color.green, color.blue).min) / 2d).toInt
+    Color.greyscale(luminance, color.alpha)
   }
 }
 
@@ -81,9 +79,8 @@ class ConvertToGreyscale(greyscaleMethod: GreyscaleMethod)(implicit executionCon
 
   private def processLine(image: BufferedImage, graphics: Graphics2D, y: Int): Future[Unit] = Future {
     for (x <- 0 until image.getWidth) {
-      val rgb = greyscaleMethod(image.getRGB(x, y))
-      val color = new Color(rgb, Alpha.extract(rgb) < 255)
-      graphics.setColor(color)
+      val color = greyscaleMethod(Color.fromRGB(image.getRGB(x, y)))
+      graphics.setColor(color.asJava)
       graphics.fillRect(x, y, 1, 1)
     }
   }
