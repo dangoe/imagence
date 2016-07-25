@@ -19,6 +19,7 @@ class ConvertToGreyscaleTest extends WordSpec with Matchers {
       val backgroundColor = image.getRGB(0, 0)
 
       image.dimension shouldBe Dimension(1, 1)
+      // TODO Fix rounding problem
       backgroundColor shouldBe -933010589
     }
   }
