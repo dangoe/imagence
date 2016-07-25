@@ -20,11 +20,8 @@
   */
 package de.dangoe.imatch
 
-import java.awt.Color
-import java.awt.image.BufferedImage
-
-import de.dangoe.imatch.Deviation.NoDeviation
 import de.dangoe.imatch.Colors._
+import de.dangoe.imatch.Deviation.NoDeviation
 
 import scala.math.abs
 
