@@ -39,10 +39,9 @@ trait GreyscaleMethod extends (Color => Color)
 
 abstract class ChannelWeightingGreyscaleMethod extends GreyscaleMethod {
   override def apply(color: Color): Color = {
-    val luminance = math.round((for (channel <- Seq(Red, Green, Blue)) yield channel.extract(color.toRGB) * weight(channel)).sum).toInt
-    Color.greyscale(luminance, color.alpha)
+    val luminance = math.round(color.red * weight(Red) + color.green * weight(Green) + color.blue * weight(Blue)).toInt
+    Color.grey(luminance, color.alpha)
   }
-
   protected def weight(channel: RgbChannel): Double
 }
 
@@ -52,8 +51,9 @@ case object Averaging extends ChannelWeightingGreyscaleMethod {
 
 case object Desaturation extends GreyscaleMethod {
   override def apply(color: Color): Color = {
-    val luminance = math.round((Seq(color.red, color.green, color.blue).max + Seq(color.red, color.green, color.blue).min) / 2d).toInt
-    Color.greyscale(luminance, color.alpha)
+    val channelValues = Set(color.red, color.green, color.blue)
+    val luminance = math.round((channelValues.max + channelValues.min) / 2d).toInt
+    Color.grey(luminance, color.alpha)
   }
 }
 
@@ -70,15 +70,15 @@ class ConvertToGreyscale(greyscaleMethod: GreyscaleMethod)(implicit executionCon
 
   override def apply(image: BufferedImage): BufferedImage = {
     val processed = new BufferedImage(image.getWidth, image.getHeight, image.getType)
-    val g2d = processed.getGraphics.asInstanceOf[Graphics2D]
+    val graphics = processed.getGraphics.asInstanceOf[Graphics2D]
     Await.ready(Future.sequence {
-      for (y <- 0 until image.getHeight) yield processLine(image, g2d, y)
+      for (y <- 0 until image.getHeight) yield processLine(image, graphics, y)
     }, Inf)
     processed
   }
 
   private def processLine(image: BufferedImage, graphics: Graphics2D, y: Int): Future[Unit] = Future {
-    for (x <- 0 until image.getWidth) {
+    0 until image.getWidth foreach { x =>
       val color = greyscaleMethod(Color.fromRGB(image.getRGB(x, y)))
       graphics.setColor(color.asJava)
       graphics.fillRect(x, y, 1, 1)

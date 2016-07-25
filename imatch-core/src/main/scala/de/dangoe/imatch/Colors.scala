@@ -47,7 +47,7 @@ object Colors {
 
   object Color {
     def fromRGB(rgb: Int): Color = Color(Red.extract(rgb), Green.extract(rgb), Blue.extract(rgb), Alpha.extract(rgb))
-    def greyscale(luminance: Int, alpha: Int): Color = Color(luminance: Int, luminance: Int, luminance: Int, alpha: Int)
+    def grey(luminance: Int, alpha: Int): Color = Color(luminance: Int, luminance: Int, luminance: Int, alpha: Int)
   }
 
   sealed trait RgbChannel {
