@@ -47,11 +47,4 @@ object Colors {
   case object Blue extends RgbChannel {
     override def extract(rgb: Int): Int = rgb & 0x000000FF
   }
-
-  implicit class RichColor(delegate: Color) {
-    def greyscale = {
-      val average = ((delegate.getRed + delegate.getGreen + delegate.getBlue) / 3d).toInt
-      new Color(average, average, average, delegate.getAlpha)
-    }
-  }
 }
