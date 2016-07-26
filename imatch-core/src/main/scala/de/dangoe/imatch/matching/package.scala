@@ -20,7 +20,9 @@
   */
 package de.dangoe.imatch
 
-import java.awt.image.BufferedImage
+import java.awt.image.{BufferedImage, DataBufferInt}
+
+import de.dangoe.imatch.common.Colors.Color
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -33,6 +35,15 @@ package object matching {
       def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
       def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)
       def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
+      def getPixels: Array[Array[Color]] = {
+        val rgbValues = delegate.getRaster.getDataBuffer.asInstanceOf[DataBufferInt].getData()
+        val array: Array[Array[Color]] = Array.ofDim[Color](delegate.getWidth, delegate.getHeight)
+        for (y <- 0 until delegate.getHeight;
+             x <- 0 until delegate.getWidth) yield {
+          array(x)(y) = Color.fromRGB(rgbValues(y * delegate.getHeight + x))
+        }
+        array
+      }
     }
   }
 
