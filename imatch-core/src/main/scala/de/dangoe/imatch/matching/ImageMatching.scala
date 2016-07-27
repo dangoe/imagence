@@ -22,58 +22,81 @@ package de.dangoe.imatch.matching
 
 import java.awt.Color
 
-import de.dangoe.imatch.common.ImageProcessingContext
-import de.dangoe.imatch.matching.Deviation._
+import de.dangoe.imatch.common.{ImageProcessingContext, Prototype}
 import de.dangoe.imatch.matching.ImplicitConversions._
 
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.math.abs
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
+// TODO Draft to be tested
+@Prototype
+class SliceMatcher[R <: MatchingResult](strategy: MatchingStrategy[R])(implicit executionContext: ExecutionContext, timeout: Duration) {
+  def evaluate(slicePairs: Seq[(Slice, Slice)]): Seq[R] = {
+    val partitioned = slicePairs.grouped(Runtime.getRuntime.availableProcessors())
+    Await.result(Future.sequence(for (partition <- partitioned) yield Future {
+      processPartition(partition)
+    }), timeout).flatten.toSeq
+  }
+
+  private def processPartition(slicePairs: Seq[(Slice, Slice)]): Seq[R] = {
+    for (slicePair <- slicePairs) yield strategy.evaluate(slicePair._1, slicePair._2)
+  }
+}
+
 abstract class MatchingStrategy[R <: MatchingResult] {
-  final def evaluate(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): R = {
+  final def evaluate(slice: Slice, reference: Slice): R = {
     if (!slice.image.isOfSameSizeAs(reference)) {
       throw ImageMatchingException("Image dimension differs from reference image!")
     }
     evaluateInternal(slice, reference)
   }
 
-  protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): R
+  protected def evaluateInternal(slice: Slice, reference: Slice): R
 }
 
 trait MatchingResult {
   def context: ImageProcessingContext
+
   def deviation: Deviation
+
   def region: Region
 }
 
 case class ImageMatchingException(message: String) extends RuntimeException(message)
 
-object PixelWiseColorDeviationMatching extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
-  override protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): PixelWiseColorDeviationMatchingResult = {
-    val deviationByPixel = for (x <- 0 until slice.getWidth;
-                                y <- 0 until slice.getHeight;
-                                deviationOfPixel <- calculateDeviation(x, y, slice, reference).map(d => (x, y, d))) yield deviationOfPixel
-    val maxDeviation = (255d * 3) * slice.getWidth * slice.getHeight
-    // TODO Find a better way to implement
-    val deviation = deviationByPixel.nonEmpty match {
-      case true => Deviation(deviationByPixel.map(_._3).sum / maxDeviation)
-      case false => NoDeviation
-    }
-    val deviantPixelCount = deviationByPixel.count(_._3 > 0d)
-    PixelWiseColorDeviationMatchingResult(context, deviation, deviantPixelCount, slice.region)
+class PixelWiseColorDeviationMatching private(context: ImageProcessingContext) extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
+  override protected def evaluateInternal(slice: Slice, reference: Slice): PixelWiseColorDeviationMatchingResult = {
+    val sliceSize = slice.region.dimension
+    val deviationsByLine = for (x <- 0 until sliceSize.width;
+                                y <- 0 until sliceSize.height;
+                                deviation <- calculatePixelDeviation(x, y, slice, reference)) yield deviation
+    PixelWiseColorDeviationMatchingResult(
+      context,
+      Deviation(deviationsByLine.sum / maxDeviation(sliceSize)),
+      deviationsByLine.length,
+      slice.region
+    )
   }
 
-  private def calculateDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Int] = {
-    val rgb = new Color(slice.getRGB(x, y), true)
-    val referenceRgb = new Color(reference.getRGB(x, y), true)
+  private def maxDeviation(dimension: Dimension): Double = (255d * 3) * dimension.width * dimension.height
+
+  private def calculatePixelDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Int] = {
+    val rgb = new Color(slice.getRGB(x, y))
+    val referenceRgb = new Color(reference.getRGB(x, y))
     abs(rgb.getRed - referenceRgb.getRed) + abs(rgb.getGreen - referenceRgb.getGreen) + abs(rgb.getBlue - referenceRgb.getBlue) match {
       case d if d > 0 => Some(d)
       case _ => None
     }
   }
+}
+
+object PixelWiseColorDeviationMatching {
+  def apply()(implicit context: ImageProcessingContext): PixelWiseColorDeviationMatching = new PixelWiseColorDeviationMatching(context)
 }
 
 case class PixelWiseColorDeviationMatchingResult(context: ImageProcessingContext,
