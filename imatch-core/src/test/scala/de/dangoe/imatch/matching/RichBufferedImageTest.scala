@@ -20,12 +20,7 @@
   */
 package de.dangoe.imatch.matching
 
-import java.awt.Graphics2D
-import java.awt.image.BufferedImage
-
 import de.dangoe.imatch.Testhelpers._
-import de.dangoe.imatch.common.Colors.Color
-import de.dangoe.imatch.common.Colors.ImplicitConversions._
 import de.dangoe.imatch.matching.ImplicitConversions._
 import org.scalatest.{Matchers, WordSpec}
 
@@ -50,31 +45,5 @@ class RichBufferedImageTest extends WordSpec with Matchers {
         rectangularImage.aspectRatio shouldBe 2
       }
     }
-  }
-
-  "A RichBufferedImage" should {
-    "return an array containing all pixel colors" when {
-      val image = createTestImage
-      image.getPixels shouldBe {
-        Array(
-          Array(Color(255, 0, 0, 255), Color(255, 255, 255, 255)),
-          Array(Color(255, 255, 0, 255), Color(255, 255, 255, 50))
-        )
-      }
-    }
-  }
-
-  private def createTestImage: BufferedImage = {
-    val image = new BufferedImage(2, 2, BufferedImage.TYPE_INT_ARGB)
-    val graphics = image.getGraphics.asInstanceOf[Graphics2D]
-    graphics.setColor(Color(255, 0, 0, 255).asJava)
-    graphics.fillRect(0, 0, 1, 1)
-    graphics.setColor(Color(255, 255, 0, 255).asJava)
-    graphics.fillRect(1, 0, 1, 1)
-    graphics.setColor(Color(255, 255, 255, 255).asJava)
-    graphics.fillRect(0, 1, 1, 1)
-    graphics.setColor(Color(255, 255, 255, 50).asJava)
-    graphics.fillRect(1, 1, 1, 1)
-    image
   }
 }
