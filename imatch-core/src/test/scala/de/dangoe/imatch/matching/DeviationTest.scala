@@ -40,7 +40,9 @@ class DeviationTest extends WordSpec with Matchers {
 
       deviation.value shouldBe 0.5
     }
+  }
 
+  it must {
     "not be negative" in {
       intercept[IllegalArgumentException] {
         Deviation(-0.1)
