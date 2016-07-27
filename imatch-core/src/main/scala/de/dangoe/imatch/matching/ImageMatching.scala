@@ -50,8 +50,8 @@ trait MatchingResult {
 
 case class ImageMatchingException(message: String) extends RuntimeException(message)
 
-object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchingResult] {
-  override protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): SimpleDifferenceMatchingResult = {
+object PixelWiseColorDeviationMatching extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
+  override protected def evaluateInternal(slice: Slice, reference: Slice)(implicit context: ImageProcessingContext): PixelWiseColorDeviationMatchingResult = {
     val deviationByPixel = for (x <- 0 until slice.getWidth;
                                 y <- 0 until slice.getHeight;
                                 deviationOfPixel <- calculateDeviation(x, y, slice, reference).map(d => (x, y, d))) yield deviationOfPixel
@@ -62,7 +62,7 @@ object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchin
       case false => NoDeviation
     }
     val deviantPixelCount = deviationByPixel.count(_._3 > 0d)
-    SimpleDifferenceMatchingResult(context, deviation, deviantPixelCount, slice.region)
+    PixelWiseColorDeviationMatchingResult(context, deviation, deviantPixelCount, slice.region)
   }
 
   private def calculateDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Int] = {
@@ -75,10 +75,10 @@ object SimpleDifferenceMatching extends MatchingStrategy[SimpleDifferenceMatchin
   }
 }
 
-case class SimpleDifferenceMatchingResult(context: ImageProcessingContext,
-                                          deviation: Deviation,
-                                          deviantPixelCount: Int,
-                                          region: Region) extends MatchingResult
+case class PixelWiseColorDeviationMatchingResult(context: ImageProcessingContext,
+                                                 deviation: Deviation,
+                                                 deviantPixelCount: Int,
+                                                 region: Region) extends MatchingResult
 
 case class Deviation(value: Double) {
   require(value >= 0, "Value must not be smaller than zero.")

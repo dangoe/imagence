@@ -31,7 +31,7 @@ import scala.math.BigDecimal.RoundingMode
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
+class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
 
   "Simple difference matching" should {
     "calculate a deviation of zero" when {
@@ -40,7 +40,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, image)
 
-        val result = SimpleDifferenceMatching.evaluate(image, image)
+        val result = PixelWiseColorDeviationMatching.evaluate(image, image)
 
         result.deviation.value shouldBe 0
       }
@@ -53,7 +53,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching.evaluate(image, referenceImage)
 
         BigDecimal.valueOf(result.deviation.value).setScale(2, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(0.47)
         result.deviantPixelCount shouldBe 169
@@ -67,7 +67,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching.evaluate(image, referenceImage)
 
         result.deviation.value shouldBe 1
         result.deviantPixelCount shouldBe 4096
@@ -81,7 +81,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching.evaluate(image, referenceImage)
 
         result.deviation.value shouldBe 1
         result.deviantPixelCount shouldBe 4096
@@ -95,7 +95,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching.evaluate(image, referenceImage)
 
         BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
         result.deviantPixelCount shouldBe 4096
@@ -109,7 +109,7 @@ class SimpleDifferenceMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = SimpleDifferenceMatching.evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching.evaluate(image, referenceImage)
 
         BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
         result.deviantPixelCount shouldBe 4096
