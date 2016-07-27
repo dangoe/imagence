@@ -28,16 +28,22 @@ import org.scalatest.{Matchers, WordSpec}
   */
 class DeviationTest extends WordSpec with Matchers {
 
-  "PercentageDeviation" must {
-    "not be smaller than zero." in {
-      intercept[IllegalArgumentException] {
-        Deviation(-0.5)
-      }
+  "A deviation" can {
+    "be zero." in {
+      val deviation = Deviation(0.5)
+
+      deviation.value shouldBe 0.5
     }
 
-    "not be larger than one." in {
+    "be positive." in {
+      val deviation = Deviation(0.5)
+
+      deviation.value shouldBe 0.5
+    }
+
+    "not be negative" in {
       intercept[IllegalArgumentException] {
-        Deviation(1.5)
+        Deviation(-0.1)
       }
     }
   }

@@ -20,26 +20,47 @@
   */
 package de.dangoe.imatch.matching
 
-import org.scalatest.WordSpec
+import org.scalatest.{Matchers, WordSpec}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 24.07.16
   */
-class DimensionTest extends WordSpec {
+class DimensionTest extends WordSpec with Matchers {
 
-  "Width" must {
-    "not be smaller than zero." in {
-      intercept[IllegalArgumentException] {
-        Anchor(-1, 1)
+  "A dimension" can {
+    "be created" when {
+      "both dimensions larger than zero." in {
+        val dimension = Dimension(1, 1)
+
+        dimension.width shouldBe 1
+        dimension.height shouldBe 1
       }
     }
-  }
 
-  "Height" must {
-    "not be smaller than zero." in {
-      intercept[IllegalArgumentException] {
-        Anchor(1, -1)
+    "not be created" when {
+      "horizontal dimension is zero." in {
+        intercept[IllegalArgumentException] {
+          Dimension(1, 0)
+        }
+      }
+
+      "vertical dimension is zero." in {
+        intercept[IllegalArgumentException] {
+          Dimension(0, 1)
+        }
+      }
+
+      "horizontal dimension is negative." in {
+        intercept[IllegalArgumentException] {
+          Dimension(-1, 1)
+        }
+      }
+
+      "vertical dimension is negative." in {
+        intercept[IllegalArgumentException] {
+          Dimension(1, -1)
+        }
       }
     }
   }

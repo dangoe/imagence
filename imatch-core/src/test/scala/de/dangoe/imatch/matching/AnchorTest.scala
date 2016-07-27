@@ -28,18 +28,48 @@ import org.scalatest.{Matchers, WordSpec}
   */
 class AnchorTest extends WordSpec with Matchers {
 
-  "Horizontal shift" must {
-    "not be smaller than zero." in {
-      intercept[IllegalArgumentException] {
-        Anchor(-1, 1)
+  "An anchor" can {
+    "be created" when {
+      "both coordinates are zero." in {
+        val anchor = Anchor(0, 0)
+
+        anchor.x shouldBe 0
+        anchor.y shouldBe 0
+      }
+
+      "horizontal coordinate is zero." in {
+        val anchor = Anchor(0, 1)
+
+        anchor.x shouldBe 0
+        anchor.y shouldBe 1
+      }
+
+      "vertical coordinate is zero." in {
+        val anchor = Anchor(1, 0)
+
+        anchor.x shouldBe 1
+        anchor.y shouldBe 0
+      }
+
+      "both coordinates larger than zero." in {
+        val anchor = Anchor(1, 1)
+
+        anchor.x shouldBe 1
+        anchor.y shouldBe 1
       }
     }
-  }
 
-  "Vertical shift" must {
-    "not be smaller than zero." in {
-      intercept[IllegalArgumentException] {
-        Anchor(1, -1)
+    "not be created" when {
+      "horizontal coordinate is negative." in {
+        intercept[IllegalArgumentException] {
+          Anchor(-1, 0)
+        }
+      }
+
+      "vertical coordinate is negative." in {
+        intercept[IllegalArgumentException] {
+          Anchor(0, -1)
+        }
       }
     }
   }
