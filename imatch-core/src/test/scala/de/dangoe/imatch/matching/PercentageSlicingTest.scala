@@ -26,6 +26,7 @@ import de.dangoe.imatch.matching.Sliceable._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -36,6 +37,7 @@ class PercentageSlicingTest extends WordSpec with Matchers {
   import PercentageSlicingTest._
 
   implicit val executionContext = ExecutionContext.global
+  implicit val timeout = 15 seconds
 
   val quadraticImage = readImage("quadratic.png")
   val rectangularImage = readImage("rectangular.png")
@@ -97,4 +99,5 @@ object PercentageSlicingTest {
   implicit class SliceSequence(delegate: Seq[Slice]) {
     def sliceAt(anchor: Anchor) = delegate.find(_.region.anchor == anchor).get.image
   }
+
 }

@@ -25,7 +25,7 @@ import java.awt.image.BufferedImage
 import de.dangoe.imatch.matching.ImplicitConversions._
 import de.dangoe.imatch.matching.PercentageSlicing._
 
-import scala.concurrent.duration.Duration.Inf
+import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.math.{ceil, min}
 
@@ -35,15 +35,15 @@ import scala.math.{ceil, min}
   */
 trait SliceSize
 
-abstract class SlicingStrategy(minSliceSize: Dimension with SliceSize) {
+abstract class SlicingStrategy {
   def slice(image: BufferedImage): Seq[Slice]
 }
 
-class PercentageSlicing(factor: Double, minSliceSize: Dimension with SliceSize = MinSliceSize)(implicit executionContext: ExecutionContext) extends SlicingStrategy(minSliceSize) {
+class PercentageSlicing(factor: Double)(implicit executionContext: ExecutionContext, timeout: Duration) extends SlicingStrategy {
 
   override def slice(image: BufferedImage): Seq[Slice] = {
     implicit val sliceSize = calculateSliceSize(image.dimension)
-    Await.result(slice(image), Inf)
+    Await.result(slice(image), timeout)
   }
 
   def slice(image: BufferedImage)(implicit sliceSize: Dimension with SliceSize) = Future.sequence {
@@ -63,7 +63,7 @@ class PercentageSlicing(factor: Double, minSliceSize: Dimension with SliceSize =
 
   private def calculateSliceSize(dimension: Dimension): Dimension with SliceSize = {
     Dimension(ceil(factor * dimension.width).toInt, ceil(factor * dimension.height).toInt) match {
-      case d if d.width < minSliceSize.width || d.height < minSliceSize.height => minSliceSize
+      case d if d.width < MinSliceSize.width || d.height < MinSliceSize.height => MinSliceSize
       case d => new Dimension(d.width, d.height) with SliceSize
     }
   }
@@ -77,9 +77,7 @@ class Slice private(val image: BufferedImage, val region: Region)
 
 object Slice {
   def apply(image: BufferedImage, anchor: Anchor): Slice = new Slice(image, Region(anchor, Dimension(image.getWidth, image.getHeight)))
-
   implicit def toSlice(image: BufferedImage): Slice = Slice(image, Anchor.PointOfOrigin)
-
   implicit def extractBufferedImage(slice: Slice): BufferedImage = slice.image
 }
 
