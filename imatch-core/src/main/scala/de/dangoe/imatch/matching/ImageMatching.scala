@@ -56,10 +56,10 @@ object PixelWiseColorDeviationMatching extends MatchingStrategy[PixelWiseColorDe
     val deviationByPixel = for (x <- 0 until slice.getWidth;
                                 y <- 0 until slice.getHeight;
                                 deviationOfPixel <- calculateDeviation(x, y, slice, reference).map(d => (x, y, d))) yield deviationOfPixel
+    val maxDeviation = (255d * 3) * slice.getWidth * slice.getHeight
+    // TODO Find a better way to implement
     val deviation = deviationByPixel.nonEmpty match {
-      case true =>
-        val maxDeviation = (255d * 3) * slice.getWidth * slice.getHeight
-        Deviation(deviationByPixel.map(_._3).sum / maxDeviation)
+      case true => Deviation(deviationByPixel.map(_._3).sum / maxDeviation)
       case false => NoDeviation
     }
     val deviantPixelCount = deviationByPixel.count(_._3 > 0d)
