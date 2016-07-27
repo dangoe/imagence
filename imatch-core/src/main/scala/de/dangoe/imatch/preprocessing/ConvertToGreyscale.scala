@@ -20,66 +20,54 @@
   */
 package de.dangoe.imatch.preprocessing
 
-import java.awt.Graphics2D
+import java.awt.{Color, Graphics2D}
 import java.awt.image.BufferedImage
 
-import de.dangoe.imatch.common.Colors.ImplicitConversions._
-import de.dangoe.imatch.common.Colors._
-
-import scala.concurrent.duration.Duration._
+import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 25.07.16
   */
-trait GreyscaleMethod extends (Color => Color)
-
-abstract class ChannelWeightingGreyscaleMethod extends GreyscaleMethod {
-  override def apply(color: Color): Color = {
-    val luminance = math.round(color.red * weight(Red) + color.green * weight(Green) + color.blue * weight(Blue)).toInt
-    Color.grey(luminance, color.alpha)
-  }
-  protected def weight(channel: RgbChannel): Double
+trait GreyscaleMethod extends (Color => Color) {
+  protected def createColor(luminance: Int, alpha: Int): Color = new Color(luminance, luminance, luminance, alpha)
 }
 
-case object Averaging extends ChannelWeightingGreyscaleMethod {
-  override protected def weight(channel: RgbChannel): Double = 1d / 3d
+case object Averaging extends GreyscaleMethod {
+  override def apply(color: Color): Color =
+    createColor(math.round((color.getRed + color.getGreen + color.getBlue) / 3d).toInt, color.getAlpha)
 }
 
 case object Desaturation extends GreyscaleMethod {
   override def apply(color: Color): Color = {
-    val channelValues = Set(color.red, color.green, color.blue)
-    val luminance = math.round((channelValues.max + channelValues.min) / 2d).toInt
-    Color.grey(luminance, color.alpha)
+    val maxChannelValue = color.getRed max color.getGreen max color.getBlue
+    val minChannelValue = color.getRed min color.getGreen min color.getBlue
+    createColor(math.round((maxChannelValue + minChannelValue) / 2d).toInt, color.getAlpha)
   }
 }
 
-case object Luma extends ChannelWeightingGreyscaleMethod {
-  override protected def weight(channel: RgbChannel): Double = channel match {
-    case Red => 0.299
-    case Green => 0.587
-    case Blue => 0.114
-    case _ => 0
-  }
+case object Luma extends GreyscaleMethod {
+  override def apply(color: Color): Color =
+    createColor(math.round(color.getRed * 0.299 + color.getGreen * 0.587 + color.getBlue * 0.114).toInt, color.getAlpha)
 }
 
-class ConvertToGreyscale(greyscaleMethod: GreyscaleMethod)(implicit executionContext: ExecutionContext) extends ImagePreprocessor {
+class ConvertToGreyscale(method: GreyscaleMethod)(implicit executionContext: ExecutionContext, timeout: Duration) extends ImagePreprocessor {
 
   override def apply(image: BufferedImage): BufferedImage = {
-    val processed = new BufferedImage(image.getWidth, image.getHeight, image.getType)
-    val graphics = processed.getGraphics.asInstanceOf[Graphics2D]
+    val greyscaleImage = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_INT_ARGB)
     Await.ready(Future.sequence {
-      for (y <- 0 until image.getHeight) yield processLine(image, graphics, y)
-    }, Inf)
-    processed
+      for (y <- 0 until image.getHeight)
+        yield processLine(image, greyscaleImage.getSubimage(0, y, image.getWidth, 1), y)
+    }, timeout)
+    greyscaleImage
   }
 
-  private def processLine(image: BufferedImage, graphics: Graphics2D, y: Int): Future[Unit] = Future {
-    0 until image.getWidth foreach { x =>
-      val color = greyscaleMethod(Color.fromRGB(image.getRGB(x, y)))
-      graphics.setColor(color.asJava)
-      graphics.fillRect(x, y, 1, 1)
+  private def processLine(image: BufferedImage, subimage: BufferedImage, y: Int): Future[Unit] = Future {
+    val graphics = subimage.getGraphics.asInstanceOf[Graphics2D]
+    0 until subimage.getWidth foreach { x =>
+      graphics.setColor(method(new Color(image.getRGB(x, y), true)))
+      graphics.fillRect(x, 0, 1, 1)
     }
   }
 }
