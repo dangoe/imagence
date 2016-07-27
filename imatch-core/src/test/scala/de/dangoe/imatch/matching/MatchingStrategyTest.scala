@@ -33,8 +33,8 @@ import org.scalatest.{Matchers, WordSpec}
 class MatchingStrategyTest extends WordSpec with Matchers {
 
   val sut = new MatchingStrategy[MatchingResult] {
-    override protected def evaluateInternal(image: Slice, reference: Slice)(implicit context: ImageProcessingContext): MatchingResult = new MatchingResult {
-      override def context: ImageProcessingContext = context
+    override protected def evaluateInternal(image: Slice, reference: Slice)(implicit _context: ImageProcessingContext): MatchingResult = new MatchingResult {
+      override def context: ImageProcessingContext = _context
       override def deviation: Deviation = NoDeviation
       override def region: Region = Region(PointOfOrigin, Dimension(image.getWidth, image.getHeight))
     }
