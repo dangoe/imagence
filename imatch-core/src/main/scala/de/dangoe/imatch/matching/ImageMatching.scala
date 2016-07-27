@@ -20,7 +20,8 @@
   */
 package de.dangoe.imatch.matching
 
-import de.dangoe.imatch.common.Colors._
+import java.awt.Color
+
 import de.dangoe.imatch.common.ImageProcessingContext
 import de.dangoe.imatch.matching.Deviation._
 import de.dangoe.imatch.matching.ImplicitConversions._
@@ -66,9 +67,9 @@ object PixelWiseColorDeviationMatching extends MatchingStrategy[PixelWiseColorDe
   }
 
   private def calculateDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Int] = {
-    val rgb = slice.getRGB(x, y)
-    val referenceRgb = reference.getRGB(x, y)
-    (for (channel <- Seq(Red, Green, Blue)) yield abs(channel.extract(rgb) - channel.extract(referenceRgb))).sum match {
+    val rgb = new Color(slice.getRGB(x, y), true)
+    val referenceRgb = new Color(reference.getRGB(x, y), true)
+    abs(rgb.getRed - referenceRgb.getRed) + abs(rgb.getGreen - referenceRgb.getGreen) + abs(rgb.getBlue - referenceRgb.getBlue) match {
       case d if d > 0 => Some(d)
       case _ => None
     }
