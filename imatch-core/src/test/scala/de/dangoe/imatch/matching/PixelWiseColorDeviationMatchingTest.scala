@@ -45,7 +45,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, image)
 
-        val result = PixelWiseColorDeviationMatching().evaluate(image, image)
+        val result = PixelWiseColorDeviationMatching().apply(image, image)
 
         result.deviation.value shouldBe 0
       }
@@ -58,7 +58,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = PixelWiseColorDeviationMatching().evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching().apply(image, referenceImage)
 
         BigDecimal.valueOf(result.deviation.value).setScale(2, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(0.47)
         result.deviantPixelCount shouldBe 169
@@ -72,7 +72,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = PixelWiseColorDeviationMatching().evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching().apply(image, referenceImage)
 
         result.deviation.value shouldBe 1
         result.deviantPixelCount shouldBe 4096
@@ -86,7 +86,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = PixelWiseColorDeviationMatching().evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching().apply(image, referenceImage)
 
         result.deviation.value shouldBe 1
         result.deviantPixelCount shouldBe 4096
@@ -100,7 +100,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = PixelWiseColorDeviationMatching().evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching().apply(image, referenceImage)
 
         BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
         result.deviantPixelCount shouldBe 4096
@@ -114,7 +114,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
 
         implicit val context = ImageProcessingContext(image, referenceImage)
 
-        val result = PixelWiseColorDeviationMatching().evaluate(image, referenceImage)
+        val result = PixelWiseColorDeviationMatching().apply(image, referenceImage)
 
         BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
         result.deviantPixelCount shouldBe 4096

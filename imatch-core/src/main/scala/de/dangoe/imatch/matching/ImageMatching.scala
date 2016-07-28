@@ -39,44 +39,43 @@ import de.dangoe.imatch.matching.Sliceable._
 @Prototype
 class SlicingImageMatcher[R <: MatchingResult](slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
                                               (implicit executionContext: ExecutionContext, timeout: Duration) {
-  def evaluate(image: BufferedImage, reference: BufferedImage): Seq[R] = {
-    val slices = image.slice(slicingStrategy)
-    val referenceSlices = reference.slice(slicingStrategy)
+
+  def apply(image: BufferedImage, reference: BufferedImage): Seq[R] = {
+    val slices = Await.result(Future.sequence(image.slice(slicingStrategy)), timeout)
+    val referenceSlices = Await.result(Future.sequence(reference.slice(slicingStrategy)), timeout)
     val slicePairs = for (i <- slices.indices) yield (slices(i), referenceSlices(i))
-    val partitioned = slicePairs.grouped(Runtime.getRuntime.availableProcessors())
-    Await.result(Future.sequence(for (partition <- partitioned) yield Future {
+
+    Await.result(Future.sequence(for (partition <- slicePairs.grouped(Runtime.getRuntime.availableProcessors())) yield Future {
       processPartition(partition)
     }), timeout).flatten.toSeq
   }
 
   private def processPartition(slicePairs: Seq[(Slice, Slice)]): Seq[R] = {
-    for (slicePair <- slicePairs) yield matchingStrategy.evaluate(slicePair._1, slicePair._2)
+    for (slicePair <- slicePairs) yield matchingStrategy(slicePair._1, slicePair._2)
   }
 }
 
 abstract class MatchingStrategy[R <: MatchingResult] {
-  final def evaluate(slice: Slice, reference: Slice): R = {
+  final def apply(slice: Slice, reference: Slice): R = {
     if (!slice.image.isOfSameSizeAs(reference)) {
       throw ImageMatchingException("Image dimension differs from reference image!")
     }
-    evaluateInternal(slice, reference)
+    applyInternal(slice, reference)
   }
 
-  protected def evaluateInternal(slice: Slice, reference: Slice): R
+  protected def applyInternal(slice: Slice, reference: Slice): R
 }
 
 trait MatchingResult {
   def context: ImageProcessingContext
-
   def deviation: Deviation
-
   def region: Region
 }
 
 case class ImageMatchingException(message: String) extends RuntimeException(message)
 
 class PixelWiseColorDeviationMatching private(context: ImageProcessingContext) extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
-  override protected def evaluateInternal(slice: Slice, reference: Slice): PixelWiseColorDeviationMatchingResult = {
+  override protected def applyInternal(slice: Slice, reference: Slice): PixelWiseColorDeviationMatchingResult = {
     val sliceSize = slice.region.dimension
     val deviationsByLine = for (x <- 0 until sliceSize.width;
                                 y <- 0 until sliceSize.height;

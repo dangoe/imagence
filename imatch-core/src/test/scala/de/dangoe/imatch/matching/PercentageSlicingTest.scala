@@ -25,7 +25,7 @@ import de.dangoe.imatch.matching.Anchor._
 import de.dangoe.imatch.matching.Sliceable._
 import org.scalatest.{Matchers, WordSpec}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
 /**
@@ -46,7 +46,7 @@ class PercentageSlicingTest extends WordSpec with Matchers {
   "Percentage slicing" should {
     "slice an quadratic image in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = quadraticImage.slice(new PercentageSlicing(0.5))
+        val slices = Await.result(Future.sequence(quadraticImage.slice(new PercentageSlicing(0.5))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("quadratic_11.png"))
@@ -58,7 +58,7 @@ class PercentageSlicingTest extends WordSpec with Matchers {
 
     "slice an rectangular image with even edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = rectangularImage.slice(new PercentageSlicing(0.5))
+        val slices = Await.result(Future.sequence(rectangularImage.slice(new PercentageSlicing(0.5))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_11.png"))
@@ -70,7 +70,7 @@ class PercentageSlicingTest extends WordSpec with Matchers {
 
     "slice an rectangular image with odd edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = rectangularWithOddEdgeLengthsImage.slice(new PercentageSlicing(0.5))
+        val slices = Await.result(Future.sequence(rectangularWithOddEdgeLengthsImage.slice(new PercentageSlicing(0.5))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))
@@ -84,7 +84,7 @@ class PercentageSlicingTest extends WordSpec with Matchers {
   it must {
     "not produce slices with an edge length shorter than four pixels" when {
       "calculated edge length is shorter than this value." in {
-        val slices = rectangularImage.slice(new PercentageSlicing(0.01))
+        val slices = Await.result(Future.sequence(rectangularImage.slice(new PercentageSlicing(0.01))), timeout)
 
         val firstSlice = slices.head
         firstSlice.image.getWidth shouldBe 4
