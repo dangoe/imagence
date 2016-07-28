@@ -21,9 +21,7 @@
 package de.dangoe.imatch
 
 import java.awt.Graphics2D
-import java.awt.image.{BufferedImage, DataBufferInt}
-
-import de.dangoe.imatch.common.Colors.Color
+import java.awt.image.BufferedImage
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
