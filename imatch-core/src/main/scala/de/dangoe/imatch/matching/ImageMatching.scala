@@ -21,6 +21,7 @@
 package de.dangoe.imatch.matching
 
 import java.awt.Color
+import java.awt.image.BufferedImage
 
 import de.dangoe.imatch.common.{ImageProcessingContext, Prototype}
 import de.dangoe.imatch.matching.ImplicitConversions._
@@ -28,15 +29,20 @@ import de.dangoe.imatch.matching.ImplicitConversions._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.math.abs
+import de.dangoe.imatch.matching.Sliceable._
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-// TODO Draft to be tested
+// TODO Draft to be tested or removed
 @Prototype
-class SliceMatcher[R <: MatchingResult](strategy: MatchingStrategy[R])(implicit executionContext: ExecutionContext, timeout: Duration) {
-  def evaluate(slicePairs: Seq[(Slice, Slice)]): Seq[R] = {
+class SlicingImageMatcher[R <: MatchingResult](slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
+                                              (implicit executionContext: ExecutionContext, timeout: Duration) {
+  def evaluate(image: BufferedImage, reference: BufferedImage): Seq[R] = {
+    val slices = image.slice(slicingStrategy)
+    val referenceSlices = reference.slice(slicingStrategy)
+    val slicePairs = for (i <- slices.indices) yield (slices(i), referenceSlices(i))
     val partitioned = slicePairs.grouped(Runtime.getRuntime.availableProcessors())
     Await.result(Future.sequence(for (partition <- partitioned) yield Future {
       processPartition(partition)
@@ -44,7 +50,7 @@ class SliceMatcher[R <: MatchingResult](strategy: MatchingStrategy[R])(implicit 
   }
 
   private def processPartition(slicePairs: Seq[(Slice, Slice)]): Seq[R] = {
-    for (slicePair <- slicePairs) yield strategy.evaluate(slicePair._1, slicePair._2)
+    for (slicePair <- slicePairs) yield matchingStrategy.evaluate(slicePair._1, slicePair._2)
   }
 }
 
