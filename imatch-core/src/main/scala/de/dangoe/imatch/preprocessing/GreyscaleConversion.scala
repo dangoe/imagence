@@ -20,8 +20,9 @@
   */
 package de.dangoe.imatch.preprocessing
 
-import java.awt.{Color, Graphics2D}
-import java.awt.image.BufferedImage
+import java.awt.RenderingHints.Key
+import java.awt.{Color, Graphics2D, RenderingHints}
+import java.awt.image.{BufferedImage, ColorConvertOp}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -69,5 +70,18 @@ class GreyscaleConversion(method: GreyscaleMethod)(implicit executionContext: Ex
       graphics.setColor(method(new Color(source.getRGB(x, y), true)))
       graphics.fillRect(x, 0, 1, 1)
     }
+  }
+}
+
+object NativeGreyscaleConversion extends ImagePreprocessor {
+
+  import collection.JavaConverters._
+
+  val EmptyRenderingHints = new RenderingHints(Map.empty[Key, AnyRef].asJava)
+
+  override def apply(image: BufferedImage): BufferedImage = {
+    val greyscale = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_BYTE_GRAY)
+    new ColorConvertOp(image.getColorModel.getColorSpace, greyscale.getColorModel.getColorSpace, EmptyRenderingHints).filter(image, greyscale)
+    greyscale
   }
 }
