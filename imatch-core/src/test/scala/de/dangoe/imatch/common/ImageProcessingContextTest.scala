@@ -25,7 +25,7 @@ class ImageProcessingContextTest extends WordSpec with Matchers {
       "reference image type is TYPE_BYTE_GRAY." in {
         val sut = ImageProcessingContext(new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY), new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY))
 
-        sut.colorModel shouldBe Greyscale
+        sut.greyscaleMode shouldBe true
       }
     }
 
@@ -33,7 +33,7 @@ class ImageProcessingContextTest extends WordSpec with Matchers {
       "reference image type is not TYPE_BYTE_GRAY." in {
         val sut = ImageProcessingContext(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB))
 
-        sut.colorModel shouldBe RGB
+        sut.greyscaleMode shouldBe false
       }
     }
   }

@@ -28,9 +28,7 @@ import java.awt.image.BufferedImage
   */
 case class ImageProcessingContext(image: BufferedImage, reference: BufferedImage) {
   require(image.getType == reference.getType, s"Image is not of type ${reference.getType}!")
-  val colorModel = if (image.getType == BufferedImage.TYPE_BYTE_GRAY && reference.getType == BufferedImage.TYPE_BYTE_GRAY) Greyscale else RGB
-}
+  val greyscaleMode = isGreyscale(image) && isGreyscale(reference)
 
-sealed trait ColorModel
-case object RGB extends ColorModel
-case object Greyscale extends ColorModel
+  private def isGreyscale(image: BufferedImage): Boolean = image.getType == BufferedImage.TYPE_BYTE_GRAY
+}

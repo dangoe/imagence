@@ -97,14 +97,15 @@ class PixelWiseColorDeviationMatching private(context: ImageProcessingContext) e
   }
 
   @inline private def calculatePixelDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Double] = {
-    euclideanDistance(new Color(slice.getRGB(x, y)), new Color(reference.getRGB(x, y)), context.colorModel) / MaxEuclideanDistance(context.colorModel) match {
+    val maxEuclideanDistance = if (context.greyscaleMode) MaxEuclideanDistanceGreyscale else MaxEuclideanDistance
+    euclideanDistance(new Color(slice.getRGB(x, y)), new Color(reference.getRGB(x, y))) / maxEuclideanDistance match {
       case d if d > 0 => Some(d)
       case _ => None
     }
   }
 
-  @inline private def euclideanDistance(color: Color, referenceColor: Color, colorModel: ColorModel): Double = {
-    if (colorModel == Greyscale) {
+  @inline private def euclideanDistance(color: Color, referenceColor: Color): Double = {
+    if (context.greyscaleMode) {
       sqrt(pow(color.getRed - referenceColor.getRed, 2))
     } else {
       sqrt(pow(color.getRed - referenceColor.getRed, 2) + pow(color.getGreen - referenceColor.getGreen, 2) + pow(color.getBlue - referenceColor.getBlue, 2))
@@ -113,7 +114,9 @@ class PixelWiseColorDeviationMatching private(context: ImageProcessingContext) e
 }
 
 object PixelWiseColorDeviationMatching {
-  val MaxEuclideanDistance: Map[ColorModel, Double] = Map(RGB -> sqrt(3 * pow(255, 2)), Greyscale -> sqrt(pow(255, 2)))
+  val MaxEuclideanDistance: Double = sqrt(3 * pow(255, 2))
+  val MaxEuclideanDistanceGreyscale: Double = sqrt(pow(255, 2))
+
   def apply()(implicit context: ImageProcessingContext): PixelWiseColorDeviationMatching = new PixelWiseColorDeviationMatching(context)
 }
 
