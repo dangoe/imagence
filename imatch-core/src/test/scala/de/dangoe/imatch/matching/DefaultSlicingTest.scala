@@ -32,9 +32,9 @@ import scala.concurrent.duration._
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
   */
-class PercentageSlicingTest extends WordSpec with Matchers {
+class DefaultSlicingTest extends WordSpec with Matchers {
 
-  import PercentageSlicingTest._
+  import DefaultSlicingTest._
 
   implicit val executionContext = ExecutionContext.global
   implicit val timeout = 15 seconds
@@ -43,10 +43,10 @@ class PercentageSlicingTest extends WordSpec with Matchers {
   val rectangularImage = readImage("rectangular.png")
   val rectangularWithOddEdgeLengthsImage = readImage("rectangular_with_odd_edge_lengths.png")
 
-  "Percentage slicing" should {
+  "Default slicing with percentage slice size" should {
     "slice an quadratic image in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(quadraticImage.slice(new PercentageSlicing(0.5))), timeout)
+        val slices = Await.result(Future.sequence(quadraticImage.slice(new DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("quadratic_11.png"))
@@ -58,7 +58,7 @@ class PercentageSlicingTest extends WordSpec with Matchers {
 
     "slice an rectangular image with even edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(rectangularImage.slice(new PercentageSlicing(0.5))), timeout)
+        val slices = Await.result(Future.sequence(rectangularImage.slice(new DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_11.png"))
@@ -70,7 +70,7 @@ class PercentageSlicingTest extends WordSpec with Matchers {
 
     "slice an rectangular image with odd edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(rectangularWithOddEdgeLengthsImage.slice(new PercentageSlicing(0.5))), timeout)
+        val slices = Await.result(Future.sequence(rectangularWithOddEdgeLengthsImage.slice(new DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))
@@ -80,21 +80,9 @@ class PercentageSlicingTest extends WordSpec with Matchers {
       }
     }
   }
-
-  it must {
-    "not produce slices with an edge length shorter than four pixels" when {
-      "calculated edge length is shorter than this value." in {
-        val slices = Await.result(Future.sequence(rectangularImage.slice(new PercentageSlicing(0.01))), timeout)
-
-        val firstSlice = slices.head
-        firstSlice.image.getWidth shouldBe 4
-        firstSlice.image.getWidth shouldBe 4
-      }
-    }
-  }
 }
 
-object PercentageSlicingTest {
+object DefaultSlicingTest {
 
   implicit class SliceSequence(delegate: Seq[Slice]) {
     def sliceAt(anchor: Anchor) = delegate.find(_.region.anchor == anchor).get.image

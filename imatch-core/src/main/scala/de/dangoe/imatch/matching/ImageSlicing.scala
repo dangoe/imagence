@@ -23,7 +23,6 @@ package de.dangoe.imatch.matching
 import java.awt.image.BufferedImage
 
 import de.dangoe.imatch.matching.ImplicitConversions._
-import de.dangoe.imatch.matching.PercentageSlicing._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.math.{ceil, min}
@@ -34,15 +33,41 @@ import scala.math.{ceil, min}
   */
 trait SliceSize
 
-abstract class SlicingStrategy {
+trait SliceSizeCalculation extends (Dimension => Dimension with SliceSize)
+
+case class FixedSliceSize(value: Dimension) extends SliceSizeCalculation {
+
+  override def apply(dimension: Dimension): Dimension with SliceSize = new Dimension(value.width, value.height) with SliceSize
+}
+
+case class PercentageSliceSize(factor: Double) extends SliceSizeCalculation {
+
+  import PercentageSliceSize._
+
+  require(factor > 0, "Factor must be larger than zero.")
+  require(factor <= 1, "Factor must not be larger than one.")
+
+  override def apply(dimension: Dimension): Dimension with SliceSize = {
+    Dimension(ceil(factor * dimension.width).toInt, ceil(factor * dimension.height).toInt) match {
+      case d if d.width < MinSliceSize.width || d.height < MinSliceSize.height => MinSliceSize
+      case d => new Dimension(d.width, d.height) with SliceSize
+    }
+  }
+}
+
+object PercentageSliceSize {
+  val MinSliceSize = new Dimension(1, 1) with SliceSize
+}
+
+trait SlicingStrategy {
   def slice(image: BufferedImage): Seq[Future[Slice]]
 }
 
-class PercentageSlicing(factor: Double)(implicit executionContext: ExecutionContext) extends SlicingStrategy {
+class DefaultSlicing(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext) extends SlicingStrategy {
 
   override def slice(image: BufferedImage): Seq[Future[Slice]] = {
     val imageSize = image.dimension
-    implicit val sliceSize = calculateSliceSize(imageSize)
+    implicit val sliceSize = sliceSizeCalculation(imageSize)
     for (horizontalOffset <- calculateOffsets(imageSize, _.width);
          verticalOffset <- calculateOffsets(imageSize, _.height)) yield createSlice(Anchor(horizontalOffset, verticalOffset), image)
   }
@@ -55,17 +80,6 @@ class PercentageSlicing(factor: Double)(implicit executionContext: ExecutionCont
     val height = min(sliceSize.height, image.getHeight - anchor.y)
     Slice(image.getSubimage(anchor.x, anchor.y, width, height), Anchor(anchor.x, anchor.y))
   }
-
-  private def calculateSliceSize(dimension: Dimension): Dimension with SliceSize = {
-    Dimension(ceil(factor * dimension.width).toInt, ceil(factor * dimension.height).toInt) match {
-      case d if d.width < MinSliceSize.width || d.height < MinSliceSize.height => MinSliceSize
-      case d => new Dimension(d.width, d.height) with SliceSize
-    }
-  }
-}
-
-object PercentageSlicing {
-  val MinSliceSize = new Dimension(4, 4) with SliceSize
 }
 
 class Slice private(val image: BufferedImage, val region: Region)
@@ -74,7 +88,6 @@ object Slice {
   def apply(image: BufferedImage, anchor: Anchor): Slice = new Slice(image, Region(anchor, Dimension(image.getWidth, image.getHeight)))
 
   implicit def toSlice(image: BufferedImage): Slice = Slice(image, Anchor.PointOfOrigin)
-
   implicit def extractBufferedImage(slice: Slice): BufferedImage = slice.image
 }
 
