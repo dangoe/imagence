@@ -24,12 +24,13 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 
 import de.dangoe.imatch.common.{ImageProcessingContext, Prototype}
+import de.dangoe.imatch.matching.Deviation.NoDeviation
 import de.dangoe.imatch.matching.ImplicitConversions._
+import de.dangoe.imatch.matching.Sliceable._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.math.abs
-import de.dangoe.imatch.matching.Sliceable._
+import scala.math.{pow, round, sqrt}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -75,25 +76,31 @@ trait MatchingResult {
 case class ImageMatchingException(message: String) extends RuntimeException(message)
 
 class PixelWiseColorDeviationMatching private(context: ImageProcessingContext) extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
+
+  import de.dangoe.imatch.matching.PixelWiseColorDeviationMatching._
+
   override protected def applyInternal(slice: Slice, reference: Slice): PixelWiseColorDeviationMatchingResult = {
     val sliceSize = slice.region.dimension
-    val deviationsByLine = for (x <- 0 until sliceSize.width;
-                                y <- 0 until sliceSize.height;
-                                deviation <- calculatePixelDeviation(x, y, slice, reference)) yield deviation
-    PixelWiseColorDeviationMatchingResult(
-      context,
-      Deviation(deviationsByLine.sum / maxDeviation(sliceSize)),
-      deviationsByLine.length,
-      slice.region
-    )
+    (for (x <- 0 until sliceSize.width;
+          y <- 0 until sliceSize.height;
+          deviation <- calculatePixelDeviation(x, y, slice, reference)) yield deviation) match {
+      case deviationsByLine if deviationsByLine.nonEmpty =>
+        val deviatingPixelCount = deviationsByLine.length
+        PixelWiseColorDeviationMatchingResult(
+          context,
+          Deviation(deviationsByLine.sum / deviatingPixelCount),
+          deviatingPixelCount,
+          slice.region
+        )
+      case _ => PixelWiseColorDeviationMatchingResult.withoutDeviation(context, slice.region)
+    }
   }
 
-  private def maxDeviation(dimension: Dimension): Double = (255d * 3) * dimension.width * dimension.height
-
-  private def calculatePixelDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Int] = {
+  private def calculatePixelDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Double] = {
     val rgb = new Color(slice.getRGB(x, y))
     val referenceRgb = new Color(reference.getRGB(x, y))
-    abs(rgb.getRed - referenceRgb.getRed) + abs(rgb.getGreen - referenceRgb.getGreen) + abs(rgb.getBlue - referenceRgb.getBlue) match {
+    val euclideanDistance = sqrt(pow(rgb.getRed - referenceRgb.getRed, 2) + pow(rgb.getGreen - referenceRgb.getGreen, 2) + pow(rgb.getBlue - referenceRgb.getBlue, 2))
+    euclideanDistance / MaxEuclideanDistance match {
       case d if d > 0 => Some(d)
       case _ => None
     }
@@ -101,6 +108,7 @@ class PixelWiseColorDeviationMatching private(context: ImageProcessingContext) e
 }
 
 object PixelWiseColorDeviationMatching {
+  val MaxEuclideanDistance: Double = sqrt(3 * pow(255, 2))
   def apply()(implicit context: ImageProcessingContext): PixelWiseColorDeviationMatching = new PixelWiseColorDeviationMatching(context)
 }
 
@@ -108,6 +116,10 @@ case class PixelWiseColorDeviationMatchingResult(context: ImageProcessingContext
                                                  deviation: Deviation,
                                                  deviantPixelCount: Int,
                                                  region: Region) extends MatchingResult
+
+object PixelWiseColorDeviationMatchingResult {
+  def withoutDeviation(context: ImageProcessingContext, region: Region): PixelWiseColorDeviationMatchingResult = PixelWiseColorDeviationMatchingResult(context, NoDeviation, 0, region)
+}
 
 case class Deviation(value: Double) {
   require(value >= 0, "Value must not be smaller than zero.")
