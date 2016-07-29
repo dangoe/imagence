@@ -23,14 +23,14 @@ package de.dangoe.imatch.matching
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-import de.dangoe.imatch.common.{ImageProcessingContext, Prototype}
+import de.dangoe.imatch.common._
 import de.dangoe.imatch.matching.Deviation.NoDeviation
 import de.dangoe.imatch.matching.ImplicitConversions._
 import de.dangoe.imatch.matching.Sliceable._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.math.{pow, round, sqrt}
+import scala.math.{pow, sqrt}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -77,7 +77,7 @@ case class ImageMatchingException(message: String) extends RuntimeException(mess
 
 class PixelWiseColorDeviationMatching private(context: ImageProcessingContext) extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
 
-  import de.dangoe.imatch.matching.PixelWiseColorDeviationMatching._
+  import PixelWiseColorDeviationMatching._
 
   override protected def applyInternal(slice: Slice, reference: Slice): PixelWiseColorDeviationMatchingResult = {
     val sliceSize = slice.region.dimension
@@ -96,19 +96,24 @@ class PixelWiseColorDeviationMatching private(context: ImageProcessingContext) e
     }
   }
 
-  private def calculatePixelDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Double] = {
-    val rgb = new Color(slice.getRGB(x, y))
-    val referenceRgb = new Color(reference.getRGB(x, y))
-    val euclideanDistance = sqrt(pow(rgb.getRed - referenceRgb.getRed, 2) + pow(rgb.getGreen - referenceRgb.getGreen, 2) + pow(rgb.getBlue - referenceRgb.getBlue, 2))
-    euclideanDistance / MaxEuclideanDistance match {
+  @inline private def calculatePixelDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Double] = {
+    euclideanDistance(new Color(slice.getRGB(x, y)), new Color(reference.getRGB(x, y)), context.colorModel) / MaxEuclideanDistance(context.colorModel) match {
       case d if d > 0 => Some(d)
       case _ => None
+    }
+  }
+
+  @inline private def euclideanDistance(color: Color, referenceColor: Color, colorModel: ColorModel): Double = {
+    if (colorModel == Greyscale) {
+      sqrt(pow(color.getRed - referenceColor.getRed, 2))
+    } else {
+      sqrt(pow(color.getRed - referenceColor.getRed, 2) + pow(color.getGreen - referenceColor.getGreen, 2) + pow(color.getBlue - referenceColor.getBlue, 2))
     }
   }
 }
 
 object PixelWiseColorDeviationMatching {
-  val MaxEuclideanDistance: Double = sqrt(3 * pow(255, 2))
+  val MaxEuclideanDistance: Map[ColorModel, Double] = Map(RGB -> sqrt(3 * pow(255, 2)), Greyscale -> sqrt(pow(255, 2)))
   def apply()(implicit context: ImageProcessingContext): PixelWiseColorDeviationMatching = new PixelWiseColorDeviationMatching(context)
 }
 

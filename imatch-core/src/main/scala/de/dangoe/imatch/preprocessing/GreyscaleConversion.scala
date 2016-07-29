@@ -52,10 +52,10 @@ case object Luma extends GreyscaleMethod {
     createColor(math.round(color.getRed * 0.299 + color.getGreen * 0.587 + color.getBlue * 0.114).toInt, color.getAlpha)
 }
 
-class ConvertToGreyscale(method: GreyscaleMethod)(implicit executionContext: ExecutionContext, timeout: Duration) extends ImagePreprocessor {
+class GreyscaleConversion(method: GreyscaleMethod)(implicit executionContext: ExecutionContext, timeout: Duration) extends ImagePreprocessor {
 
   override def apply(image: BufferedImage): BufferedImage = {
-    val greyscaleImage = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_INT_ARGB)
+    val greyscaleImage = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_BYTE_GRAY)
     Await.ready(Future.sequence {
       for (y <- 0 until image.getHeight)
         yield processLine(image, greyscaleImage.getSubimage(0, y, image.getWidth, 1), y)
@@ -63,10 +63,10 @@ class ConvertToGreyscale(method: GreyscaleMethod)(implicit executionContext: Exe
     greyscaleImage
   }
 
-  private def processLine(image: BufferedImage, subimage: BufferedImage, y: Int): Future[Unit] = Future {
-    val graphics = subimage.getGraphics.asInstanceOf[Graphics2D]
-    0 until subimage.getWidth foreach { x =>
-      graphics.setColor(method(new Color(image.getRGB(x, y), true)))
+  private def processLine(source: BufferedImage, target: BufferedImage, y: Int): Future[Unit] = Future {
+    val graphics = target.getGraphics.asInstanceOf[Graphics2D]
+    0 until target.getWidth foreach { x =>
+      graphics.setColor(method(new Color(source.getRGB(x, y), true)))
       graphics.fillRect(x, 0, 1, 1)
     }
   }

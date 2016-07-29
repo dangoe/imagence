@@ -26,4 +26,11 @@ import java.awt.image.BufferedImage
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 24.07.16
   */
-case class ImageProcessingContext(image: BufferedImage, reference: BufferedImage)
+case class ImageProcessingContext(image: BufferedImage, reference: BufferedImage) {
+  require(image.getType == reference.getType, s"Image is not of type ${reference.getType}!")
+  val colorModel = if (image.getType == BufferedImage.TYPE_BYTE_GRAY && reference.getType == BufferedImage.TYPE_BYTE_GRAY) Greyscale else RGB
+}
+
+sealed trait ColorModel
+case object RGB extends ColorModel
+case object Greyscale extends ColorModel
