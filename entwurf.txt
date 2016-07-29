@@ -1,9 +1,0 @@
-Umsetzung mit akka-streams
-
-context includes diff_image_building_strategy, diff_slice_processor and slice_size
-
-SOURCE(img, ref_img, context) ->
-tokenizer : ImageSliceSource(img_slice, ref_img_slice, context) ->
-aggregator: SlicesImageSource(img_diff_sliced, context) ->
-SINK(diff_slices, context): MatchingResult
-
