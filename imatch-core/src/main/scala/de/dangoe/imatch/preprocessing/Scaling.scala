@@ -22,9 +22,14 @@ package de.dangoe.imatch.preprocessing
 
 import java.awt.image.BufferedImage
 
+import de.dangoe.imatch.common.{ImageProcessingContext, ProcessingInput}
 import de.dangoe.imatch.matching.Dimension
+import de.dangoe.imatch.matching.ImplicitConversions.RichBufferedImage
 import org.imgscalr.Scalr
 import org.imgscalr.Scalr.{Method, Mode}
+
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration.Duration
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -66,4 +71,26 @@ class Scaling private(bounds: Dimension, method: ScalingMethod) extends (Buffere
 
 object Scaling {
   def apply(bounds: Dimension, method: ScalingMethod): Scaling = new Scaling(bounds, method)
+}
+
+class HarmonizeResolutions private()(implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration)
+  extends (ProcessingInput => ProcessingInput) {
+
+  override def apply(input: ProcessingInput): ProcessingInput = {
+    ProcessingInput(Await.result(Future(Scaling(input.reference.dimension, Exact).apply(input.image)), timeout), input.reference)
+  }
+}
+
+object HarmonizeResolutions {
+
+  def apply()(implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration): HarmonizeResolutions =
+    new HarmonizeResolutions()
+}
+
+object Resolution {
+  def veryLow: Dimension = Dimension(320, 320)
+  def low: Dimension = Dimension(640, 640)
+  def medium: Dimension = Dimension(1024, 1024)
+  def high: Dimension = Dimension(1440, 1440)
+  def veryHigh: Dimension = Dimension(1920, 1920)
 }
