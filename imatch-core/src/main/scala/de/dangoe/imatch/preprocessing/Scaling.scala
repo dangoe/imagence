@@ -21,9 +21,12 @@
 package de.dangoe.imatch.preprocessing
 
 import java.awt.RenderingHints
-import java.awt.image.BufferedImage
+import java.awt.geom.AffineTransform
+import java.awt.image.{AffineTransformOp, BufferedImage}
 
 import de.dangoe.imatch.matching.Dimension
+import org.imgscalr.Scalr
+import org.imgscalr.Scalr.Method
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -51,14 +54,9 @@ case object ToBoundingBox extends ScalingMethod {
 }
 
 class Scaling(bounds: Dimension, method: ScalingMethod) extends (BufferedImage => BufferedImage) {
+
   override def apply(image: BufferedImage): BufferedImage = {
     val scaledSize = method.scale(Dimension(image.getWidth, image.getHeight), bounds)
-    val resized = new BufferedImage(scaledSize.width, scaledSize.height, image.getType)
-    val g = resized.createGraphics()
-    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-    g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC)
-    g.drawImage(image, 0, 0, scaledSize.width, scaledSize.height, null)
-    g.dispose()
-    resized
+    Scalr.resize(image, Method.QUALITY, scaledSize.width, scaledSize.height)
   }
 }
