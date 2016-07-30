@@ -38,17 +38,17 @@ import scala.math.{pow, sqrt}
   */
 // TODO Draft to be tested or removed
 @Prototype
-class SlicingImageMatching[R <: MatchingResult] private (slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
-                                               (implicit executionContext: ExecutionContext, timeout: Duration) extends ((ProcessingInput) => Seq[R]) {
+class SlicingImageMatching[R <: MatchingResult] private(slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
+                                                       (implicit executionContext: ExecutionContext, timeout: Duration) extends ((ProcessingInput) => (ProcessingInput, Seq[R])) {
 
-  override def apply(processingInput: ProcessingInput): Seq[R] = {
+  override def apply(processingInput: ProcessingInput): (ProcessingInput, Seq[R]) = {
     val slices = Await.result(Future.sequence(processingInput.image.slice(slicingStrategy)), timeout)
     val referenceSlices = Await.result(Future.sequence(processingInput.reference.slice(slicingStrategy)), timeout)
     val slicePairs = for (i <- slices.indices) yield (slices(i), referenceSlices(i))
 
-    Await.result(Future.sequence(for (partition <- slicePairs.grouped(Runtime.getRuntime.availableProcessors())) yield Future {
+    (processingInput, Await.result(Future.sequence(for (partition <- slicePairs.grouped(Runtime.getRuntime.availableProcessors())) yield Future {
       processPartition(partition)
-    }), timeout).flatten.toSeq
+    }), timeout).flatten.toSeq)
   }
 
   private def processPartition(slicePairs: Seq[(Slice, Slice)]): Seq[R] = {
@@ -58,7 +58,7 @@ class SlicingImageMatching[R <: MatchingResult] private (slicingStrategy: Slicin
 
 object SlicingImageMatching {
   def apply[R <: MatchingResult](slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
-              (implicit executionContext: ExecutionContext, timeout: Duration): SlicingImageMatching[R] =
+                                (implicit executionContext: ExecutionContext, timeout: Duration): SlicingImageMatching[R] =
     new SlicingImageMatching[R](slicingStrategy, matchingStrategy)
 }
 
