@@ -25,8 +25,8 @@ import de.dangoe.imatch.matching.Anchor._
 import de.dangoe.imatch.matching.Sliceable._
 import org.scalatest.{Matchers, WordSpec}
 
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -46,7 +46,7 @@ class DefaultSlicingTest extends WordSpec with Matchers {
   "Default slicing with percentage slice size" should {
     "slice an quadratic image in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(quadraticImage.slice(new DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
+        val slices = Await.result(Future.sequence(quadraticImage.slice(DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("quadratic_11.png"))
@@ -58,7 +58,7 @@ class DefaultSlicingTest extends WordSpec with Matchers {
 
     "slice an rectangular image with even edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(rectangularImage.slice(new DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
+        val slices = Await.result(Future.sequence(rectangularImage.slice(DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_11.png"))
@@ -70,7 +70,7 @@ class DefaultSlicingTest extends WordSpec with Matchers {
 
     "slice an rectangular image with odd edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(rectangularWithOddEdgeLengthsImage.slice(new DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
+        val slices = Await.result(Future.sequence(rectangularWithOddEdgeLengthsImage.slice(DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))
