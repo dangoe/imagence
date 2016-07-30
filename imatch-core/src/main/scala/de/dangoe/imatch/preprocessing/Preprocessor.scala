@@ -42,6 +42,13 @@ class Preprocessor private(op: BufferedImage => BufferedImage)
 }
 
 object Preprocessor {
+
+  object Implicits {
+    implicit def toPreprocessor(op: BufferedImage => BufferedImage)
+                               (implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration): Preprocessor =
+      Preprocessor(op)
+  }
+
   def apply(op: BufferedImage => BufferedImage)
            (implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration): Preprocessor =
     new Preprocessor(op)
