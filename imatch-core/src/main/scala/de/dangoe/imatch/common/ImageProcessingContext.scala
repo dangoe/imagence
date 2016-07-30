@@ -27,8 +27,6 @@ import java.awt.image.BufferedImage
   * @since 24.07.16
   */
 case class ImageProcessingContext(processingInput: ProcessingInput) {
-  require(processingInput.image.getType == processingInput.reference.getType, s"Image is not of type ${processingInput.reference.getType}!")
-
   val image = processingInput.image
   val reference = processingInput.reference
 

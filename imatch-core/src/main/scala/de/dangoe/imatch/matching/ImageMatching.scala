@@ -21,7 +21,6 @@
 package de.dangoe.imatch.matching
 
 import java.awt.Color
-import java.awt.image.BufferedImage
 
 import de.dangoe.imatch.common._
 import de.dangoe.imatch.matching.Deviation.NoDeviation
@@ -75,9 +74,7 @@ abstract class MatchingStrategy[R <: MatchingResult] {
 
 trait MatchingResult {
   def context: ImageProcessingContext
-
   def deviation: Deviation
-
   def region: Region
 }
 

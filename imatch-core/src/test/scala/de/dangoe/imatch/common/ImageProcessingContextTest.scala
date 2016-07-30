@@ -10,17 +10,7 @@ import org.scalatest.{Matchers, WordSpec}
   */
 class ImageProcessingContextTest extends WordSpec with Matchers {
 
-  "ImageProcessingContext" can {
-    "not be created" when {
-      "image type and reference image type differ." in {
-        intercept[IllegalArgumentException] {
-          ImageProcessingContext(ProcessingInput(new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY), new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)))
-        }
-      }
-    }
-  }
-
-  it should {
+  "ImageProcessingContext" should {
     "determine greyscale as color model" when {
       "reference image type is TYPE_BYTE_GRAY." in {
         val sut = ImageProcessingContext(ProcessingInput(new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY), new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY)))
