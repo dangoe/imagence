@@ -41,6 +41,8 @@ class SlicingImageMatching[R <: MatchingResult] private(slicingStrategy: Slicing
                                                        (implicit executionContext: ExecutionContext, timeout: Duration) extends ((ProcessingInput) => (ProcessingInput, Seq[R])) {
 
   override def apply(processingInput: ProcessingInput): (ProcessingInput, Seq[R]) = {
+    require(processingInput.image.dimension == processingInput.reference.dimension, "Image and reference image must be of same size!")
+
     val slices = Await.result(Future.sequence(processingInput.image.slice(slicingStrategy)), timeout)
     val referenceSlices = Await.result(Future.sequence(processingInput.reference.slice(slicingStrategy)), timeout)
     val slicePairs = for (i <- slices.indices) yield (slices(i), referenceSlices(i))
