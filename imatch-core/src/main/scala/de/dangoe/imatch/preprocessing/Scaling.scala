@@ -24,7 +24,7 @@ import java.awt.image.BufferedImage
 
 import de.dangoe.imatch.matching.Dimension
 import org.imgscalr.Scalr
-import org.imgscalr.Scalr.Method
+import org.imgscalr.Scalr.{Method, Mode}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -51,11 +51,16 @@ case object ToBoundingBox extends ScalingMethod {
   }
 }
 
-class Scaling private (bounds: Dimension, method: ScalingMethod) extends (BufferedImage => BufferedImage) {
+case object Exact extends ScalingMethod {
+  override private[preprocessing] def scale(dimension: Dimension, bounds: Dimension): Dimension =
+    Dimension(bounds.width, bounds.height)
+}
+
+class Scaling private(bounds: Dimension, method: ScalingMethod) extends (BufferedImage => BufferedImage) {
 
   override def apply(image: BufferedImage): BufferedImage = {
     val scaledSize = method.scale(Dimension(image.getWidth, image.getHeight), bounds)
-    Scalr.resize(image, Method.QUALITY, scaledSize.width, scaledSize.height)
+    Scalr.resize(image, Method.QUALITY, Mode.FIT_EXACT, scaledSize.width, scaledSize.height)
   }
 }
 
