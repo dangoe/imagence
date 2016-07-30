@@ -18,21 +18,16 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imatch.common
+package de.dangoe.imatch.preprocessing
 
 import java.awt.image.BufferedImage
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 24.07.16
+  * @since 25.07.16
   */
-case class ImageProcessingContext(processingInput: ProcessingInput) {
-  require(processingInput.image.getType == processingInput.reference.getType, s"Image is not of type ${processingInput.reference.getType}!")
+trait BufferedImagePreprocessor extends (BufferedImage => BufferedImage)
 
-  val image = processingInput.image
-  val reference = processingInput.reference
-
-  val greyscaleMode = isGreyscale(processingInput.image) && isGreyscale(processingInput.reference)
-
-  private def isGreyscale(image: BufferedImage): Boolean = image.getType == BufferedImage.TYPE_BYTE_GRAY
+case object NoPreprocessing extends BufferedImagePreprocessor {
+  override def apply(image: BufferedImage): BufferedImage = image
 }

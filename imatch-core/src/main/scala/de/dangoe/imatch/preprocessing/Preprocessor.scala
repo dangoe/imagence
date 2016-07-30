@@ -22,12 +22,27 @@ package de.dangoe.imatch.preprocessing
 
 import java.awt.image.BufferedImage
 
+import de.dangoe.imatch.common.{ImageProcessingContext, ProcessingInput}
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 25.07.16
+  * @since 30.07.16
   */
-trait ImagePreprocessor extends (BufferedImage => BufferedImage)
+class Preprocessor private(op: BufferedImage => BufferedImage)
+                          (implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration)
+  extends (ProcessingInput => ProcessingInput) {
 
-case object NoPreprocessing extends ImagePreprocessor {
-  override def apply(image: BufferedImage): BufferedImage = image
+  override def apply(input: ProcessingInput): ProcessingInput = {
+    val processingResults = Await.result(Future.sequence(Seq(Future(op(input.image)), Future(op(input.reference)))), timeout)
+    ProcessingInput(processingResults.head, processingResults.last)
+  }
+}
+
+object Preprocessor {
+  def apply(op: BufferedImage => BufferedImage)
+           (implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration): Preprocessor =
+    new Preprocessor(op)
 }

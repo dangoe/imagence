@@ -14,7 +14,7 @@ class ImageProcessingContextTest extends WordSpec with Matchers {
     "not be created" when {
       "image type and reference image type differ." in {
         intercept[IllegalArgumentException] {
-          ImageProcessingContext(new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY), new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB))
+          ImageProcessingContext(ProcessingInput(new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY), new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)))
         }
       }
     }
@@ -23,7 +23,7 @@ class ImageProcessingContextTest extends WordSpec with Matchers {
   it should {
     "determine greyscale as color model" when {
       "reference image type is TYPE_BYTE_GRAY." in {
-        val sut = ImageProcessingContext(new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY), new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY))
+        val sut = ImageProcessingContext(ProcessingInput(new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY), new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY)))
 
         sut.greyscaleMode shouldBe true
       }
@@ -31,7 +31,7 @@ class ImageProcessingContextTest extends WordSpec with Matchers {
 
     "determine RGB as color model" when {
       "reference image type is not TYPE_BYTE_GRAY." in {
-        val sut = ImageProcessingContext(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB))
+        val sut = ImageProcessingContext(ProcessingInput(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)))
 
         sut.greyscaleMode shouldBe false
       }

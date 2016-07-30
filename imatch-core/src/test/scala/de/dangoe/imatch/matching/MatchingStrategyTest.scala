@@ -21,7 +21,7 @@
 package de.dangoe.imatch.matching
 
 import de.dangoe.imatch.Testhelpers._
-import de.dangoe.imatch.common.ImageProcessingContext
+import de.dangoe.imatch.common.{ImageProcessingContext, ProcessingInput}
 import de.dangoe.imatch.matching.Anchor._
 import de.dangoe.imatch.matching.Deviation.NoDeviation
 import org.scalatest.{Matchers, WordSpec}
@@ -34,7 +34,7 @@ class MatchingStrategyTest extends WordSpec with Matchers {
 
   val sut = new MatchingStrategy[MatchingResult] {
     override protected def applyInternal(image: Slice, reference: Slice): MatchingResult = new MatchingResult {
-      override def context: ImageProcessingContext = ImageProcessingContext(image, reference)
+      override def context: ImageProcessingContext = ImageProcessingContext(ProcessingInput(image, reference))
       override def deviation: Deviation = NoDeviation
       override def region: Region = Region(PointOfOrigin, Dimension(image.getWidth, image.getHeight))
     }
@@ -46,7 +46,7 @@ class MatchingStrategyTest extends WordSpec with Matchers {
         val quadraticImage = readImage("quadratic.png")
         val rectangularImage = readImage("rectangular.png")
 
-        implicit val context = ImageProcessingContext(quadraticImage, rectangularImage)
+        implicit val context = ImageProcessingContext(ProcessingInput(quadraticImage, rectangularImage))
 
         intercept[ImageMatchingException] {
           sut(quadraticImage, rectangularImage)

@@ -24,15 +24,6 @@ import java.awt.image.BufferedImage
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 24.07.16
+  * @since 30.07.16
   */
-case class ImageProcessingContext(processingInput: ProcessingInput) {
-  require(processingInput.image.getType == processingInput.reference.getType, s"Image is not of type ${processingInput.reference.getType}!")
-
-  val image = processingInput.image
-  val reference = processingInput.reference
-
-  val greyscaleMode = isGreyscale(processingInput.image) && isGreyscale(processingInput.reference)
-
-  private def isGreyscale(image: BufferedImage): Boolean = image.getType == BufferedImage.TYPE_BYTE_GRAY
-}
+case class ProcessingInput(image: BufferedImage, reference: BufferedImage)

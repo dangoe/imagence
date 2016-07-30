@@ -38,12 +38,12 @@ import scala.math.{pow, sqrt}
   */
 // TODO Draft to be tested or removed
 @Prototype
-class SlicingImageMatcher[R <: MatchingResult](slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
-                                              (implicit executionContext: ExecutionContext, timeout: Duration) {
+class SlicingImageMatching[R <: MatchingResult] private (slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
+                                               (implicit executionContext: ExecutionContext, timeout: Duration) extends ((ProcessingInput) => Seq[R]) {
 
-  def apply(image: BufferedImage, reference: BufferedImage): Seq[R] = {
-    val slices = Await.result(Future.sequence(image.slice(slicingStrategy)), timeout)
-    val referenceSlices = Await.result(Future.sequence(reference.slice(slicingStrategy)), timeout)
+  override def apply(processingInput: ProcessingInput): Seq[R] = {
+    val slices = Await.result(Future.sequence(processingInput.image.slice(slicingStrategy)), timeout)
+    val referenceSlices = Await.result(Future.sequence(processingInput.reference.slice(slicingStrategy)), timeout)
     val slicePairs = for (i <- slices.indices) yield (slices(i), referenceSlices(i))
 
     Await.result(Future.sequence(for (partition <- slicePairs.grouped(Runtime.getRuntime.availableProcessors())) yield Future {
@@ -54,6 +54,12 @@ class SlicingImageMatcher[R <: MatchingResult](slicingStrategy: SlicingStrategy,
   private def processPartition(slicePairs: Seq[(Slice, Slice)]): Seq[R] = {
     for (slicePair <- slicePairs) yield matchingStrategy(slicePair._1, slicePair._2)
   }
+}
+
+object SlicingImageMatching {
+  def apply[R <: MatchingResult](slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
+              (implicit executionContext: ExecutionContext, timeout: Duration): SlicingImageMatching[R] =
+    new SlicingImageMatching[R](slicingStrategy, matchingStrategy)
 }
 
 abstract class MatchingStrategy[R <: MatchingResult] {
@@ -69,7 +75,9 @@ abstract class MatchingStrategy[R <: MatchingResult] {
 
 trait MatchingResult {
   def context: ImageProcessingContext
+
   def deviation: Deviation
+
   def region: Region
 }
 

@@ -63,7 +63,7 @@ trait SlicingStrategy {
   def slice(image: BufferedImage): Seq[Future[Slice]]
 }
 
-class DefaultSlicing(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext) extends SlicingStrategy {
+class DefaultSlicing private (sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext) extends SlicingStrategy {
 
   override def slice(image: BufferedImage): Seq[Future[Slice]] = {
     val imageSize = image.dimension
@@ -80,6 +80,11 @@ class DefaultSlicing(sliceSizeCalculation: SliceSizeCalculation)(implicit execut
     val height = min(sliceSize.height, image.getHeight - anchor.y)
     Slice(image.getSubimage(anchor.x, anchor.y, width, height), Anchor(anchor.x, anchor.y))
   }
+}
+
+object DefaultSlicing {
+  def apply(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext): DefaultSlicing =
+    new DefaultSlicing(sliceSizeCalculation)
 }
 
 class Slice private(val image: BufferedImage, val region: Region)

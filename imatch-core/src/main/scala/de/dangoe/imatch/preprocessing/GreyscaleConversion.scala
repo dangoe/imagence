@@ -53,7 +53,7 @@ case object Luma extends GreyscaleMethod {
     createColor(math.round(color.getRed * 0.299 + color.getGreen * 0.587 + color.getBlue * 0.114).toInt, color.getAlpha)
 }
 
-class GreyscaleConversion(method: GreyscaleMethod)(implicit executionContext: ExecutionContext, timeout: Duration) extends ImagePreprocessor {
+class GreyscaleConversion private(method: GreyscaleMethod)(implicit executionContext: ExecutionContext, timeout: Duration) extends BufferedImagePreprocessor {
 
   override def apply(image: BufferedImage): BufferedImage = {
     val greyscaleImage = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_BYTE_GRAY)
@@ -73,7 +73,11 @@ class GreyscaleConversion(method: GreyscaleMethod)(implicit executionContext: Ex
   }
 }
 
-object NativeGreyscaleConversion extends ImagePreprocessor {
+object GreyscaleConversion {
+  def apply(method: GreyscaleMethod)(implicit executionContext: ExecutionContext, timeout: Duration): GreyscaleConversion = new GreyscaleConversion(method)
+}
+
+object NativeGreyscaleConversion extends BufferedImagePreprocessor {
 
   import collection.JavaConverters._
 
