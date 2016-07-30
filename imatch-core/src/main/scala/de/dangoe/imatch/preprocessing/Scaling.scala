@@ -51,10 +51,14 @@ case object ToBoundingBox extends ScalingMethod {
   }
 }
 
-class Scaling(bounds: Dimension, method: ScalingMethod) extends (BufferedImage => BufferedImage) {
+class Scaling private (bounds: Dimension, method: ScalingMethod) extends (BufferedImage => BufferedImage) {
 
   override def apply(image: BufferedImage): BufferedImage = {
     val scaledSize = method.scale(Dimension(image.getWidth, image.getHeight), bounds)
     Scalr.resize(image, Method.QUALITY, scaledSize.width, scaledSize.height)
   }
+}
+
+object Scaling {
+  def apply(bounds: Dimension, method: ScalingMethod): Scaling = new Scaling(bounds, method)
 }
