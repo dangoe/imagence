@@ -20,9 +20,7 @@
   */
 package de.dangoe.imatch.preprocessing
 
-import java.awt.RenderingHints
-import java.awt.geom.AffineTransform
-import java.awt.image.{AffineTransformOp, BufferedImage}
+import java.awt.image.BufferedImage
 
 import de.dangoe.imatch.matching.Dimension
 import org.imgscalr.Scalr
