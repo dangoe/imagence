@@ -29,4 +29,16 @@
             </plugin>
         </plugins>
     </build>
+
+    <dependencies>
+        
+        <!-- Testing dependencies -->
+
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.11</artifactId>
+            <version>${scalatest.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
