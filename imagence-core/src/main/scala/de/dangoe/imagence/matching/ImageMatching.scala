@@ -22,7 +22,7 @@ package de.dangoe.imagence.matching
 
 import java.awt.Color
 
-import de.dangoe.imagence.common._
+import de.dangoe.imagence.ProcessingInput
 import de.dangoe.imagence.matching.Deviation.NoDeviation
 import de.dangoe.imagence.matching.ImplicitConversions._
 
@@ -42,28 +42,27 @@ abstract class MatchingStrategy[R <: MatchingResult] {
 }
 
 trait MatchingResult {
-  def context: ImageProcessingContext
   def deviation: Deviation
 }
 
 case class ImageMatchingException(message: String) extends RuntimeException(message)
 
-class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator), context: ImageProcessingContext) extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
+class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))
+  extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
 
   override protected def applyInternal(input: ProcessingInput): PixelWiseColorDeviationMatchingResult = {
     val deviationCalculator = deviationCalculatorFactory(input)
-    val imageSize =input.image.dimension
+    val imageSize = input.image.dimension
     (for (x <- 0 until imageSize.width;
           y <- 0 until imageSize.height;
           deviation <- deviationCalculator.calculate(new Color(input.image.getRGB(x, y)), new Color(input.reference.getRGB(x, y)))) yield deviation) match {
       case deviations if deviations.nonEmpty =>
         val deviatingPixelCount = deviations.length
         PixelWiseColorDeviationMatchingResult(
-          context,
           Deviation(deviations.sum / deviations.length),
           deviatingPixelCount
         )
-      case _ => PixelWiseColorDeviationMatchingResult.withoutDeviation(context)
+      case _ => PixelWiseColorDeviationMatchingResult.withoutDeviation
     }
   }
 }
@@ -73,20 +72,18 @@ object PixelWiseColorDeviationMatching {
   private final val DefaultDeviationCalculatorFactory: (ProcessingInput) => EuclideanDistanceCalculator =
     input => new EuclideanDistanceCalculator(input)
 
-  def apply()(implicit context: ImageProcessingContext): PixelWiseColorDeviationMatching =
-    new PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory, context)
+  def apply(): PixelWiseColorDeviationMatching =
+    new PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
 
-  def apply(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))
-           (implicit context: ImageProcessingContext): PixelWiseColorDeviationMatching =
-    new PixelWiseColorDeviationMatching(deviationCalculatorFactory, context)
+  def apply(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator)): PixelWiseColorDeviationMatching =
+    new PixelWiseColorDeviationMatching(deviationCalculatorFactory)
 }
 
-case class PixelWiseColorDeviationMatchingResult(context: ImageProcessingContext,
-                                                 deviation: Deviation,
+case class PixelWiseColorDeviationMatchingResult(deviation: Deviation,
                                                  deviantPixelCount: Int) extends MatchingResult
 
 object PixelWiseColorDeviationMatchingResult {
-  def withoutDeviation(context: ImageProcessingContext): PixelWiseColorDeviationMatchingResult = PixelWiseColorDeviationMatchingResult(context, NoDeviation, 0)
+  def withoutDeviation: PixelWiseColorDeviationMatchingResult = PixelWiseColorDeviationMatchingResult(NoDeviation, 0)
 }
 
 case class Deviation(value: Double) {

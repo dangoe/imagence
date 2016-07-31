@@ -18,19 +18,12 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.common
+package de.dangoe.imagence
 
 import java.awt.image.BufferedImage
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 24.07.16
+  * @since 30.07.16
   */
-case class ImageProcessingContext(processingInput: ProcessingInput) {
-  val image = processingInput.image
-  val reference = processingInput.reference
-
-  val greyscaleMode = isGreyscale(processingInput.image) && isGreyscale(processingInput.reference)
-
-  private def isGreyscale(image: BufferedImage): Boolean = image.getType == BufferedImage.TYPE_BYTE_GRAY
-}
+case class ProcessingInput(image: BufferedImage, reference: BufferedImage)

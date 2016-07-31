@@ -22,7 +22,7 @@ package de.dangoe.imagence.preprocessing
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.common.{ImageProcessingContext, ProcessingInput}
+import de.dangoe.imagence.ProcessingInput
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -32,7 +32,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @since 30.07.16
   */
 class Preprocessor private(op: BufferedImage => BufferedImage)
-                          (implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration)
+                          (implicit executionContext: ExecutionContext, timeout: Duration)
   extends (ProcessingInput => ProcessingInput) {
 
   override def apply(input: ProcessingInput): ProcessingInput = {
@@ -45,11 +45,11 @@ object Preprocessor {
 
   object Implicits {
     implicit def toPreprocessor(op: BufferedImage => BufferedImage)
-                               (implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration): Preprocessor =
+                               (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
       Preprocessor(op)
   }
 
   def apply(op: BufferedImage => BufferedImage)
-           (implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration): Preprocessor =
+           (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
     new Preprocessor(op)
 }

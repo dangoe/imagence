@@ -22,7 +22,7 @@ package de.dangoe.imagence.preprocessing
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.common.{ImageProcessingContext, ProcessingInput}
+import de.dangoe.imagence.ProcessingInput
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext
@@ -43,9 +43,7 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers {
 
   "HarmonizeResolutions" should {
     "scale a smaller image to the reference image's size while the reference image remains unchanged." in {
-      implicit val context = ImageProcessingContext(ProcessingInput(smallerImage, reference))
-
-      val processed = HarmonizeResolutions().apply(context.processingInput)
+      val processed = HarmonizeResolutions().apply(ProcessingInput(smallerImage, reference))
 
       processed.image.getWidth shouldBe 800
       processed.image.getHeight shouldBe 600
@@ -54,9 +52,7 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers {
     }
 
     "scale a larger image to the reference image's size while the reference image remains unchanged." in {
-      implicit val context = ImageProcessingContext(ProcessingInput(largerImage, reference))
-
-      val processed = HarmonizeResolutions().apply(context.processingInput)
+      val processed = HarmonizeResolutions().apply(ProcessingInput(largerImage, reference))
 
       processed.image.getWidth shouldBe 800
       processed.image.getHeight shouldBe 600

@@ -23,7 +23,7 @@ package de.dangoe.imagence.matching
 import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 
-import de.dangoe.imagence.common.ProcessingInput
+import de.dangoe.imagence.ProcessingInput
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.math.BigDecimal.RoundingMode

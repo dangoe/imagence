@@ -25,7 +25,7 @@ import java.awt.{AlphaComposite, Color, Graphics2D, Image}
 import java.io.OutputStream
 import javax.imageio.ImageIO
 
-import de.dangoe.imagence.common.{ProcessingInput, Prototype}
+import de.dangoe.imagence.{ProcessingInput, Prototype}
 import de.dangoe.imagence.matching.{MatchingResult, Region}
 
 /**

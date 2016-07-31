@@ -23,7 +23,7 @@ package de.dangoe.imagence.matching
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.common.ProcessingInput
+import de.dangoe.imagence.ProcessingInput
 
 import scala.math._
 

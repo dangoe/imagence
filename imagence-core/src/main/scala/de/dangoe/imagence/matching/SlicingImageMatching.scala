@@ -20,7 +20,8 @@
   */
 package de.dangoe.imagence.matching
 
-import de.dangoe.imagence.common.{ProcessingInput, Prototype}
+import de.dangoe.imagence.{ProcessingInput, Prototype}
+import de.dangoe.imagence.Prototype
 import de.dangoe.imagence.matching.ImageSlicing.ImplicitConversions._
 import de.dangoe.imagence.matching.ImplicitConversions._
 

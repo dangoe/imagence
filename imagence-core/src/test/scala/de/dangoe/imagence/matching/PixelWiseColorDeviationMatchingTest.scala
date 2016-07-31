@@ -20,8 +20,8 @@
   */
 package de.dangoe.imagence.matching
 
+import de.dangoe.imagence.ProcessingInput
 import de.dangoe.imagence.Testhelpers._
-import de.dangoe.imagence.common.{ImageProcessingContext, ProcessingInput}
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext
@@ -43,7 +43,6 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
         val image = readImage("quadratic.png")
 
         val processingInput = ProcessingInput(image, image)
-        implicit val context = ImageProcessingContext(processingInput)
 
         val result = PixelWiseColorDeviationMatching().apply(processingInput)
 
@@ -57,7 +56,6 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
         val referenceImage = readImage("quadratic_22.png")
 
         val processingInput = ProcessingInput(image, referenceImage)
-        implicit val context = ImageProcessingContext(processingInput)
 
         val result = PixelWiseColorDeviationMatching().apply(processingInput)
 
@@ -72,7 +70,6 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
         val referenceImage = readImage("black.png")
 
         val processingInput = ProcessingInput(image, referenceImage)
-        implicit val context = ImageProcessingContext(processingInput)
 
         val result = PixelWiseColorDeviationMatching().apply(processingInput)
 
@@ -87,7 +84,6 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
         val referenceImage = readImage("black.png")
 
         val processingInput = ProcessingInput(image, referenceImage)
-        implicit val context = ImageProcessingContext(processingInput)
 
         val result = PixelWiseColorDeviationMatching().apply(processingInput)
 
@@ -102,7 +98,6 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
         val referenceImage = readImage("grey.png")
 
         val processingInput = ProcessingInput(image, referenceImage)
-        implicit val context = ImageProcessingContext(processingInput)
 
         val result = PixelWiseColorDeviationMatching().apply(processingInput)
 
@@ -117,7 +112,6 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
         val referenceImage = readImage("black.png")
 
         val processingInput = ProcessingInput(image, referenceImage)
-        implicit val context = ImageProcessingContext(processingInput)
 
         val result = PixelWiseColorDeviationMatching().apply(processingInput)
 

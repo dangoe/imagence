@@ -22,14 +22,14 @@ package de.dangoe.imagence.preprocessing
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.common.{ImageProcessingContext, ProcessingInput}
+import de.dangoe.imagence.ProcessingInput
 import de.dangoe.imagence.matching.Dimension
 import de.dangoe.imagence.matching.ImplicitConversions.RichBufferedImage
 import org.imgscalr.Scalr
 import org.imgscalr.Scalr.{Method, Mode}
 
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -73,7 +73,7 @@ object Scaling {
   def apply(bounds: Dimension, method: ScalingMethod): Scaling = new Scaling(bounds, method)
 }
 
-class HarmonizeResolutions private()(implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration)
+class HarmonizeResolutions private()(implicit executionContext: ExecutionContext, timeout: Duration)
   extends (ProcessingInput => ProcessingInput) {
 
   override def apply(input: ProcessingInput): ProcessingInput = {
@@ -83,14 +83,18 @@ class HarmonizeResolutions private()(implicit context: ImageProcessingContext, e
 
 object HarmonizeResolutions {
 
-  def apply()(implicit context: ImageProcessingContext, executionContext: ExecutionContext, timeout: Duration): HarmonizeResolutions =
+  def apply()(implicit executionContext: ExecutionContext, timeout: Duration): HarmonizeResolutions =
     new HarmonizeResolutions()
 }
 
 object Resolution {
   def veryLow: Dimension = Dimension(320, 320)
+
   def low: Dimension = Dimension(640, 640)
+
   def medium: Dimension = Dimension(1024, 1024)
+
   def high: Dimension = Dimension(1440, 1440)
+
   def veryHigh: Dimension = Dimension(1920, 1920)
 }
