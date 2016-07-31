@@ -39,7 +39,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
 
   "PixelWiseColorDeviationMatching" should {
     "calculate a deviation of zero" when {
-      "if the image to be compared is equal to the reference image." in {
+      "the image to be compared is equal to the reference image." in {
         val image = readImage("quadratic.png")
 
         val processingInput = ProcessingInput(image, image)
@@ -52,7 +52,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
     }
 
     "calculate a deviation greater than zero" when {
-      "if the image to be compared is not equal to the reference image." in {
+      "the image to be compared is not equal to the reference image." in {
         val image = readImage("quadratic_11.png")
         val referenceImage = readImage("quadratic_22.png")
 
@@ -67,7 +67,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
     }
 
     "calculate a deviation of one" when {
-      "if the image is completely white and the reference image is completely black." in {
+      "the image is completely white and the reference image is completely black." in {
         val image = readImage("white.png")
         val referenceImage = readImage("black.png")
 
@@ -82,7 +82,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
     }
 
     "calculate a deviation of one" when {
-      "if the image is completely black and the reference image is completely white." in {
+      "the image is completely black and the reference image is completely white." in {
         val image = readImage("white.png")
         val referenceImage = readImage("black.png")
 
@@ -97,7 +97,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
     }
 
     "calculate a deviation of one half" when {
-      "if the image is completely white and the reference image is completely grey." in {
+      "the image is completely white and the reference image is completely grey." in {
         val image = readImage("white.png")
         val referenceImage = readImage("grey.png")
 
@@ -112,7 +112,7 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
     }
 
     "calculate a deviation of one half" when {
-      "if the image is completely grey and the reference image is completely white." in {
+      "the image is completely grey and the reference image is completely white." in {
         val image = readImage("grey.png")
         val referenceImage = readImage("black.png")
 
