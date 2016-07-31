@@ -22,7 +22,7 @@ package de.dangoe.imagence.matching
 
 import de.dangoe.imagence.Testhelpers._
 import de.dangoe.imagence.matching.Anchor._
-import de.dangoe.imagence.matching.ImageSlicing.ImplicitConversions._
+import de.dangoe.imagence.matching.Slicing.Implicits._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.duration._
@@ -32,9 +32,9 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
   */
-class DefaultSlicingTest extends WordSpec with Matchers {
+class DefaultSlicingStrategyTest extends WordSpec with Matchers {
 
-  import DefaultSlicingTest._
+  import DefaultSlicingStrategyTest._
 
   implicit val executionContext = ExecutionContext.global
   implicit val timeout = 15 seconds
@@ -46,7 +46,7 @@ class DefaultSlicingTest extends WordSpec with Matchers {
   "Default slicing with percentage slice size" should {
     "slice an quadratic image in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(quadraticImage.slice(DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
+        val slices = Await.result(Future.sequence(quadraticImage.slice(DefaultSlicingStrategy(PercentageSliceSize(0.5)))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("quadratic_11.png"))
@@ -58,7 +58,7 @@ class DefaultSlicingTest extends WordSpec with Matchers {
 
     "slice an rectangular image with even edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(rectangularImage.slice(DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
+        val slices = Await.result(Future.sequence(rectangularImage.slice(DefaultSlicingStrategy(PercentageSliceSize(0.5)))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_11.png"))
@@ -70,7 +70,7 @@ class DefaultSlicingTest extends WordSpec with Matchers {
 
     "slice an rectangular image with odd edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(rectangularWithOddEdgeLengthsImage.slice(DefaultSlicing(PercentageSliceSize(0.5)))), timeout)
+        val slices = Await.result(Future.sequence(rectangularWithOddEdgeLengthsImage.slice(DefaultSlicingStrategy(PercentageSliceSize(0.5)))), timeout)
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))
@@ -82,10 +82,9 @@ class DefaultSlicingTest extends WordSpec with Matchers {
   }
 }
 
-object DefaultSlicingTest {
+object DefaultSlicingStrategyTest {
 
   implicit class SliceSequence(delegate: Seq[Slice]) {
     def sliceAt(anchor: Anchor) = delegate.find(_.region.anchor == anchor).get.image
   }
-
 }

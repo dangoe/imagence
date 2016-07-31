@@ -22,7 +22,7 @@ package de.dangoe.imagence.matching
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.matching.ImplicitConversions._
+import de.dangoe.imagence.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.math.{ceil, min}
@@ -31,9 +31,29 @@ import scala.math.{ceil, min}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
   */
-trait SliceSize
+class DefaultSlicingStrategy private(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext) extends SlicingStrategy {
 
-trait SliceSizeCalculation extends (Dimension => Dimension with SliceSize)
+  override def slice(image: BufferedImage): Seq[Future[Slice]] = {
+    val imageSize = image.dimension
+    implicit val sliceSize = sliceSizeCalculation(imageSize)
+    for (horizontalOffset <- calculateOffsets(imageSize, _.width);
+         verticalOffset <- calculateOffsets(imageSize, _.height)) yield createSlice(Anchor(horizontalOffset, verticalOffset), image)
+  }
+
+  private def calculateOffsets(dimension: Dimension, edgeLength: Dimension => Int)(implicit sliceSize: Dimension with SliceSize) =
+    0 until ceil(edgeLength(dimension).toDouble / edgeLength(sliceSize)).toInt map (_ * edgeLength(sliceSize))
+
+  private def createSlice(anchor: Anchor, image: BufferedImage)(implicit sliceSize: Dimension with SliceSize): Future[Slice] = Future {
+    val width = min(sliceSize.width, image.getWidth - anchor.x)
+    val height = min(sliceSize.height, image.getHeight - anchor.y)
+    Slice(image.getSubimage(anchor.x, anchor.y, width, height), Anchor(anchor.x, anchor.y))
+  }
+}
+
+object DefaultSlicingStrategy {
+  def apply(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext): DefaultSlicingStrategy =
+    new DefaultSlicingStrategy(sliceSizeCalculation)
+}
 
 case class FixedSliceSize(value: Dimension) extends SliceSizeCalculation {
 
@@ -57,51 +77,4 @@ case class PercentageSliceSize(factor: Double) extends SliceSizeCalculation {
 
 object PercentageSliceSize {
   val MinSliceSize = new Dimension(1, 1) with SliceSize
-}
-
-trait SlicingStrategy {
-  def slice(image: BufferedImage): Seq[Future[Slice]]
-}
-
-class DefaultSlicing private (sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext) extends SlicingStrategy {
-
-  override def slice(image: BufferedImage): Seq[Future[Slice]] = {
-    val imageSize = image.dimension
-    implicit val sliceSize = sliceSizeCalculation(imageSize)
-    for (horizontalOffset <- calculateOffsets(imageSize, _.width);
-         verticalOffset <- calculateOffsets(imageSize, _.height)) yield createSlice(Anchor(horizontalOffset, verticalOffset), image)
-  }
-
-  private def calculateOffsets(dimension: Dimension, edgeLength: Dimension => Int)(implicit sliceSize: Dimension with SliceSize) =
-    0 until ceil(edgeLength(dimension).toDouble / edgeLength(sliceSize)).toInt map (_ * edgeLength(sliceSize))
-
-  private def createSlice(anchor: Anchor, image: BufferedImage)(implicit sliceSize: Dimension with SliceSize): Future[Slice] = Future {
-    val width = min(sliceSize.width, image.getWidth - anchor.x)
-    val height = min(sliceSize.height, image.getHeight - anchor.y)
-    Slice(image.getSubimage(anchor.x, anchor.y, width, height), Anchor(anchor.x, anchor.y))
-  }
-}
-
-object DefaultSlicing {
-  def apply(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext): DefaultSlicing =
-    new DefaultSlicing(sliceSizeCalculation)
-}
-
-class Slice private(val image: BufferedImage, val region: Region)
-
-object Slice {
-  def apply(image: BufferedImage, anchor: Anchor): Slice = new Slice(image, Region(anchor, Dimension(image.getWidth, image.getHeight)))
-
-}
-
-class Sliceable(image: BufferedImage) {
-  def slice(strategy: SlicingStrategy): Seq[Future[Slice]] = strategy.slice(image)
-}
-
-object ImageSlicing {
-  object ImplicitConversions {
-    implicit def toSlice(image: BufferedImage): Slice = Slice(image, Anchor.PointOfOrigin)
-    implicit def extractBufferedImage(slice: Slice): BufferedImage = slice.image
-    implicit def toSliceable(image: BufferedImage): Sliceable = new Sliceable(image)
-  }
 }

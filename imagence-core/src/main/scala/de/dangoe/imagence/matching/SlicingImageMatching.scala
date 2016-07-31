@@ -20,10 +20,10 @@
   */
 package de.dangoe.imagence.matching
 
-import de.dangoe.imagence.{ProcessingInput, Prototype}
-import de.dangoe.imagence.Prototype
-import de.dangoe.imagence.matching.ImageSlicing.ImplicitConversions._
-import de.dangoe.imagence.matching.ImplicitConversions._
+import de.dangoe.imagence.Implicits._
+import de.dangoe.imagence.matching.Slicing.Implicits._
+import de.dangoe.imagence.ProcessingInput
+import de.dangoe.imagence.prototyping.Prototype
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}

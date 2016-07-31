@@ -45,7 +45,7 @@ class MatchingStrategyTest extends WordSpec with Matchers {
 
         val processingInput = ProcessingInput(quadraticImage, rectangularImage)
 
-        intercept[ImageMatchingException] {
+        intercept[MatchingException] {
           sut(processingInput)
         }
       }

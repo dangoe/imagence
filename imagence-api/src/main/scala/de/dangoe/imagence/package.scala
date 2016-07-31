@@ -18,38 +18,24 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.preprocessing
+package de.dangoe
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.ProcessingInput
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import de.dangoe.imagence.matching.Dimension
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 30.07.16
+  * @since 31.07.16
   */
-class Preprocessor private(op: BufferedImage => BufferedImage)
-                          (implicit executionContext: ExecutionContext, timeout: Duration)
-  extends (ProcessingInput => ProcessingInput) {
+package object imagence {
 
-  override def apply(input: ProcessingInput): ProcessingInput = {
-    val processingResults = Await.result(Future.sequence(Seq(Future(op(input.image)), Future(op(input.reference)))), timeout)
-    ProcessingInput(processingResults.head, processingResults.last)
-  }
-}
-
-object Preprocessor {
+  case class ProcessingInput(image: BufferedImage, reference: BufferedImage)
 
   object Implicits {
-    implicit def toPreprocessor(op: BufferedImage => BufferedImage)
-                               (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
-      Preprocessor(op)
+    implicit class RichBufferedImage(delegate: BufferedImage) {
+      def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
+      def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)
+    }
   }
-
-  def apply(op: BufferedImage => BufferedImage)
-           (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
-    new Preprocessor(op)
 }

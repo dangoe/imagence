@@ -23,7 +23,7 @@ package de.dangoe.imagence
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
-import de.dangoe.imagence.matching.ImplicitConversions._
+import de.dangoe.imagence.Implicits._
 import org.scalatest.matchers.{MatchResult, Matcher}
 
 /**
@@ -35,7 +35,7 @@ object Testhelpers {
   case class ImageShowsTheSameMatcher(image: BufferedImage) extends Matcher[BufferedImage] {
 
     def apply(otherImage: BufferedImage): MatchResult = {
-      MatchResult(otherImage.isOfSameSizeAs(image) && sameRGBValuesPerPixel(otherImage),
+      MatchResult(otherImage.dimension == image.dimension && sameRGBValuesPerPixel(otherImage),
         "Images are not the same!",
         "Images are not the same!")
     }

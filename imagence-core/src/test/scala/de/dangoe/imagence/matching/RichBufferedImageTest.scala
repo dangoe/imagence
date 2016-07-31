@@ -20,8 +20,8 @@
   */
 package de.dangoe.imagence.matching
 
+import de.dangoe.imagence.Implicits._
 import de.dangoe.imagence.Testhelpers._
-import de.dangoe.imagence.matching.ImplicitConversions._
 import org.scalatest.{Matchers, WordSpec}
 
 /**

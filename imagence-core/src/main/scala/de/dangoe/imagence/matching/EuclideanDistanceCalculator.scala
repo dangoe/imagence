@@ -31,19 +31,15 @@ import scala.math._
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 31.07.16
   */
-trait NormalizedDeviationCalculator {
-  def calculate(color: Color, referenceColor: Color): Option[Double]
-}
-
 class EuclideanDistanceCalculator(input: ProcessingInput) extends NormalizedDeviationCalculator {
 
   import EuclideanDistanceCalculator._
 
   private final val greyscale = input.image.getType == BufferedImage.TYPE_BYTE_GRAY && input.image.getType == BufferedImage.TYPE_BYTE_GRAY
 
-  override def calculate(color: Color, referenceColor: Color): Option[Double] = {
+  override def calculate(color: Color, referenceColor: Color): Option[Deviation] = {
     val deviation = if (greyscale) calculateGreyscale(color, referenceColor) else calculateColor(color, referenceColor)
-    if (deviation > 0) Some(deviation) else None
+    if (deviation > 0) Some(Deviation(deviation)) else None
   }
 
   @inline private def calculateColor(color: Color, referenceColor: Color): Double = {

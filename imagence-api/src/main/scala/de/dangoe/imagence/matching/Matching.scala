@@ -18,12 +18,46 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence
+package de.dangoe.imagence.matching
 
-import java.awt.image.BufferedImage
+import java.awt.Color
+
+import de.dangoe.imagence.ProcessingInput
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 30.07.16
+  * @since 31.07.16
   */
-case class ProcessingInput(image: BufferedImage, reference: BufferedImage)
+trait MatchingResult {
+  def deviation: Deviation
+}
+
+trait MatchingStrategy[R <: MatchingResult] {
+
+  import de.dangoe.imagence.Implicits._
+
+  final def apply(input: ProcessingInput): R = {
+    if (input.image.dimension != input.reference.dimension) {
+      throw MatchingException("Image dimension differs from reference image!")
+    }
+    applyInternal(input)
+  }
+
+  protected def applyInternal(input: ProcessingInput): R
+}
+
+case class MatchingException(message: String) extends RuntimeException(message)
+
+trait NormalizedDeviationCalculator {
+  def calculate(color: Color, referenceColor: Color): Option[Deviation]
+}
+
+case class Deviation(value: Double) {
+  require(value >= 0, "Value must not be smaller than zero.")
+  require(value <= 1, "Value must not be larger than one.")
+}
+
+object Deviation {
+  val NoDeviation = Deviation(0)
+  val MaximumDeviation = Deviation(1)
+}

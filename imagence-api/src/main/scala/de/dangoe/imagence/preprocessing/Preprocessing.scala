@@ -18,44 +18,40 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence
+package de.dangoe.imagence.preprocessing
 
-import java.awt.Graphics2D
 import java.awt.image.BufferedImage
+
+import de.dangoe.imagence.ProcessingInput
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 19.07.16
+  * @since 30.07.16
   */
-package object matching {
+object Preprocessing {
 
-  object ImplicitConversions {
-    implicit class RichBufferedImage(delegate: BufferedImage) {
-      def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
-      def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)
-      def isOfSameSizeAs(other: BufferedImage): Boolean = dimension == other.dimension
-      def copy: BufferedImage = {
-        val image = new BufferedImage(delegate.getWidth, delegate.getHeight, delegate.getType)
-        image.getGraphics.asInstanceOf[Graphics2D].drawImage(delegate, 0, 0, null)
-        image
-      }
-    }
+  object Implicits {
+    implicit def toPreprocessor(op: BufferedImage => BufferedImage)
+                               (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
+      Preprocessor(op)
   }
+}
 
-  case class Anchor(x: Int, y: Int) {
-    require(x >= 0, "Horizontal shift must not be smaller than zero.")
-    require(y >= 0, "Vertical shift must not be smaller than zero.")
+class Preprocessor private(op: BufferedImage => BufferedImage)
+                          (implicit executionContext: ExecutionContext, timeout: Duration)
+  extends (ProcessingInput => ProcessingInput) {
+
+  override def apply(input: ProcessingInput): ProcessingInput = {
+    val processingResults = Await.result(Future.sequence(Seq(Future(op(input.image)), Future(op(input.reference)))), timeout)
+    ProcessingInput(processingResults.head, processingResults.last)
   }
+}
 
-  object Anchor {
-    val PointOfOrigin = Anchor(0, 0)
-  }
-
-  case class Dimension(width: Int, height: Int) {
-    require(width > 0, "Width must be greater than zero.")
-    require(height > 0, "Height must be greater than zero.")
-    def aspectRatio: Double = width.toDouble / height.toDouble
-  }
-
-  case class Region(anchor: Anchor, dimension: Dimension)
+object Preprocessor {
+  def apply(op: BufferedImage => BufferedImage)
+           (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
+    new Preprocessor(op)
 }

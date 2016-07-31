@@ -43,7 +43,7 @@ class EuclideanDistanceCalculatorTest extends WordSpec with Matchers {
         val image = createSinglePixelImage(firstColor, BufferedImage.TYPE_BYTE_GRAY)
         val reference = createSinglePixelImage(secondColor, BufferedImage.TYPE_BYTE_GRAY)
 
-        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(firstColor, secondColor).get
+        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(firstColor, secondColor).get.value
 
         round(deviation) shouldBe round(0.039)
       }
@@ -54,7 +54,7 @@ class EuclideanDistanceCalculatorTest extends WordSpec with Matchers {
         val image = createSinglePixelImage(firstColor, BufferedImage.TYPE_INT_ARGB)
         val reference = createSinglePixelImage(secondColor, BufferedImage.TYPE_INT_ARGB)
 
-        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(firstColor, secondColor).get
+        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(firstColor, secondColor).get.value
 
         round(deviation) shouldBe round(0.081)
       }
@@ -65,7 +65,7 @@ class EuclideanDistanceCalculatorTest extends WordSpec with Matchers {
         val image = createSinglePixelImage(Color.BLACK, BufferedImage.TYPE_BYTE_GRAY)
         val reference = createSinglePixelImage(Color.WHITE, BufferedImage.TYPE_BYTE_GRAY)
 
-        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(Color.BLACK, Color.WHITE).get
+        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(Color.BLACK, Color.WHITE).get.value
 
         round(deviation) shouldBe round(1)
       }
@@ -76,7 +76,7 @@ class EuclideanDistanceCalculatorTest extends WordSpec with Matchers {
         val image = createSinglePixelImage(Color.GRAY, BufferedImage.TYPE_BYTE_GRAY)
         val reference = createSinglePixelImage(Color.WHITE, BufferedImage.TYPE_BYTE_GRAY)
 
-        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(Color.GRAY, Color.WHITE).get
+        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(Color.GRAY, Color.WHITE).get.value
 
         round(deviation) shouldBe round(0.5)
       }
@@ -87,7 +87,7 @@ class EuclideanDistanceCalculatorTest extends WordSpec with Matchers {
         val image = createSinglePixelImage(Color.GRAY, BufferedImage.TYPE_BYTE_GRAY)
         val reference = createSinglePixelImage(Color.BLACK, BufferedImage.TYPE_BYTE_GRAY)
 
-        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(Color.GRAY, Color.BLACK).get
+        val deviation = new EuclideanDistanceCalculator(ProcessingInput(image, reference)).calculate(Color.GRAY, Color.BLACK).get.value
 
         round(deviation) shouldBe round(0.5)
       }

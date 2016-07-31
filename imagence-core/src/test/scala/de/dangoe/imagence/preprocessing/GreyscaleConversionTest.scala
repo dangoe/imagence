@@ -23,8 +23,8 @@ package de.dangoe.imagence.preprocessing
 import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 
+import de.dangoe.imagence.Implicits._
 import de.dangoe.imagence.matching.Dimension
-import de.dangoe.imagence.matching.ImplicitConversions._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext
