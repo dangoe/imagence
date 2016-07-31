@@ -34,7 +34,7 @@ import scala.concurrent.duration._
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 24.07.16
   */
-class ConvertToGreyscaleTest extends WordSpec with Matchers {
+class GreyscaleConversionTest extends WordSpec with Matchers {
 
   implicit val executionContext = ExecutionContext.global
   implicit val timeout = 15 seconds
