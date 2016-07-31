@@ -33,10 +33,9 @@ import org.scalatest.{Matchers, WordSpec}
 class MatchingStrategyTest extends WordSpec with Matchers {
 
   val sut = new MatchingStrategy[MatchingResult] {
-    override protected def applyInternal(image: Slice, reference: Slice): MatchingResult = new MatchingResult {
-      override def context: ImageProcessingContext = ImageProcessingContext(ProcessingInput(image, reference))
+    override protected def applyInternal(input: ProcessingInput): MatchingResult = new MatchingResult {
+      override def context: ImageProcessingContext = ImageProcessingContext(input)
       override def deviation: Deviation = NoDeviation
-      override def region: Region = Region(PointOfOrigin, Dimension(image.getWidth, image.getHeight))
     }
   }
 
@@ -46,10 +45,11 @@ class MatchingStrategyTest extends WordSpec with Matchers {
         val quadraticImage = readImage("quadratic.png")
         val rectangularImage = readImage("rectangular.png")
 
-        implicit val context = ImageProcessingContext(ProcessingInput(quadraticImage, rectangularImage))
+        val processingInput = ProcessingInput(quadraticImage, rectangularImage)
+        implicit val context = ImageProcessingContext(processingInput)
 
         intercept[ImageMatchingException] {
-          sut(quadraticImage, rectangularImage)
+          sut(processingInput)
         }
       }
     }

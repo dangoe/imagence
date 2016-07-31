@@ -22,7 +22,7 @@ package de.dangoe.imagence.matching
 
 import de.dangoe.imagence.Testhelpers._
 import de.dangoe.imagence.matching.Anchor._
-import de.dangoe.imagence.matching.Sliceable._
+import de.dangoe.imagence.matching.ImageSlicing.ImplicitConversions._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.duration._

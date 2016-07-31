@@ -92,14 +92,16 @@ class Slice private(val image: BufferedImage, val region: Region)
 object Slice {
   def apply(image: BufferedImage, anchor: Anchor): Slice = new Slice(image, Region(anchor, Dimension(image.getWidth, image.getHeight)))
 
-  implicit def toSlice(image: BufferedImage): Slice = Slice(image, Anchor.PointOfOrigin)
-  implicit def extractBufferedImage(slice: Slice): BufferedImage = slice.image
 }
 
 class Sliceable(image: BufferedImage) {
   def slice(strategy: SlicingStrategy): Seq[Future[Slice]] = strategy.slice(image)
 }
 
-object Sliceable {
-  implicit def toSliceable(image: BufferedImage): Sliceable = new Sliceable(image)
+object ImageSlicing {
+  object ImplicitConversions {
+    implicit def toSlice(image: BufferedImage): Slice = Slice(image, Anchor.PointOfOrigin)
+    implicit def extractBufferedImage(slice: Slice): BufferedImage = slice.image
+    implicit def toSliceable(image: BufferedImage): Sliceable = new Sliceable(image)
+  }
 }

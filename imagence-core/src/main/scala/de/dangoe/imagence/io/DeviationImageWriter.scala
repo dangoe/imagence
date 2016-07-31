@@ -25,8 +25,8 @@ import java.awt.{AlphaComposite, Color, Graphics2D, Image}
 import java.io.OutputStream
 import javax.imageio.ImageIO
 
-import de.dangoe.imagence.common.{ImageProcessingContext, ProcessingInput, Prototype}
-import de.dangoe.imagence.matching.MatchingResult
+import de.dangoe.imagence.common.{ProcessingInput, Prototype}
+import de.dangoe.imagence.matching.{MatchingResult, Region}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -35,17 +35,17 @@ import de.dangoe.imagence.matching.MatchingResult
 @Prototype
 class DeviationImageWriter() extends ImageObserver {
 
-  def writeTo(processingInput: ProcessingInput, results: Seq[MatchingResult], outputStream: OutputStream): Unit = {
+  def writeTo(processingInput: ProcessingInput, results: Map[Region, MatchingResult], outputStream: OutputStream): Unit = {
     val resultImage = new BufferedImage(processingInput.reference.getWidth, processingInput.reference.getHeight, BufferedImage.TYPE_INT_ARGB)
     val g2d = resultImage.getGraphics.asInstanceOf[Graphics2D]
     g2d.drawImage(processingInput.reference, 0, 0, this)
 
-    results.foreach { r =>
-      val region = r.region
+    results.foreach { entry =>
+      val region = entry._1
       val anchor = region.anchor
       val dimension = region.dimension
 
-      val ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, r.deviation.value.toFloat)
+      val ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, entry._2.deviation.value.toFloat)
       g2d.setComposite(ac)
       g2d.drawImage(processingInput.image.getSubimage(anchor.x, anchor.y, dimension.width, dimension.height), anchor.x, anchor.y, this)
 

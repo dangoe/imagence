@@ -25,115 +25,68 @@ import java.awt.Color
 import de.dangoe.imagence.common._
 import de.dangoe.imagence.matching.Deviation.NoDeviation
 import de.dangoe.imagence.matching.ImplicitConversions._
-import de.dangoe.imagence.matching.Sliceable._
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.math.{pow, sqrt}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-// TODO Draft to be tested or removed
-@Prototype
-class SlicingImageMatching[R <: MatchingResult] private(slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
-                                                       (implicit executionContext: ExecutionContext, timeout: Duration) extends ((ProcessingInput) => (ProcessingInput, Seq[R])) {
-
-  override def apply(processingInput: ProcessingInput): (ProcessingInput, Seq[R]) = {
-    require(processingInput.image.dimension == processingInput.reference.dimension, "Image and reference image must be of same size!")
-
-    val slices = Await.result(Future.sequence(processingInput.image.slice(slicingStrategy)), timeout)
-    val referenceSlices = Await.result(Future.sequence(processingInput.reference.slice(slicingStrategy)), timeout)
-    val slicePairs = for (i <- slices.indices) yield (slices(i), referenceSlices(i))
-
-    (processingInput, Await.result(Future.sequence(for (partition <- slicePairs.grouped(Runtime.getRuntime.availableProcessors())) yield Future {
-      processPartition(partition)
-    }), timeout).flatten.toSeq)
-  }
-
-  private def processPartition(slicePairs: Seq[(Slice, Slice)]): Seq[R] = {
-    for (slicePair <- slicePairs) yield matchingStrategy(slicePair._1, slicePair._2)
-  }
-}
-
-object SlicingImageMatching {
-  def apply[R <: MatchingResult](slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
-                                (implicit executionContext: ExecutionContext, timeout: Duration): SlicingImageMatching[R] =
-    new SlicingImageMatching[R](slicingStrategy, matchingStrategy)
-}
-
 abstract class MatchingStrategy[R <: MatchingResult] {
-  final def apply(slice: Slice, reference: Slice): R = {
-    if (!slice.image.isOfSameSizeAs(reference)) {
+  final def apply(input: ProcessingInput): R = {
+    if (!input.image.isOfSameSizeAs(input.reference)) {
       throw ImageMatchingException("Image dimension differs from reference image!")
     }
-    applyInternal(slice, reference)
+    applyInternal(input)
   }
 
-  protected def applyInternal(slice: Slice, reference: Slice): R
+  protected def applyInternal(input: ProcessingInput): R
 }
 
 trait MatchingResult {
   def context: ImageProcessingContext
   def deviation: Deviation
-  def region: Region
 }
 
 case class ImageMatchingException(message: String) extends RuntimeException(message)
 
-class PixelWiseColorDeviationMatching private(context: ImageProcessingContext) extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
+class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator), context: ImageProcessingContext) extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
 
-  import PixelWiseColorDeviationMatching._
-
-  override protected def applyInternal(slice: Slice, reference: Slice): PixelWiseColorDeviationMatchingResult = {
-    val sliceSize = slice.region.dimension
-    (for (x <- 0 until sliceSize.width;
-          y <- 0 until sliceSize.height;
-          deviation <- calculatePixelDeviation(x, y, slice, reference)) yield deviation) match {
-      case deviationsByLine if deviationsByLine.nonEmpty =>
-        val deviatingPixelCount = deviationsByLine.length
+  override protected def applyInternal(input: ProcessingInput): PixelWiseColorDeviationMatchingResult = {
+    val deviationCalculator = deviationCalculatorFactory(input)
+    val imageSize =input.image.dimension
+    (for (x <- 0 until imageSize.width;
+          y <- 0 until imageSize.height;
+          deviation <- deviationCalculator.calculate(new Color(input.image.getRGB(x, y)), new Color(input.reference.getRGB(x, y)))) yield deviation) match {
+      case deviations if deviations.nonEmpty =>
+        val deviatingPixelCount = deviations.length
         PixelWiseColorDeviationMatchingResult(
           context,
-          Deviation(deviationsByLine.sum / deviatingPixelCount),
-          deviatingPixelCount,
-          slice.region
+          Deviation(deviations.sum / deviations.length),
+          deviatingPixelCount
         )
-      case _ => PixelWiseColorDeviationMatchingResult.withoutDeviation(context, slice.region)
-    }
-  }
-
-  @inline private def calculatePixelDeviation(x: Int, y: Int, slice: Slice, reference: Slice): Option[Double] = {
-    val maxEuclideanDistance = if (context.greyscaleMode) MaxEuclideanDistanceGreyscale else MaxEuclideanDistance
-    euclideanDistance(new Color(slice.getRGB(x, y)), new Color(reference.getRGB(x, y))) / maxEuclideanDistance match {
-      case d if d > 0 => Some(d)
-      case _ => None
-    }
-  }
-
-  @inline private def euclideanDistance(color: Color, referenceColor: Color): Double = {
-    if (context.greyscaleMode) {
-      sqrt(pow(color.getRed - referenceColor.getRed, 2))
-    } else {
-      sqrt(pow(color.getRed - referenceColor.getRed, 2) + pow(color.getGreen - referenceColor.getGreen, 2) + pow(color.getBlue - referenceColor.getBlue, 2))
+      case _ => PixelWiseColorDeviationMatchingResult.withoutDeviation(context)
     }
   }
 }
 
 object PixelWiseColorDeviationMatching {
-  val MaxEuclideanDistance: Double = sqrt(3 * pow(255, 2))
-  val MaxEuclideanDistanceGreyscale: Double = sqrt(pow(255, 2))
 
-  def apply()(implicit context: ImageProcessingContext): PixelWiseColorDeviationMatching = new PixelWiseColorDeviationMatching(context)
+  private final val DefaultDeviationCalculatorFactory: (ProcessingInput) => EuclideanDistanceCalculator =
+    input => new EuclideanDistanceCalculator(input)
+
+  def apply()(implicit context: ImageProcessingContext): PixelWiseColorDeviationMatching =
+    new PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory, context)
+
+  def apply(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))
+           (implicit context: ImageProcessingContext): PixelWiseColorDeviationMatching =
+    new PixelWiseColorDeviationMatching(deviationCalculatorFactory, context)
 }
 
 case class PixelWiseColorDeviationMatchingResult(context: ImageProcessingContext,
                                                  deviation: Deviation,
-                                                 deviantPixelCount: Int,
-                                                 region: Region) extends MatchingResult
+                                                 deviantPixelCount: Int) extends MatchingResult
 
 object PixelWiseColorDeviationMatchingResult {
-  def withoutDeviation(context: ImageProcessingContext, region: Region): PixelWiseColorDeviationMatchingResult = PixelWiseColorDeviationMatchingResult(context, NoDeviation, 0, region)
+  def withoutDeviation(context: ImageProcessingContext): PixelWiseColorDeviationMatchingResult = PixelWiseColorDeviationMatchingResult(context, NoDeviation, 0)
 }
 
 case class Deviation(value: Double) {
