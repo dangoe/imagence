@@ -33,6 +33,7 @@ import de.dangoe.imagence.prototyping.Prototype
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 24.07.16
   */
+// TODO Draft to be tested or removed
 @Prototype
 class DeviationImageWriter() extends ImageObserver {
 

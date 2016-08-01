@@ -20,9 +20,11 @@
   */
 package de.dangoe.imagence.matching
 
+import java.awt.image.BufferedImage
+
 import de.dangoe.imagence.Implicits._
-import de.dangoe.imagence.matching.Slicing.Implicits._
 import de.dangoe.imagence.ProcessingInput
+import de.dangoe.imagence.matching.Slicing.Implicits._
 import de.dangoe.imagence.prototyping.Prototype
 
 import scala.concurrent.duration.Duration
@@ -34,28 +36,32 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   */
 // TODO Draft to be tested or removed
 @Prototype
-class SlicingImageMatching[R <: MatchingResult] private(slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
-                                                       (implicit executionContext: ExecutionContext, timeout: Duration) extends ((ProcessingInput) => (ProcessingInput, Map[Region, R])) {
+class RegionalImageMatcher[R <: MatchingResult] private(slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
+                                                       (implicit executionContext: ExecutionContext, timeout: Duration) extends (ProcessingInput => (ProcessingInput, Seq[RegionalMatchingResult[R]])) {
 
-  override def apply(processingInput: ProcessingInput): (ProcessingInput, Map[Region, R]) = {
+  private final val LevelOfParallelism = Runtime.getRuntime.availableProcessors()
+
+  override def apply(processingInput: ProcessingInput): (ProcessingInput, Seq[RegionalMatchingResult[R]]) = {
     require(processingInput.image.dimension == processingInput.reference.dimension, "Image and reference image must be of same size!")
 
-    val slices = Await.result(Future.sequence(processingInput.image.slice(slicingStrategy)), timeout)
-    val referenceSlices = Await.result(Future.sequence(processingInput.reference.slice(slicingStrategy)), timeout)
-    val slicePairs = for (i <- slices.indices) yield (slices(i), referenceSlices(i))
+    val slicesToBeMatched = slice(processingInput.image) zip slice(processingInput.reference)
 
-    (processingInput, Await.result(Future.sequence(for (partition <- slicePairs.grouped(Runtime.getRuntime.availableProcessors())) yield Future {
-      processPartition(partition)
-    }), timeout).flatten.toMap)
+    (processingInput, Await.result(Future.sequence {
+      for (partition <- slicesToBeMatched.grouped(LevelOfParallelism)) yield Future {
+        processPartition(partition)
+      }
+    }, timeout).flatten.toSeq)
   }
 
-  private def processPartition(slicePairs: Seq[(Slice, Slice)]): Seq[(Region, R)] = {
-    for (slicePair <- slicePairs) yield slicePair._1.region -> matchingStrategy(ProcessingInput(slicePair._1, slicePair._2))
+  private def slice(image: BufferedImage): Seq[Slice] = Await.result(Future.sequence(image.slice(slicingStrategy)), timeout)
+
+  private def processPartition(slicesToBeCompared: Seq[(Slice, Slice)]): Seq[RegionalMatchingResult[R]] = {
+    for (current <- slicesToBeCompared) yield RegionalMatchingResult(current._1.region, matchingStrategy(ProcessingInput(current._1, current._2)))
   }
 }
 
-object SlicingImageMatching {
+object RegionalImageMatcher {
   def apply[R <: MatchingResult](slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
-                                (implicit executionContext: ExecutionContext, timeout: Duration): SlicingImageMatching[R] =
-    new SlicingImageMatching[R](slicingStrategy, matchingStrategy)
+                                (implicit executionContext: ExecutionContext, timeout: Duration): RegionalImageMatcher[R] =
+    new RegionalImageMatcher[R](slicingStrategy, matchingStrategy)
 }

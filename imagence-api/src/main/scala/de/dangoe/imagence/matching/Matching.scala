@@ -32,6 +32,14 @@ trait MatchingResult {
   def deviation: Deviation
 }
 
+trait Regional {
+  def region: Region
+}
+
+case class RegionalMatchingResult[R <: MatchingResult](region: Region, delegate: R) extends MatchingResult with Regional {
+  override def deviation: Deviation = delegate.deviation
+}
+
 trait MatchingStrategy[R <: MatchingResult] {
 
   import de.dangoe.imagence.Implicits._
