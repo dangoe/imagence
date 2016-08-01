@@ -65,7 +65,7 @@ class Scaling private(bounds: Dimension, method: ScalingMethod) extends (Buffere
 
   override def apply(image: BufferedImage): BufferedImage = {
     val scaledSize = method.scale(Dimension(image.getWidth, image.getHeight), bounds)
-    Scalr.resize(image, Method.QUALITY, Mode.FIT_EXACT, scaledSize.width, scaledSize.height)
+    Scalr.resize(image, Method.SPEED, Mode.FIT_EXACT, scaledSize.width, scaledSize.height)
   }
 }
 
