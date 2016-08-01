@@ -86,11 +86,3 @@ object HarmonizeResolutions {
   def apply()(implicit executionContext: ExecutionContext, timeout: Duration): HarmonizeResolutions =
     new HarmonizeResolutions()
 }
-
-object Resolution {
-  def veryLow: Dimension = Dimension(320, 320)
-  def low: Dimension = Dimension(640, 640)
-  def medium: Dimension = Dimension(1024, 1024)
-  def high: Dimension = Dimension(1440, 1440)
-  def veryHigh: Dimension = Dimension(1920, 1920)
-}

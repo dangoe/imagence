@@ -64,4 +64,12 @@ class DimensionTest extends WordSpec with Matchers {
       }
     }
   }
+
+  "A square dimension" can {
+    "be created for a given edge length." in {
+      val dimension = Dimension.square(2)
+
+      dimension shouldBe Dimension(2, 2)
+    }
+  }
 }

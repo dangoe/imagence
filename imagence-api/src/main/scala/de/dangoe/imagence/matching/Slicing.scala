@@ -69,4 +69,8 @@ case class Dimension(width: Int, height: Int) {
   def aspectRatio: Double = width.toDouble / height.toDouble
 }
 
+object Dimension {
+  def square(edgeLength: Int) = Dimension(edgeLength, edgeLength)
+}
+
 case class Region(anchor: Anchor, dimension: Dimension)
