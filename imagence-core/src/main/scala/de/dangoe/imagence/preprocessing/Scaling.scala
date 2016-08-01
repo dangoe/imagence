@@ -70,6 +70,7 @@ class Scaling private(bounds: Dimension, method: ScalingMethod) extends (Buffere
 }
 
 object Scaling {
+  def apply(bounds: Dimension): Scaling = new Scaling(bounds, ToBoundingBox)
   def apply(bounds: Dimension, method: ScalingMethod): Scaling = new Scaling(bounds, method)
 }
 
