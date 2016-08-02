@@ -38,14 +38,14 @@ class MatchingStrategyTest extends WordSpec with Matchers {
   }
 
   "Any matching strategy" must {
-    "throw an ImageMatchingException" when {
+    "throw an MatchingNotPossible exception" when {
       "image size differs from reference image size." in {
         val quadraticImage = readImage("quadratic.png")
         val rectangularImage = readImage("rectangular.png")
 
         val processingInput = ProcessingInput(quadraticImage, rectangularImage)
 
-        intercept[MatchingException] {
+        intercept[MatchingNotPossible] {
           sut(processingInput)
         }
       }

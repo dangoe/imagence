@@ -40,13 +40,13 @@ case class RegionalMatchingResult[R <: MatchingResult](region: Region, delegate:
   override def deviation: Deviation = delegate.deviation
 }
 
-trait MatchingStrategy[R <: MatchingResult] {
+trait MatchingStrategy[R <: MatchingResult] extends (ProcessingInput => R) {
 
   import de.dangoe.imagence.Implicits._
 
   final def apply(input: ProcessingInput): R = {
     if (input.image.dimension != input.reference.dimension) {
-      throw MatchingException("Image dimension differs from reference image!")
+      throw MatchingNotPossible("Image dimension differs from reference image!")
     }
     applyInternal(input)
   }
@@ -54,7 +54,7 @@ trait MatchingStrategy[R <: MatchingResult] {
   protected def applyInternal(input: ProcessingInput): R
 }
 
-case class MatchingException(message: String) extends RuntimeException(message)
+case class MatchingNotPossible(message: String) extends RuntimeException(message)
 
 trait NormalizedDeviationCalculator {
   def calculate(color: Color, referenceColor: Color): Option[Deviation]

@@ -22,10 +22,8 @@ package de.dangoe.imagence.matching
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.Implicits._
 import de.dangoe.imagence.ProcessingInput
 import de.dangoe.imagence.matching.Slicing.Implicits._
-import de.dangoe.imagence.prototyping.Prototype
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -34,19 +32,16 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-// TODO Draft to be tested or removed
-@Prototype
 class RegionalImageMatcher[R <: MatchingResult] private(slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
-                                                       (implicit executionContext: ExecutionContext, timeout: Duration) extends (ProcessingInput => (ProcessingInput, Seq[RegionalMatchingResult[R]])) {
+                                                       (implicit executionContext: ExecutionContext, timeout: Duration)
+  extends MatchingStrategy[RegionalImageMatcherResult[R]] {
 
   private final val LevelOfParallelism = Runtime.getRuntime.availableProcessors()
 
-  override def apply(processingInput: ProcessingInput): (ProcessingInput, Seq[RegionalMatchingResult[R]]) = {
-    require(processingInput.image.dimension == processingInput.reference.dimension, "Image and reference image must be of same size!")
+  override def applyInternal(input: ProcessingInput): RegionalImageMatcherResult[R] = {
+    val slicesToBeMatched = slice(input.image) zip slice(input.reference)
 
-    val slicesToBeMatched = slice(processingInput.image) zip slice(processingInput.reference)
-
-    (processingInput, Await.result(Future.sequence {
+    RegionalImageMatcherResult(input, Await.result(Future.sequence {
       for (partition <- slicesToBeMatched.grouped(LevelOfParallelism)) yield Future {
         processPartition(partition)
       }
@@ -56,7 +51,10 @@ class RegionalImageMatcher[R <: MatchingResult] private(slicingStrategy: Slicing
   private def slice(image: BufferedImage): Seq[Slice] = Await.result(Future.sequence(image.slice(slicingStrategy)), timeout)
 
   private def processPartition(slicesToBeCompared: Seq[(Slice, Slice)]): Seq[RegionalMatchingResult[R]] = {
-    for (current <- slicesToBeCompared) yield RegionalMatchingResult(current._1.region, matchingStrategy(ProcessingInput(current._1, current._2)))
+    for (current <- slicesToBeCompared) yield {
+      val matchingResult = matchingStrategy(ProcessingInput(current._1, current._2))
+      RegionalMatchingResult(current._1.region, matchingResult)
+    }
   }
 }
 
@@ -64,4 +62,24 @@ object RegionalImageMatcher {
   def apply[R <: MatchingResult](slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
                                 (implicit executionContext: ExecutionContext, timeout: Duration): RegionalImageMatcher[R] =
     new RegionalImageMatcher[R](slicingStrategy, matchingStrategy)
+}
+
+case class RegionalImageMatcherResult[R <: MatchingResult](processingInput: ProcessingInput,
+                                                           regionalMatchingResults: Seq[RegionalMatchingResult[R]]) extends MatchingResult {
+
+  import de.dangoe.imagence.Implicits._
+  import RegionalImageMatcherResult._
+
+  override def deviation: Deviation = {
+    val averageDeviation = if (regionalMatchingResults.nonEmpty) {
+      regionalMatchingResults.map(r => r.deviation.value).sum / regionalMatchingResults.length
+    } else 0
+    val inputArea = calculateArea(processingInput.image)
+    val matchingResultsArea = regionalMatchingResults.map(r => calculateArea(r.region)).sum
+    Deviation(averageDeviation * matchingResultsArea / inputArea)
+  }
+}
+
+object RegionalImageMatcherResult {
+  private def calculateArea(obj: {def dimension: Dimension}): Double = obj.dimension.width * obj.dimension.height
 }
