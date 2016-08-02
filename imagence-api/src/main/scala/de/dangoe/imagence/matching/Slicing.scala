@@ -43,14 +43,14 @@ object Slice {
 }
 
 class Sliceable(image: BufferedImage) {
-  def slice(strategy: SlicingStrategy): Seq[Future[Slice]] = strategy.slice(image)
+  def slice(strategy: Slicer): Seq[Future[Slice]] = strategy.slice(image)
 }
 
 trait SliceSize
 
 trait SliceSizeCalculation extends (Dimension => Dimension with SliceSize)
 
-trait SlicingStrategy {
+trait Slicer {
   def slice(image: BufferedImage): Seq[Future[Slice]]
 }
 

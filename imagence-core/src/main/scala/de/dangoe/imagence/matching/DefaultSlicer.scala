@@ -31,7 +31,7 @@ import scala.math.{ceil, min}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
   */
-class DefaultSlicingStrategy private(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext) extends SlicingStrategy {
+class DefaultSlicer private(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext) extends Slicer {
 
   override def slice(image: BufferedImage): Seq[Future[Slice]] = {
     val imageSize = image.dimension
@@ -50,9 +50,9 @@ class DefaultSlicingStrategy private(sliceSizeCalculation: SliceSizeCalculation)
   }
 }
 
-object DefaultSlicingStrategy {
-  def apply(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext): DefaultSlicingStrategy =
-    new DefaultSlicingStrategy(sliceSizeCalculation)
+object DefaultSlicer {
+  def apply(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext): DefaultSlicer =
+    new DefaultSlicer(sliceSizeCalculation)
 }
 
 case class FixedSliceSize(value: Dimension) extends SliceSizeCalculation {

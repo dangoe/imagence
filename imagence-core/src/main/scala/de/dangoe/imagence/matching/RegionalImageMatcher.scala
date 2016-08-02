@@ -32,9 +32,9 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class RegionalImageMatcher[R <: MatchingResult] private(slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
+class RegionalImageMatcher[R <: MatchingResult] private(slicer: Slicer, matcher: Matcher[R])
                                                        (implicit executionContext: ExecutionContext, timeout: Duration)
-  extends MatchingStrategy[RegionalImageMatcherResult[R]] {
+  extends Matcher[RegionalImageMatcherResult[R]] {
 
   private final val LevelOfParallelism = Runtime.getRuntime.availableProcessors()
 
@@ -48,20 +48,20 @@ class RegionalImageMatcher[R <: MatchingResult] private(slicingStrategy: Slicing
     }, timeout).flatten.toSeq)
   }
 
-  private def slice(image: BufferedImage): Seq[Slice] = Await.result(Future.sequence(image.slice(slicingStrategy)), timeout)
+  private def slice(image: BufferedImage): Seq[Slice] = Await.result(Future.sequence(image.slice(slicer)), timeout)
 
   private def processPartition(slicesToBeCompared: Seq[(Slice, Slice)]): Seq[RegionalMatchingResult[R]] = {
     for (current <- slicesToBeCompared) yield {
-      val matchingResult = matchingStrategy(ProcessingInput(current._1, current._2))
+      val matchingResult = matcher(ProcessingInput(current._1, current._2))
       RegionalMatchingResult(current._1.region, matchingResult)
     }
   }
 }
 
 object RegionalImageMatcher {
-  def apply[R <: MatchingResult](slicingStrategy: SlicingStrategy, matchingStrategy: MatchingStrategy[R])
+  def apply[R <: MatchingResult](slicer: Slicer, matcher: Matcher[R])
                                 (implicit executionContext: ExecutionContext, timeout: Duration): RegionalImageMatcher[R] =
-    new RegionalImageMatcher[R](slicingStrategy, matchingStrategy)
+    new RegionalImageMatcher[R](slicer, matcher)
 }
 
 case class RegionalImageMatcherResult[R <: MatchingResult](processingInput: ProcessingInput,

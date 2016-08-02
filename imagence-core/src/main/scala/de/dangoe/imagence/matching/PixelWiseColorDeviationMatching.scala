@@ -31,7 +31,7 @@ import de.dangoe.imagence.matching.Deviation.NoDeviation
   * @since 23.07.16
   */
 class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))
-  extends MatchingStrategy[PixelWiseColorDeviationMatchingResult] {
+  extends Matcher[PixelWiseColorDeviationMatchingResult] {
 
   override protected def applyInternal(input: ProcessingInput): PixelWiseColorDeviationMatchingResult = {
     val deviationCalculator = deviationCalculatorFactory(input)

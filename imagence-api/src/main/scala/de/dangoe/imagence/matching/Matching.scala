@@ -40,7 +40,7 @@ case class RegionalMatchingResult[R <: MatchingResult](region: Region, delegate:
   override def deviation: Deviation = delegate.deviation
 }
 
-trait MatchingStrategy[R <: MatchingResult] extends (ProcessingInput => R) {
+trait Matcher[R <: MatchingResult] extends (ProcessingInput => R) {
 
   import de.dangoe.imagence.Implicits._
 

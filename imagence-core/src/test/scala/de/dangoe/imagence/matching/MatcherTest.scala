@@ -29,15 +29,15 @@ import org.scalatest.{Matchers, WordSpec}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class MatchingStrategyTest extends WordSpec with Matchers {
+class MatcherTest extends WordSpec with Matchers {
 
-  val sut = new MatchingStrategy[MatchingResult] {
+  val sut = new Matcher[MatchingResult] {
     override protected def applyInternal(input: ProcessingInput): MatchingResult = new MatchingResult {
       override def deviation: Deviation = NoDeviation
     }
   }
 
-  "Any matching strategy" must {
+  "Any matcher" must {
     "throw an MatchingNotPossible exception" when {
       "image size differs from reference image size." in {
         val quadraticImage = readImage("quadratic.png")
