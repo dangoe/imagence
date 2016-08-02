@@ -24,6 +24,8 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 
 import de.dangoe.imagence.Implicits._
+import de.dangoe.imagence.Testhelpers
+import de.dangoe.imagence.Testhelpers.createImage
 import de.dangoe.imagence.matching.Dimension
 import org.scalatest.{Matchers, WordSpec}
 
@@ -43,7 +45,7 @@ class GreyscaleConversionTest extends WordSpec with Matchers {
 
   "Any color" can {
     "be converted to greyscale using averaging method." in {
-      val image = GreyscaleConversion(Averaging).apply(createTestImage(Dimension(1, 1), color))
+      val image = GreyscaleConversion(Averaging).apply(createImage(Dimension(1, 1), color))
       val backgroundColor = new Color(image.getRGB(0, 0), true)
 
       image.dimension shouldBe Dimension(1, 1)
@@ -51,7 +53,7 @@ class GreyscaleConversionTest extends WordSpec with Matchers {
     }
 
     "be converted to greyscale using desaturation method." in {
-      val image = GreyscaleConversion(Desaturation).apply(createTestImage(Dimension(1, 1), color))
+      val image = GreyscaleConversion(Desaturation).apply(createImage(Dimension(1, 1), color))
       val backgroundColor = new Color(image.getRGB(0, 0), true)
 
       image.dimension shouldBe Dimension(1, 1)
@@ -59,19 +61,11 @@ class GreyscaleConversionTest extends WordSpec with Matchers {
     }
 
     "be converted to greyscale using luma method." in {
-      val image = GreyscaleConversion(Luma).apply(createTestImage(Dimension(1, 1), color))
+      val image = GreyscaleConversion(Luma).apply(createImage(Dimension(1, 1), color))
       val backgroundColor = new Color(image.getRGB(0, 0), true)
 
       image.dimension shouldBe Dimension(1, 1)
       backgroundColor.getRGB shouldBe -7303024
     }
-  }
-
-  private def createTestImage(dimension: Dimension, backgroundColor: Color): BufferedImage = {
-    val image = new BufferedImage(dimension.width, dimension.height, BufferedImage.TYPE_INT_ARGB)
-    val graphics = image.getGraphics
-    graphics.setColor(backgroundColor)
-    graphics.asInstanceOf[Graphics2D].fillRect(0, 0, dimension.width, dimension.height)
-    image
   }
 }

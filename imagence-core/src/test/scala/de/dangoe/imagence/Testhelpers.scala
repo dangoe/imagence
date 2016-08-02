@@ -20,10 +20,12 @@
   */
 package de.dangoe.imagence
 
+import java.awt.{Color, Graphics2D}
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
 import de.dangoe.imagence.Implicits._
+import de.dangoe.imagence.matching.Dimension
 import org.scalatest.matchers.{MatchResult, Matcher}
 
 /**
@@ -50,4 +52,12 @@ object Testhelpers {
   def showTheSameAs(image: BufferedImage) = ImageShowsTheSameMatcher(image)
 
   def readImage(resourceName: String): BufferedImage = ImageIO.read(getClass.getResourceAsStream(resourceName))
+
+  def createImage(dimension: Dimension, backgroundColor: Color, imageType:Int = BufferedImage.TYPE_INT_ARGB): BufferedImage = {
+    val image = new BufferedImage(dimension.width, dimension.height, imageType)
+    val graphics = image.getGraphics
+    graphics.setColor(backgroundColor)
+    graphics.asInstanceOf[Graphics2D].fillRect(0, 0, dimension.width, dimension.height)
+    image
+  }
 }
