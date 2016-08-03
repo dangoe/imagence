@@ -20,43 +20,48 @@
   */
 package de.dangoe.imagence.io
 
-import java.awt.image.{BufferedImage, ImageObserver}
-import java.awt.{AlphaComposite, Color, Graphics2D, Image}
+import java.awt.image.BufferedImage
+import java.awt.{AlphaComposite, Color, Graphics2D}
 import java.io.OutputStream
 import javax.imageio.ImageIO
 
-import de.dangoe.imagence.ProcessingInput
-import de.dangoe.imagence.matching.{MatchingResult, Region}
-import de.dangoe.imagence.prototyping.Prototype
+import de.dangoe.imagence.matching.{MatchingResult, Regional}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 24.07.16
   */
-// TODO Draft to be tested or removed
-@Prototype
-class DeviationImageWriter() extends ImageObserver {
+class DifferenceImageWriter(imageFormat: ImageFormat)
+  extends MatchingResultWriter[MatchingResult with Regional] {
 
-  def writeTo(processingInput: ProcessingInput, results: Map[Region, MatchingResult], outputStream: OutputStream): Unit = {
-    val resultImage = new BufferedImage(processingInput.reference.getWidth, processingInput.reference.getHeight, BufferedImage.TYPE_INT_ARGB)
+  def write(input: DifferenceImageData[MatchingResult with Regional], outputStream: OutputStream): Unit = {
+    val processingInput = input.processingInput
+    val matchingResults = input.matchingResults
+
+    val reference = processingInput.reference
+    val resultImage = new BufferedImage(reference.getWidth, reference.getHeight, BufferedImage.TYPE_INT_ARGB)
     val g2d = resultImage.getGraphics.asInstanceOf[Graphics2D]
-    g2d.drawImage(processingInput.reference, 0, 0, this)
+    g2d.drawImage(processingInput.reference, 0, 0, null)
 
-    results.foreach { entry =>
-      val region = entry._1
+    matchingResults.foreach { result =>
+      val region = result.region
       val anchor = region.anchor
       val dimension = region.dimension
 
-      val ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, entry._2.deviation.value.toFloat)
+      val ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, result.deviation.value.toFloat)
       g2d.setComposite(ac)
-      g2d.drawImage(processingInput.image.getSubimage(anchor.x, anchor.y, dimension.width, dimension.height), anchor.x, anchor.y, this)
+      g2d.drawImage(processingInput.image.getSubimage(anchor.x, anchor.y, dimension.width, dimension.height), anchor.x, anchor.y, null)
 
       g2d.setColor(new Color(255, 0, 0))
       g2d.fillRect(anchor.x, anchor.y, dimension.width, dimension.height)
     }
 
-    ImageIO.write(resultImage, "png", outputStream)
+    ImageIO.write(resultImage, imageFormat.productPrefix, outputStream)
   }
-
-  override def imageUpdate(img: Image, infoflags: Int, x: Int, y: Int, width: Int, height: Int): Boolean = true
 }
+
+trait ImageFormat {
+  def productPrefix: String
+}
+case object `jpg` extends ImageFormat
+case object `png` extends ImageFormat
