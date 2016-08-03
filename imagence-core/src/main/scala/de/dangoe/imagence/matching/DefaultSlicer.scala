@@ -53,6 +53,11 @@ class DefaultSlicer private(sliceSizeCalculation: SliceSizeCalculation)(implicit
 object DefaultSlicer {
   def apply(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext): DefaultSlicer =
     new DefaultSlicer(sliceSizeCalculation)
+
+  def withFixedSliceSizeOf(dimension: Dimension)(implicit executionContext: ExecutionContext): DefaultSlicer =
+    new DefaultSlicer(FixedSliceSize(dimension))
+  def withPercentageSliceSizeOf(factor: Double)(implicit executionContext: ExecutionContext): DefaultSlicer =
+    new DefaultSlicer(PercentageSliceSize(factor))
 }
 
 case class FixedSliceSize(value: Dimension) extends SliceSizeCalculation {

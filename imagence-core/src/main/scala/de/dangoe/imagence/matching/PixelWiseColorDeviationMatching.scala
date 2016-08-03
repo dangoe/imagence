@@ -55,8 +55,8 @@ object PixelWiseColorDeviationMatching {
   private final val DefaultDeviationCalculatorFactory: (ProcessingInput) => EuclideanDistanceCalculator =
     input => new EuclideanDistanceCalculator(input)
 
-  def apply(): PixelWiseColorDeviationMatching =
-    new PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
+  final val DefaultPixelWiseColorDeviationMatching = new PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
+
   def apply(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator)): PixelWiseColorDeviationMatching =
     new PixelWiseColorDeviationMatching(deviationCalculatorFactory)
 }
