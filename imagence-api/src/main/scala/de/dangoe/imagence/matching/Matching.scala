@@ -69,3 +69,7 @@ object Deviation {
   val NoDeviation = Deviation(0)
   val MaximumDeviation = Deviation(1)
 }
+
+object Implicits {
+  implicit def deviationOrdering: Ordering[Deviation] = Ordering.fromLessThan(_.value < _.value)
+}
