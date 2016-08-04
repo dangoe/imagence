@@ -50,29 +50,31 @@ class DeviationTest extends WordSpec with Matchers {
     }
   }
 
-  it should {
+  it when {
 
     import Implicits._
 
-    "be equal to another deviation if its value is equal." in {
-      val deviation = Deviation(0.5)
-      val other = Deviation(0.5)
+    "sorted" should {
+      "be equal to another deviation if its value is equal." in {
+        val deviation = Deviation(0.5)
+        val other = Deviation(0.5)
 
-      Seq(deviation, other).sorted shouldBe Seq(deviation, other)
-    }
+        Seq(deviation, other).sorted shouldBe Seq(deviation, other)
+      }
 
-    "be larger than another deviation if its value is larger." in {
-      val deviation = Deviation(0.5)
-      val other = Deviation(0.25)
+      "be larger than another deviation if its value is larger." in {
+        val deviation = Deviation(0.5)
+        val other = Deviation(0.25)
 
-      Seq(deviation, other).sorted shouldBe Seq(other, deviation)
-    }
+        Seq(deviation, other).sorted shouldBe Seq(other, deviation)
+      }
 
-    "be smaller than another deviation if its value is smaller." in {
-      val deviation = Deviation(0.25)
-      val other = Deviation(0.5)
+      "be smaller than another deviation if its value is smaller." in {
+        val deviation = Deviation(0.25)
+        val other = Deviation(0.5)
 
-      Seq(other, deviation).sorted shouldBe Seq(deviation, other)
+        Seq(other, deviation).sorted shouldBe Seq(deviation, other)
+      }
     }
   }
 }
