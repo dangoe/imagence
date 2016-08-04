@@ -28,8 +28,8 @@ import de.dangoe.imagence.matching.Dimension
 import org.imgscalr.Scalr
 import org.imgscalr.Scalr.{Method, Mode}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -74,8 +74,7 @@ object Scaling {
   def apply(bounds: Dimension, method: ScalingMethod): Scaling = new Scaling(bounds, method)
 }
 
-class HarmonizeResolutions private()(implicit executionContext: ExecutionContext, timeout: Duration)
-  extends (ProcessingInput => ProcessingInput) {
+class HarmonizeResolutions private() extends (ProcessingInput => ProcessingInput) {
 
   override def apply(input: ProcessingInput): ProcessingInput =
     ProcessingInput(Scaling(input.reference.dimension, Exact).apply(input.image), input.reference)
