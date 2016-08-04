@@ -10,6 +10,31 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <url>https://github.com/dangoe/imagence</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <email>daniel.goetten@googlemail.com</email>
+            <name>Daniel Götten</name>
+            <url>https://github.com/dangoe</url>
+            <id>dangoe</id>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/dangoe/imagence</url>
+        <connection>scm:git:git://github.com/dangoe/imagence.git</connection>
+        <developerConnection>scm:git:git@github.com:dangoe/imagence.git</developerConnection>
+    </scm>
+
     <modules>
         <module>imagence-core</module>
         <module>imagence-api</module>
