@@ -20,8 +20,8 @@
   */
 package de.dangoe.imagence
 
-import java.awt.{Color, Graphics2D}
 import java.awt.image.BufferedImage
+import java.awt.{Color, Graphics2D}
 import javax.imageio.ImageIO
 
 import de.dangoe.imagence.Implicits._
@@ -30,30 +30,33 @@ import org.scalatest.matchers.{MatchResult, Matcher}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 15.07.16
+  * @since 04.08.16
   */
-object Testhelpers {
+package object testsupport {
+
+  trait ImageReader {
+    def readImage(imageResourceName: String): BufferedImage = ImageIO.read(getClass.getResourceAsStream(imageResourceName))
+  }
 
   case class ImageShowsTheSameMatcher(image: BufferedImage) extends Matcher[BufferedImage] {
 
-    def apply(otherImage: BufferedImage): MatchResult = {
+    def apply(otherImage: BufferedImage): MatchResult =  {
       MatchResult(otherImage.dimension == image.dimension && sameRGBValuesPerPixel(otherImage),
-        "Images are not the same!",
-        "Images are not the same!")
+        "Images are different!",
+        "Images are the same but shouldn't have been!")
     }
 
     private def sameRGBValuesPerPixel(otherImage: BufferedImage): Boolean = {
       (for (x <- 0 until otherImage.getWidth;
             y <- 0 until otherImage.getHeight
-      ) yield (x, y)).forall(p => image.getRGB(p._1, p._2) == otherImage.getRGB(p._1, p._2))
+            if image.getRGB(x, y) != otherImage.getRGB(x, y))
+        yield (x, y)).isEmpty
     }
   }
 
   def showTheSameAs(image: BufferedImage) = ImageShowsTheSameMatcher(image)
 
-  def readImage(resourceName: String): BufferedImage = ImageIO.read(getClass.getResourceAsStream(resourceName))
-
-  def createImage(dimension: Dimension, backgroundColor: Color, imageType:Int = BufferedImage.TYPE_INT_ARGB): BufferedImage = {
+  def createImage(dimension: Dimension, backgroundColor: Color, imageType: Int = BufferedImage.TYPE_INT_ARGB): BufferedImage = {
     val image = new BufferedImage(dimension.width, dimension.height, imageType)
     val graphics = image.getGraphics
     graphics.setColor(backgroundColor)

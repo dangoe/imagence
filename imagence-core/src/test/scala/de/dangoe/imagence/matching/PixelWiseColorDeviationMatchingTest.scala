@@ -21,8 +21,8 @@
 package de.dangoe.imagence.matching
 
 import de.dangoe.imagence.ProcessingInput
-import de.dangoe.imagence.Testhelpers._
 import de.dangoe.imagence.matching.PixelWiseColorDeviationMatching._
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext
@@ -33,7 +33,7 @@ import scala.math.BigDecimal.RoundingMode
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers {
+class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers with ImageReader {
 
   implicit val executionContext = ExecutionContext.global
   implicit val timeout = 15 seconds

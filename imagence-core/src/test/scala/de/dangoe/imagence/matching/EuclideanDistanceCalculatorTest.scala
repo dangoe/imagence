@@ -20,11 +20,11 @@
   */
 package de.dangoe.imagence.matching
 
+import java.awt.Color
 import java.awt.image.BufferedImage
-import java.awt.{Color, Graphics2D}
 
-import de.dangoe.imagence.Testhelpers.createImage
-import de.dangoe.imagence.{ProcessingInput, Testhelpers}
+import de.dangoe.imagence.ProcessingInput
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.math.BigDecimal.RoundingMode

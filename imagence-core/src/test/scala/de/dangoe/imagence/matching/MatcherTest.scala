@@ -21,15 +21,15 @@
 package de.dangoe.imagence.matching
 
 import de.dangoe.imagence.ProcessingInput
-import de.dangoe.imagence.Testhelpers._
 import de.dangoe.imagence.matching.Deviation.NoDeviation
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class MatcherTest extends WordSpec with Matchers {
+class MatcherTest extends WordSpec with Matchers with ImageReader {
 
   val sut = new Matcher[MatchingResult] {
     override protected def applyInternal(input: ProcessingInput): MatchingResult = new MatchingResult {

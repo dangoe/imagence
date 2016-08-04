@@ -20,9 +20,9 @@
   */
 package de.dangoe.imagence.matching
 
-import de.dangoe.imagence.Testhelpers._
 import de.dangoe.imagence.matching.Anchor._
 import de.dangoe.imagence.matching.Slicing.Implicits._
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.duration._
@@ -32,7 +32,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
   */
-class DefaultSlicerTest extends WordSpec with Matchers {
+class DefaultSlicerTest extends WordSpec with Matchers with ImageReader {
 
   import DefaultSlicerTest._
 
