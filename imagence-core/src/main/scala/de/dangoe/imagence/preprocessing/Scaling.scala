@@ -77,9 +77,8 @@ object Scaling {
 class HarmonizeResolutions private()(implicit executionContext: ExecutionContext, timeout: Duration)
   extends (ProcessingInput => ProcessingInput) {
 
-  override def apply(input: ProcessingInput): ProcessingInput = {
-    ProcessingInput(Await.result(Future(Scaling(input.reference.dimension, Exact).apply(input.image)), timeout), input.reference)
-  }
+  override def apply(input: ProcessingInput): ProcessingInput =
+    ProcessingInput(Scaling(input.reference.dimension, Exact).apply(input.image), input.reference)
 }
 
 object HarmonizeResolutions {
