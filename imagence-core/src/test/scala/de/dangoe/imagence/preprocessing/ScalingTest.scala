@@ -42,21 +42,21 @@ class ScalingTest extends WordSpec with Matchers {
   "Scaling" should {
     "use to bounding box as default strategy" when {
       "image is in landscape format." in {
-        val resized = Scaling(downscalingBounds).apply(landscapeFormatImage)
+        val resized = Scaling.toBoundingBox(downscalingBounds).apply(landscapeFormatImage)
 
         resized.getWidth shouldBe 40
         resized.getHeight shouldBe 30
       }
 
       "image is in portrait format." in {
-        val resized = Scaling(downscalingBounds).apply(portraitFormatImage)
+        val resized = Scaling.toBoundingBox(downscalingBounds).apply(portraitFormatImage)
 
         resized.getWidth shouldBe 30
         resized.getHeight shouldBe 40
       }
 
       "image is in square format." in {
-        val resized = Scaling(downscalingBounds).apply(squareFormatImage)
+        val resized = Scaling.toBoundingBox(downscalingBounds).apply(squareFormatImage)
 
         resized.getWidth shouldBe 40
         resized.getHeight shouldBe 40

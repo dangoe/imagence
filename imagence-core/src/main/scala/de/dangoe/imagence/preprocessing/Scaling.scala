@@ -35,6 +35,12 @@ import scala.concurrent.duration.Duration
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 30.07.16
   */
+sealed trait ScalingQuality
+case object VeryHigh extends ScalingQuality
+case object High extends ScalingQuality
+case object Normal extends ScalingQuality
+case object Speed extends ScalingQuality
+
 sealed trait ScalingMethod {
   private[preprocessing] def scale(dimension: Dimension, bounds: Dimension): Dimension
 }
@@ -61,27 +67,45 @@ case object Exact extends ScalingMethod {
     Dimension(bounds.width, bounds.height)
 }
 
-class Scaling private(bounds: Dimension, method: ScalingMethod) extends (BufferedImage => BufferedImage) {
+class Scaling private(bounds: Dimension, method: ScalingMethod)
+                     (implicit scalingQuality: ScalingQuality) extends (BufferedImage => BufferedImage) {
+
+  import Scaling._
 
   override def apply(image: BufferedImage): BufferedImage = {
     val scaledSize = method.scale(Dimension(image.getWidth, image.getHeight), bounds)
-    Scalr.resize(image, Method.SPEED, Mode.FIT_EXACT, scaledSize.width, scaledSize.height)
+    Scalr.resize(image, toScalingMethod(scalingQuality), Mode.FIT_EXACT, scaledSize.width, scaledSize.height)
   }
 }
 
 object Scaling {
-  def apply(bounds: Dimension): Scaling = new Scaling(bounds, ToBoundingBox)
-  def apply(bounds: Dimension, method: ScalingMethod): Scaling = new Scaling(bounds, method)
+  def toBoundingBox(bounds: Dimension)(implicit scalingQuality: ScalingQuality = Speed): Scaling = Scaling(bounds, ToBoundingBox)
+  def apply(bounds: Dimension, method: ScalingMethod)(implicit scalingQuality: ScalingQuality = Speed): Scaling = new Scaling(bounds, method)
+
+  private def toScalingMethod(scalingQuality: ScalingQuality) : Method = scalingQuality match {
+    case VeryHigh => Method.ULTRA_QUALITY
+    case High => Method.QUALITY
+    case Normal => Method.BALANCED
+    case Speed => Method.SPEED
+  }
 }
 
-class HarmonizeResolutions private() extends (ProcessingInput => ProcessingInput) {
+class HarmonizeResolutions private(maybeReferenceScaling: Option[Scaling])
+                                  (implicit scalingQuality: ScalingQuality) extends (ProcessingInput => ProcessingInput) {
 
-  override def apply(input: ProcessingInput): ProcessingInput =
-    ProcessingInput(Scaling(input.reference.dimension, Exact).apply(input.image), input.reference)
+  override def apply(input: ProcessingInput): ProcessingInput = {
+    val scaledReference = maybeReferenceScaling match {
+      case Some(referenceScaling) => referenceScaling.apply(input.reference)
+      case None => input.reference
+    }
+    ProcessingInput(Scaling(scaledReference.dimension, Exact).apply(input.image), scaledReference)
+  }
 }
 
 object HarmonizeResolutions {
 
-  def apply()(implicit executionContext: ExecutionContext, timeout: Duration): HarmonizeResolutions =
-    new HarmonizeResolutions()
+  def byScalingToReference()(implicit executionContext: ExecutionContext, timeout: Duration, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
+    new HarmonizeResolutions(None)
+  def using(referenceScaling: Scaling)(implicit executionContext: ExecutionContext, timeout: Duration, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
+    new HarmonizeResolutions(Some(referenceScaling))
 }

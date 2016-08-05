@@ -47,7 +47,7 @@ class DifferenceImageWriterTest extends WordSpec with Matchers with ImageReader 
       "a specific erroneous image und reference image is used." in {
         val processingInput = ProcessingInput(readImage("pattern_erroneous.png"), readImage("pattern.png"))
 
-        val result = HarmonizeResolutions()
+        val result = HarmonizeResolutions.byScalingToReference()
           .andThen(RegionalImageMatcher(
             DefaultSlicer.withFixedSliceSizeOf(Dimension.square(23)),
             DefaultPixelWiseColorDeviationMatching)

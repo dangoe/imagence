@@ -76,7 +76,7 @@ class GreyscaleConversion private(method: GreyscaleMethod)
 }
 
 object GreyscaleConversion {
-  def apply(method: GreyscaleMethod)(implicit executionContext: ExecutionContext, timeout: Duration): GreyscaleConversion = new GreyscaleConversion(method)
+  def using(method: GreyscaleMethod)(implicit executionContext: ExecutionContext, timeout: Duration): GreyscaleConversion = new GreyscaleConversion(method)
 }
 
 object NativeGreyscaleConversion extends (BufferedImage => BufferedImage) {
