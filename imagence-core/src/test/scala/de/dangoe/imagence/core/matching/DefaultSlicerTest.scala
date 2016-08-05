@@ -47,7 +47,7 @@ class DefaultSlicerTest extends WordSpec with Matchers with ImageReader {
   "Default slicing with percentage slice size" should {
     "slice an quadratic image in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(quadraticImage.slice(DefaultSlicer(PercentageSliceSize(0.5)))), timeout)
+        val slices = quadraticImage.slice(DefaultSlicer(PercentageSliceSize(0.5)))
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("quadratic_11.png"))
@@ -59,7 +59,7 @@ class DefaultSlicerTest extends WordSpec with Matchers with ImageReader {
 
     "slice an rectangular image with even edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(rectangularImage.slice(DefaultSlicer(PercentageSliceSize(0.5)))), timeout)
+        val slices = rectangularImage.slice(DefaultSlicer(PercentageSliceSize(0.5)))
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_11.png"))
@@ -71,7 +71,7 @@ class DefaultSlicerTest extends WordSpec with Matchers with ImageReader {
 
     "slice an rectangular image with odd edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = Await.result(Future.sequence(rectangularWithOddEdgeLengthsImage.slice(DefaultSlicer(PercentageSliceSize(0.5)))), timeout)
+        val slices = rectangularWithOddEdgeLengthsImage.slice(DefaultSlicer(PercentageSliceSize(0.5)))
 
         slices.length shouldBe 4
         slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))

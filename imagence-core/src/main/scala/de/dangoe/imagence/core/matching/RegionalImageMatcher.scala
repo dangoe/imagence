@@ -42,15 +42,14 @@ class RegionalImageMatcher[R <: MatchingResult] private(slicer: Slicer, matcher:
 
   override def applyInternal(input: ProcessingInput): RegionalImageMatcherResult[R] = {
     val slicesToBeMatched = slice(input.image) zip slice(input.reference)
-
     RegionalImageMatcherResult(input, Await.result(Future.sequence {
-      for (partition <- slicesToBeMatched.grouped(LevelOfParallelism)) yield Future {
+      for (partition <- slicesToBeMatched.grouped((slicesToBeMatched.length + 2) / LevelOfParallelism)) yield Future {
         processPartition(partition)
       }
     }, timeout).flatten.toSeq)
   }
 
-  private def slice(image: BufferedImage): Seq[Slice] = Await.result(Future.sequence(image.slice(slicer)), timeout)
+  private def slice(image: BufferedImage): Seq[Slice] = image.slice(slicer)
 
   private def processPartition(slicesToBeCompared: Seq[(Slice, Slice)]): Seq[RegionalMatchingResult[R]] = {
     for (current <- slicesToBeCompared) yield {

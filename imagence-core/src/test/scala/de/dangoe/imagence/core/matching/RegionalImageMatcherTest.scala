@@ -80,8 +80,8 @@ class RegionalImageMatcherTest extends WordSpec with Matchers with MockitoSugar 
       val referenceSlice1 = mockSlice(mockImage(160, 240), None)
       val referenceSlice2 = mockSlice(mockImage(160, 240), None)
 
-      when(slicer.slice(image)).thenReturn(Seq(Future(imageSlice1), Future(imageSlice2)))
-      when(slicer.slice(reference)).thenReturn(Seq(Future(referenceSlice1), Future(referenceSlice2)))
+      when(slicer.slice(image)).thenReturn(Seq(imageSlice1, imageSlice2))
+      when(slicer.slice(reference)).thenReturn(Seq(referenceSlice1, referenceSlice2))
 
       val input = ProcessingInput(image, reference)
 
@@ -103,8 +103,8 @@ class RegionalImageMatcherTest extends WordSpec with Matchers with MockitoSugar 
       val matchingResult1 = mock[MatchingResult]
       val matchingResult2 = mock[MatchingResult]
 
-      when(slicer.slice(image)).thenReturn(Seq(Future(imageSlice1), Future(imageSlice2)))
-      when(slicer.slice(reference)).thenReturn(Seq(Future(referenceSlice1), Future(referenceSlice2)))
+      when(slicer.slice(image)).thenReturn(Seq(imageSlice1, imageSlice2))
+      when(slicer.slice(reference)).thenReturn(Seq(referenceSlice1, referenceSlice2))
       when(matcher.apply(ProcessingInput(imageSlice1.image, referenceSlice1.image))).thenReturn(matchingResult1)
       when(matcher.apply(ProcessingInput(imageSlice2.image, referenceSlice2.image))).thenReturn(matchingResult2)
 
