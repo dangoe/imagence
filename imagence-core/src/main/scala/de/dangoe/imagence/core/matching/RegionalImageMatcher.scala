@@ -29,6 +29,7 @@ import de.dangoe.imagence.api.matching._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.math.max
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -43,7 +44,7 @@ class RegionalImageMatcher[R <: MatchingResult] private(slicer: Slicer, matcher:
   override def applyInternal(input: ProcessingInput): RegionalImageMatcherResult[R] = {
     val slicesToBeMatched = slice(input.image) zip slice(input.reference)
     RegionalImageMatcherResult(input, Await.result(Future.sequence {
-      for (partition <- slicesToBeMatched.grouped((slicesToBeMatched.length + 2) / LevelOfParallelism)) yield Future {
+      for (partition <- slicesToBeMatched.grouped(max(1, slicesToBeMatched.length / LevelOfParallelism))) yield Future {
         processPartition(partition)
       }
     }, timeout).flatten.toSeq)
