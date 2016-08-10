@@ -34,20 +34,35 @@ import de.dangoe.imagence.api.matching.{Deviation, Matcher, MatchingResult, Norm
 class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))
   extends Matcher[PixelWiseColorDeviationMatchingResult] {
 
+  private class DeviationAggregate {
+
+    private var sum: Double = 0
+    private var pixelCount: Int = 0
+
+    def add(deviation: Deviation): Unit = {
+      sum += deviation.value
+      pixelCount = pixelCount + 1
+    }
+
+    def asMatchingResult: PixelWiseColorDeviationMatchingResult = if (pixelCount > 0) {
+      PixelWiseColorDeviationMatchingResult(
+        Deviation(sum / pixelCount),
+        pixelCount
+      )
+    } else {
+      PixelWiseColorDeviationMatchingResult.withoutDeviation
+    }
+  }
+
   override protected def applyInternal(input: ProcessingInput): PixelWiseColorDeviationMatchingResult = {
     val deviationCalculator = deviationCalculatorFactory(input)
     val imageSize = input.image.dimension
-    (for (x <- 0 until imageSize.width;
-          y <- 0 until imageSize.height;
-          deviation <- deviationCalculator.calculate(new Color(input.image.getRGB(x, y)), new Color(input.reference.getRGB(x, y))).map(_.value)) yield deviation) match {
-      case deviations if deviations.nonEmpty =>
-        val deviatingPixelCount = deviations.length
-        PixelWiseColorDeviationMatchingResult(
-          Deviation(deviations.sum / deviatingPixelCount),
-          deviatingPixelCount
-        )
-      case _ => PixelWiseColorDeviationMatchingResult.withoutDeviation
-    }
+    val aggregate = new DeviationAggregate
+    for (x <- 0 until imageSize.width;
+         y <- 0 until imageSize.height;
+         deviation <- deviationCalculator.calculate(new Color(input.image.getRGB(x, y)), new Color(input.reference.getRGB(x, y))))
+      yield aggregate.add(deviation)
+    aggregate.asMatchingResult
   }
 }
 
