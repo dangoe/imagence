@@ -1,7 +1,52 @@
-# imagence
+# imagence - an image difference analysis library
 
 [![Build Status](https://travis-ci.org/dangoe/imagence.svg?branch=develop)](https://travis-ci.org/dangoe/imagence)
 
+## What it is
+
+This library provides comparison methods to find regional differences between an image and a given reference (i.e. check a generated image for errors on the basis of an existing reference image).
+
+## What it is not
+
+It does not provide any kind of pattern recognition or pattern similarity analysis methods.
+
+## Core features
+
+* Regional image matching to identify differing regions. 
+* Difference image visualization.
+* A flexible API that supports chainable preprocessors and matchers.
+* Full multi-core support.
+
+## Example usage
+
+```
+val imageToBeChecked = ImageIO.read(new File("/home/user/image_to_be_checked.png"))
+val referenceImage = ImageIO.read(new File("/home/user/reference_image.png"))
+
+val scaling = Scaling(Dimension.square(640), ToBoundingBox)
+val slicer = DefaultSlicer.withFixedSliceSizeOf(Dimension.square(4))
+val matchingStrategy = DefaultPixelWiseColorDeviationMatching
+
+val result = HarmonizeResolutions.using(scaling)
+  .andThen(RegionalImageMatcher(slicer, matchingStrategy))
+  .apply(ProcessingInput(imageToBeChecked, referenceImage))
+
+val outputStream = new FileOutputStream(new File("/home/user/difference.png"))
+
+try {
+    new DifferenceImageWriter(`png`).write(
+        DifferenceImageData(
+            result.processingInput,
+            result.regionalMatchingResults
+        ),
+        outputStream
+    )
+} finally outputStream.close()
+```
+
+## Contributing
+
+Please fork the repository, if you like to. Pull requests are very welcome.
 
 ## License
 
