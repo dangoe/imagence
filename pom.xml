@@ -38,6 +38,7 @@
     <modules>
         <module>imagence-core</module>
         <module>imagence-api</module>
+        <module>imagence-pdfbox</module>
     </modules>
 
     <properties>
