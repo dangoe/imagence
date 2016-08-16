@@ -18,12 +18,12 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.pdfbox
+package de.dangoe.imagence.pdf
 
 import java.awt.image.BufferedImage
 import java.io.InputStream
 
-import de.dangoe.imagence.pdfbox.PdfConverter.{ImageType, RGB}
+import de.dangoe.imagence.pdf.PdfConverter.{ImageType, RGB}
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{PDFRenderer, ImageType => PdfBoxImageType}
 
@@ -81,7 +81,7 @@ object PdfConverterConfiguration {
 
 case class PdfConversionFailed(message: String, cause: Throwable) extends RuntimeException(message, cause)
 
-class ConvertedDocument private[pdfbox](pages: Seq[BufferedImage]) extends Traversable[BufferedImage] {
+class ConvertedDocument private[pdf](pages: Seq[BufferedImage]) extends Traversable[BufferedImage] {
   override def foreach[U](f: (BufferedImage) => U): Unit = pages.foreach(f)
   def pageCount: Int = pages.length
   def page(index: Int): BufferedImage = pages(index)
