@@ -14,8 +14,9 @@ It does not provide any kind of pattern recognition or pattern similarity analys
 
 * Regional image matching to identify differing regions. 
 * Difference image visualization.
-* A flexible API that supports chainable preprocessors and matchers.
+* A flexible API that supports linkable preprocessors and matchers.
 * Full multi-core support.
+* Build in PDF conversion support for PDF comparison.
 
 ## Example usage
 
