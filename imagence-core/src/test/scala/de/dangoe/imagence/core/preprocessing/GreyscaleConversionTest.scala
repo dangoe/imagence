@@ -34,7 +34,7 @@ import scala.concurrent.duration._
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 24.07.16
   */
-class GreyscaleConversionTest extends WordSpec with Matchers {
+class GreyscaleConversionTest extends WordSpec with Matchers with ImageFactory {
 
   implicit val executionContext = ExecutionContext.global
   implicit val timeout = 15 seconds
@@ -43,7 +43,7 @@ class GreyscaleConversionTest extends WordSpec with Matchers {
 
   "Any color" can {
     "be converted to greyscale using averaging method." in {
-      val image = GreyscaleConversion.using(Averaging).apply(createOneColoredImage(Dimension(1, 1), color))
+      val image = GreyscaleConversion.using(Averaging).apply(createImage(OnePixel, Fill(color)))
       val backgroundColor = new Color(image.getRGB(0, 0), true)
 
       image.dimension shouldBe Dimension(1, 1)
@@ -51,7 +51,7 @@ class GreyscaleConversionTest extends WordSpec with Matchers {
     }
 
     "be converted to greyscale using desaturation method." in {
-      val image = GreyscaleConversion.using(Desaturation).apply(createOneColoredImage(Dimension(1, 1), color))
+      val image = GreyscaleConversion.using(Desaturation).apply(createImage(OnePixel, Fill(color)))
       val backgroundColor = new Color(image.getRGB(0, 0), true)
 
       image.dimension shouldBe Dimension(1, 1)
@@ -59,7 +59,7 @@ class GreyscaleConversionTest extends WordSpec with Matchers {
     }
 
     "be converted to greyscale using luma method." in {
-      val image = GreyscaleConversion.using(Luma).apply(createOneColoredImage(Dimension(1, 1), color))
+      val image = GreyscaleConversion.using(Luma).apply(createImage(OnePixel, Fill(color)))
       val backgroundColor = new Color(image.getRGB(0, 0), true)
 
       image.dimension shouldBe Dimension(1, 1)

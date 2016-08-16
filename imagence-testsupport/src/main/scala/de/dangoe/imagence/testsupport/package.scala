@@ -14,8 +14,30 @@ import org.scalatest.matchers.{MatchResult, Matcher}
   */
 package object testsupport {
 
+  final val OnePixel = Dimension(1, 1)
+
   trait ImageReader {
     def readImage(imageResourceName: String): BufferedImage = ImageIO.read(getClass.getResourceAsStream(imageResourceName))
+  }
+
+  trait DrawingStrategy {
+    def draw(image:BufferedImage):Unit
+  }
+
+  case class Fill(color: Color) extends DrawingStrategy{
+    override def draw(image:BufferedImage): Unit = {
+      val graphics  = image.getGraphics.asInstanceOf[Graphics2D]
+      graphics.setColor(color)
+      graphics.asInstanceOf[Graphics2D].fillRect(0, 0, image.getWidth, image.getHeight)
+    }
+  }
+
+  trait ImageFactory {
+    def createImage(dimension: Dimension, drawingStrategy: DrawingStrategy, imageType: Int = BufferedImage.TYPE_INT_ARGB): BufferedImage = {
+      val image = new BufferedImage(dimension.width, dimension.height, imageType)
+      drawingStrategy.draw(image)
+      image
+    }
   }
 
   case class ImageShowsTheSameMatcher(image: BufferedImage) extends Matcher[BufferedImage] {
@@ -35,12 +57,4 @@ package object testsupport {
   }
 
   def showTheSameAs(image: BufferedImage) = ImageShowsTheSameMatcher(image)
-
-  def createOneColoredImage(dimension: Dimension, backgroundColor: Color, imageType: Int = BufferedImage.TYPE_INT_ARGB): BufferedImage = {
-    val image = new BufferedImage(dimension.width, dimension.height, imageType)
-    val graphics = image.getGraphics
-    graphics.setColor(backgroundColor)
-    graphics.asInstanceOf[Graphics2D].fillRect(0, 0, dimension.width, dimension.height)
-    image
-  }
 }

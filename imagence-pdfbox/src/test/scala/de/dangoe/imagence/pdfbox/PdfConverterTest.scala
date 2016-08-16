@@ -34,7 +34,7 @@ import org.scalatest.{Matchers, WordSpec}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 12.08.16
   */
-class PdfConverterTest extends WordSpec with Matchers {
+class PdfConverterTest extends WordSpec with Matchers with ImageFactory {
 
   "The PdfConverter" should {
     "throw an PdfConversionFailed exception" when {
@@ -74,7 +74,7 @@ class PdfConverterTest extends WordSpec with Matchers {
 
         convertedDocument.pageCount shouldBe 1
 
-        convertedDocument.head should showTheSameAs(createOneColoredImage(Dimension(2479, 3508), Color.WHITE, BufferedImage.TYPE_INT_RGB))
+        convertedDocument.head should showTheSameAs(createImage(Dimension(2479, 3508), Fill(Color.WHITE), BufferedImage.TYPE_INT_RGB))
       }
     }
 
@@ -85,7 +85,7 @@ class PdfConverterTest extends WordSpec with Matchers {
 
         convertedDocument.pageCount shouldBe 2
         convertedDocument.foreach { pageAsImage =>
-          pageAsImage should showTheSameAs(createOneColoredImage(Dimension(2479, 3508), Color.WHITE, BufferedImage.TYPE_INT_RGB))
+          pageAsImage should showTheSameAs(createImage(Dimension(2479, 3508), Fill(Color.WHITE), BufferedImage.TYPE_INT_RGB))
         }
       }
     }
