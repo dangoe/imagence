@@ -24,7 +24,7 @@ import java.awt.Color
 
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
-import de.dangoe.imagence.core.testsupport._
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -35,7 +35,7 @@ class NativeGreyscaleConversionTest extends WordSpec with Matchers {
 
   "NativeGreyscaleConversion" should {
     "convert a color to greyscale." in {
-      val image = NativeGreyscaleConversion.apply(createImage(Dimension(1, 1), new Color(120, 255, 160)))
+      val image = NativeGreyscaleConversion.apply(createOneColoredImage(Dimension(1, 1), new Color(120, 255, 160)))
       val backgroundColor = new Color(image.getRGB(0, 0), true)
 
       image.dimension shouldBe Dimension(1, 1)

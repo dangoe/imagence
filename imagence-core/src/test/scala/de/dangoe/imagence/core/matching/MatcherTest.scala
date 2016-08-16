@@ -23,7 +23,7 @@ package de.dangoe.imagence.core.matching
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Deviation.NoDeviation
 import de.dangoe.imagence.api.matching.{Deviation, Matcher, MatchingNotPossible, MatchingResult}
-import de.dangoe.imagence.core.testsupport._
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 /**

@@ -22,7 +22,7 @@ package de.dangoe.imagence.core.matching
 
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching._
-import de.dangoe.imagence.core.testsupport._
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext

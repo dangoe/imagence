@@ -24,6 +24,7 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 
+import de.dangoe.imagence.testsupport._
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.pdfbox.PdfConverter.{Greyscale, RGB}
@@ -73,10 +74,7 @@ class PdfConverterTest extends WordSpec with Matchers {
 
         convertedDocument.pageCount shouldBe 1
 
-        val pageAsImage = convertedDocument.head
-        pageAsImage.getType shouldBe BufferedImage.TYPE_INT_RGB
-        pageAsImage.dimension shouldBe Dimension(2479, 3508)
-        shouldBeCompletelyWhite(pageAsImage)
+        convertedDocument.head should showTheSameAs(createOneColoredImage(Dimension(2479, 3508), Color.WHITE, BufferedImage.TYPE_INT_RGB))
       }
     }
 
@@ -87,17 +85,9 @@ class PdfConverterTest extends WordSpec with Matchers {
 
         convertedDocument.pageCount shouldBe 2
         convertedDocument.foreach { pageAsImage =>
-          pageAsImage.getType shouldBe BufferedImage.TYPE_INT_RGB
-          pageAsImage.dimension shouldBe Dimension(2479, 3508)
-          shouldBeCompletelyWhite(pageAsImage)
+          pageAsImage should showTheSameAs(createOneColoredImage(Dimension(2479, 3508), Color.WHITE, BufferedImage.TYPE_INT_RGB))
         }
       }
     }
-  }
-
-  // TODO Add testhelper module that can be used by all project modules
-  private def shouldBeCompletelyWhite(image: BufferedImage): Unit = for (x <- 0 until image.getWidth;
-                                                                         y <- 0 until image.getHeight) {
-    new Color(image.getRGB(x, y)) shouldBe Color.WHITE
   }
 }

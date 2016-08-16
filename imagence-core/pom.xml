@@ -58,9 +58,9 @@
         <!-- Testing dependencies -->
 
         <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.11</artifactId>
-            <version>${scalatest.version}</version>
+            <groupId>de.dangoe</groupId>
+            <artifactId>imagence-testsupport</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

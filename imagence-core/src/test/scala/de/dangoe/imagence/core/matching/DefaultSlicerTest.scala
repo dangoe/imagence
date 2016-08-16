@@ -23,11 +23,11 @@ package de.dangoe.imagence.core.matching
 import de.dangoe.imagence.api.matching.Anchor._
 import de.dangoe.imagence.api.matching.Slicing.Implicits._
 import de.dangoe.imagence.api.matching.{Anchor, Slice}
-import de.dangoe.imagence.core.testsupport._
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>

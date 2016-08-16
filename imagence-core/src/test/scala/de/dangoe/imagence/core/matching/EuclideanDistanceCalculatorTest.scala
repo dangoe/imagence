@@ -25,7 +25,7 @@ import java.awt.image.BufferedImage
 
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Dimension
-import de.dangoe.imagence.core.testsupport._
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.math.BigDecimal.RoundingMode
@@ -99,5 +99,5 @@ class EuclideanDistanceCalculatorTest extends WordSpec with Matchers {
   private def round(deviation: Double) = BigDecimal.valueOf(deviation).setScale(2, RoundingMode.HALF_UP)
 
 
-  private def createSinglePixelImage(color: Color, imageType: Int) = createImage(Dimension(1, 1), color, imageType)
+  private def createSinglePixelImage(color: Color, imageType: Int) = createOneColoredImage(Dimension(1, 1), color, imageType)
 }

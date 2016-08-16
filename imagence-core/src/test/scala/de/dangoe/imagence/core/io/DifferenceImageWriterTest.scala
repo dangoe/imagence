@@ -29,7 +29,7 @@ import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching._
 import de.dangoe.imagence.core.matching.{DefaultSlicer, RegionalImageMatcher}
 import de.dangoe.imagence.core.preprocessing.HarmonizeResolutions
-import de.dangoe.imagence.core.testsupport._
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext
