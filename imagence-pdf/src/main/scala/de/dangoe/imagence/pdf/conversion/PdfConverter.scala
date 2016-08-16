@@ -18,12 +18,12 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.pdf
+package de.dangoe.imagence.pdf.conversion
 
 import java.awt.image.BufferedImage
 import java.io.InputStream
 
-import de.dangoe.imagence.pdf.PdfConverter.{ImageType, RGB}
+import de.dangoe.imagence.pdf.conversion.PdfConverter.{ImageType, RGB}
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{PDFRenderer, ImageType => PdfBoxImageType}
 

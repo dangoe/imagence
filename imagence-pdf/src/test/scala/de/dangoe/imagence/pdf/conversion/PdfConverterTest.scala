@@ -18,17 +18,16 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.pdf
+package de.dangoe.imagence.pdf.conversion
 
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.io.{ByteArrayInputStream, File}
-import javax.imageio.ImageIO
+import java.io.ByteArrayInputStream
 
-import de.dangoe.imagence.testsupport._
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
-import de.dangoe.imagence.pdf.PdfConverter.{Greyscale, RGB}
+import de.dangoe.imagence.pdf.conversion.PdfConverter.{Greyscale, RGB}
+import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
 /**
