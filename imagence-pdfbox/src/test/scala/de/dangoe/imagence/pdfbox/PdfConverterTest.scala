@@ -40,41 +40,58 @@ class PdfConverterTest extends WordSpec with Matchers {
       "the document cannot be read." in {
         val sut = new PdfConverter
         intercept[PdfConversionFailed] {
-          sut.convert(new ByteArrayInputStream(new Array[Byte](0)))
+          sut.convert(new ByteArrayInputStream(new Array[Byte](0))).head
         }
-      }
-    }
-
-    "return a white image" when {
-      "an empty document with 300 DPI is converted." in {
-        val sut = new PdfConverter
-        val image = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf"))
-
-        image.getType shouldBe BufferedImage.TYPE_INT_RGB
-        image.dimension shouldBe Dimension(2479, 3508)
-        shouldBeCompletelyWhite(image)
       }
     }
 
     "allow to configure the wanted DPI." in {
       val sut = new PdfConverter(PdfConverterConfiguration.default.withDpi(150))
-      val image = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf"))
+      val pageAsImage = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf")).head
 
-      image.dimension shouldBe Dimension(1240, 1754)
+      pageAsImage.dimension shouldBe Dimension(1240, 1754)
     }
 
     "allow to read the document as RGB." in {
       val sut = new PdfConverter(PdfConverterConfiguration.default.withImageType(RGB))
-      val image = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf"))
+      val pageAsImage = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf")).head
 
-      image.getType shouldBe BufferedImage.TYPE_INT_RGB
+      pageAsImage.getType shouldBe BufferedImage.TYPE_INT_RGB
     }
 
     "allow to read the document as greyscale" in {
       val sut = new PdfConverter(PdfConverterConfiguration.default.withImageType(Greyscale))
-      val image = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf"))
+      val pageAsImage = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf")).head
 
-      image.getType shouldBe BufferedImage.TYPE_BYTE_GRAY
+      pageAsImage.getType shouldBe BufferedImage.TYPE_BYTE_GRAY
+    }
+
+    "return a white image" when {
+      "an empty document with 300 DPI is converted." in {
+        val sut = new PdfConverter
+        val convertedDocument = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf"))
+
+        convertedDocument.pageCount shouldBe 1
+
+        val pageAsImage = convertedDocument.head
+        pageAsImage.getType shouldBe BufferedImage.TYPE_INT_RGB
+        pageAsImage.dimension shouldBe Dimension(2479, 3508)
+        shouldBeCompletelyWhite(pageAsImage)
+      }
+    }
+
+    "return a sequence of white images" when {
+      "an empty document with two pages is converted." in {
+        val sut = new PdfConverter
+        val convertedDocument = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_two_pages.pdf"))
+
+        convertedDocument.pageCount shouldBe 2
+        convertedDocument.foreach { pageAsImage =>
+          pageAsImage.getType shouldBe BufferedImage.TYPE_INT_RGB
+          pageAsImage.dimension shouldBe Dimension(2479, 3508)
+          shouldBeCompletelyWhite(pageAsImage)
+        }
+      }
     }
   }
 

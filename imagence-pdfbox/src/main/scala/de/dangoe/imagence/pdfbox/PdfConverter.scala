@@ -37,15 +37,17 @@ class PdfConverter(config: PdfConverterConfiguration = PdfConverterConfiguration
 
   import PdfConverter._
 
-  def convert(inputStream: InputStream): BufferedImage = try {
-    consume(PDDocument.load(inputStream)) { document =>
-      val renderer = new PDFRenderer(document)
-      (0 until document.getNumberOfPages).map {
-        pageIndex => renderer.renderImageWithDPI(pageIndex, config.dpi, mapImageType(config.imageType))
-      }.head
-    }
+  def convert(inputStream: InputStream): ConvertedDocument = try {
+    process(PDDocument.load(inputStream))(convert)
   } catch {
     case NonFatal(e) => throw PdfConversionFailed("Failed to convert document.", e)
+  }
+
+  private def convert(document: PDDocument): ConvertedDocument = {
+    val renderer = new PDFRenderer(document)
+    new ConvertedDocument((0 until document.getNumberOfPages).map {
+      pageIndex => renderer.renderImageWithDPI(pageIndex, config.dpi, mapImageType(config.imageType))
+    })
   }
 }
 
@@ -56,11 +58,8 @@ object PdfConverter {
     case Greyscale => PdfBoxImageType.GRAY
   }
 
-  private def consume[C <: {def close() : Unit}, T](closeable: C)(f: C => T): T = {
-    try {
-      f(closeable)
-    } finally closeable.close()
-  }
+  private def process[T](document: PDDocument)(op: PDDocument => T): T =
+    try op(document) finally document.close()
 
   sealed trait ImageType
   object RGB extends ImageType
@@ -73,7 +72,17 @@ class PdfConverterConfiguration private(val dpi: Int, val imageType: ImageType) 
 }
 
 object PdfConverterConfiguration {
-  def default: PdfConverterConfiguration = new PdfConverterConfiguration(300, RGB)
+
+  private final val DefaultDpi = 300
+  private final val DefaultImageType = RGB
+
+  def default: PdfConverterConfiguration = new PdfConverterConfiguration(DefaultDpi, DefaultImageType)
 }
 
 case class PdfConversionFailed(message: String, cause: Throwable) extends RuntimeException(message, cause)
+
+class ConvertedDocument private[pdfbox](pages: Seq[BufferedImage]) extends Traversable[BufferedImage] {
+  override def foreach[U](f: (BufferedImage) => U): Unit = pages.foreach(f)
+  def pageCount: Int = pages.length
+  def page(index: Int): BufferedImage = pages(index)
+}
