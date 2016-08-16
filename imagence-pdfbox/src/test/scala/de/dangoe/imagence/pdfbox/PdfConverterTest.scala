@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream
 
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
+import de.dangoe.imagence.pdfbox.PdfConverter.{Greyscale, RGB}
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -55,11 +56,25 @@ class PdfConverterTest extends WordSpec with Matchers {
       }
     }
 
-    "allow to configure the wanted DPI" in {
-      val sut = new PdfConverter(150)
+    "allow to configure the wanted DPI." in {
+      val sut = new PdfConverter(PdfConverterConfiguration.default.withDpi(150))
       val image = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf"))
 
-      image.dimension shouldBe Dimension(1240,1754)
+      image.dimension shouldBe Dimension(1240, 1754)
+    }
+
+    "allow to read the document as RGB." in {
+      val sut = new PdfConverter(PdfConverterConfiguration.default.withImageType(RGB))
+      val image = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf"))
+
+      image.getType shouldBe BufferedImage.TYPE_INT_RGB
+    }
+
+    "allow to read the document as greyscale" in {
+      val sut = new PdfConverter(PdfConverterConfiguration.default.withImageType(Greyscale))
+      val image = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf"))
+
+      image.getType shouldBe BufferedImage.TYPE_BYTE_GRAY
     }
   }
 

@@ -23,8 +23,9 @@ package de.dangoe.imagence.pdfbox
 import java.awt.image.BufferedImage
 import java.io.InputStream
 
+import de.dangoe.imagence.pdfbox.PdfConverter.{ImageType, RGB}
 import org.apache.pdfbox.pdmodel.PDDocument
-import org.apache.pdfbox.rendering.{ImageType, PDFRenderer}
+import org.apache.pdfbox.rendering.{PDFRenderer, ImageType => PdfBoxImageType}
 
 import scala.util.control.NonFatal
 
@@ -32,7 +33,7 @@ import scala.util.control.NonFatal
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 12.08.16
   */
-class PdfConverter(dpi: Int = 300) {
+class PdfConverter(config: PdfConverterConfiguration = PdfConverterConfiguration.default) {
 
   import PdfConverter._
 
@@ -40,7 +41,7 @@ class PdfConverter(dpi: Int = 300) {
     consume(PDDocument.load(inputStream)) { document =>
       val renderer = new PDFRenderer(document)
       (0 until document.getNumberOfPages).map {
-        pageIndex => renderer.renderImageWithDPI(pageIndex, dpi, ImageType.RGB)
+        pageIndex => renderer.renderImageWithDPI(pageIndex, config.dpi, mapImageType(config.imageType))
       }.head
     }
   } catch {
@@ -50,11 +51,29 @@ class PdfConverter(dpi: Int = 300) {
 
 object PdfConverter {
 
+  private def mapImageType(imageType: ImageType): PdfBoxImageType = imageType match {
+    case RGB => PdfBoxImageType.RGB
+    case Greyscale => PdfBoxImageType.GRAY
+  }
+
   private def consume[C <: {def close() : Unit}, T](closeable: C)(f: C => T): T = {
     try {
       f(closeable)
     } finally closeable.close()
   }
+
+  trait ImageType
+  object RGB extends ImageType
+  object Greyscale extends ImageType
+}
+
+class PdfConverterConfiguration private(val dpi: Int, val imageType: ImageType) {
+  def withDpi(dpi: Int) = new PdfConverterConfiguration(dpi, imageType)
+  def withImageType(imageType: ImageType) = new PdfConverterConfiguration(dpi, imageType)
+}
+
+object PdfConverterConfiguration {
+  def default: PdfConverterConfiguration = new PdfConverterConfiguration(300, RGB)
 }
 
 case class PdfConversionFailed(message: String, cause: Throwable) extends RuntimeException(message, cause)
