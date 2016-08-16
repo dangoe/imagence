@@ -49,10 +49,11 @@ package object testsupport {
     }
 
     private def sameRGBValuesPerPixel(otherImage: BufferedImage): Boolean = {
-      (for (x <- 0 until otherImage.getWidth;
-            y <- 0 until otherImage.getHeight
-            if image.getRGB(x, y) != otherImage.getRGB(x, y))
-        yield (x, y)).isEmpty
+      for (x <- 0 until otherImage.getWidth;
+           y <- 0 until otherImage.getHeight) {
+        if (image.getRGB(x, y) != otherImage.getRGB(x, y)) return false
+      }
+      true
     }
   }
 
