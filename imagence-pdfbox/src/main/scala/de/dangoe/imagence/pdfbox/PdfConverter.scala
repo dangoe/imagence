@@ -62,7 +62,7 @@ object PdfConverter {
     } finally closeable.close()
   }
 
-  trait ImageType
+  sealed trait ImageType
   object RGB extends ImageType
   object Greyscale extends ImageType
 }
