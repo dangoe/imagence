@@ -21,12 +21,12 @@ package object testsupport {
   }
 
   trait DrawingStrategy {
-    def draw(image:BufferedImage):Unit
+    def draw(image: BufferedImage): Unit
   }
 
-  case class Fill(color: Color) extends DrawingStrategy{
-    override def draw(image:BufferedImage): Unit = {
-      val graphics  = image.getGraphics.asInstanceOf[Graphics2D]
+  case class Fill(color: Color) extends DrawingStrategy {
+    override def draw(image: BufferedImage): Unit = {
+      val graphics = image.getGraphics.asInstanceOf[Graphics2D]
       graphics.setColor(color)
       graphics.asInstanceOf[Graphics2D].fillRect(0, 0, image.getWidth, image.getHeight)
     }
@@ -42,7 +42,7 @@ package object testsupport {
 
   case class ImageShowsTheSameMatcher(image: BufferedImage) extends Matcher[BufferedImage] {
 
-    def apply(otherImage: BufferedImage): MatchResult =  {
+    def apply(otherImage: BufferedImage): MatchResult = {
       MatchResult(otherImage.dimension == image.dimension && sameRGBValuesPerPixel(otherImage),
         "Images are different!",
         "Images are the same but shouldn't have been!")
