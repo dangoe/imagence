@@ -56,7 +56,7 @@ trait Matcher[R <: MatchingResult] extends (ProcessingInput => R) {
 case class MatchingNotPossible(message: String) extends RuntimeException(message)
 
 trait NormalizedDeviationCalculator {
-  def calculate(color: Color, referenceColor: Color): Option[Deviation]
+  def calculate(rgb: Int, referenceRgb: Int): Option[Deviation]
 }
 
 case class Deviation(value: Double) {
