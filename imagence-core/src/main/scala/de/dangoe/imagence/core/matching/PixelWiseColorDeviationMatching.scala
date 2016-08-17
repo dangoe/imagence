@@ -60,7 +60,7 @@ class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (Proce
     val aggregate = new DeviationAggregate
     for (x <- 0 until imageSize.width;
          y <- 0 until imageSize.height;
-         deviation <- deviationCalculator.calculate(new Color(input.image.getRGB(x, y)), new Color(input.reference.getRGB(x, y))))
+         deviation <- deviationCalculator.calculate(input.image.getRGB(x, y), input.reference.getRGB(x, y)))
       yield aggregate.add(deviation)
     aggregate.asMatchingResult
   }

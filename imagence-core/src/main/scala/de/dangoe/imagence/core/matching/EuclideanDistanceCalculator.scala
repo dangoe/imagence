@@ -20,11 +20,11 @@
   */
 package de.dangoe.imagence.core.matching
 
-import java.awt.Color
 import java.awt.image.BufferedImage
 
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.{Deviation, NormalizedDeviationCalculator}
+import de.dangoe.imagence.core.matching.RgbChannels._
 
 import scala.math._
 
@@ -38,22 +38,22 @@ class EuclideanDistanceCalculator(input: ProcessingInput) extends NormalizedDevi
 
   private final val greyscale = input.image.getType == BufferedImage.TYPE_BYTE_GRAY && input.image.getType == BufferedImage.TYPE_BYTE_GRAY
 
-  override def calculate(color: Color, referenceColor: Color): Option[Deviation] = {
-    val deviation = if (greyscale) calculateGreyscale(color, referenceColor) else calculateColor(color, referenceColor)
+  override def calculate(rgb: Int, referenceRgb: Int): Option[Deviation] = {
+    val deviation = if (greyscale) calculateGreyscale(rgb, referenceRgb) else calculateColor(rgb, referenceRgb)
     if (deviation > 0) Some(Deviation(deviation)) else None
   }
 
-  @inline private def calculateColor(color: Color, referenceColor: Color): Double = {
+  @inline private def calculateColor(rgb: Int, referenceRgb: Int): Double = {
     sqrt(
-      pow(color.getRed - referenceColor.getRed, 2)
-        + pow(color.getGreen - referenceColor.getGreen, 2)
-        + pow(color.getBlue - referenceColor.getBlue, 2)
+      pow(extractRed(rgb) - extractRed(referenceRgb), 2)
+        + pow(extractGreen(rgb) - extractGreen(referenceRgb), 2)
+        + pow(extractBlue(rgb) - extractBlue(referenceRgb), 2)
     ) / MaxEuclideanDistance
   }
 
-  @inline private def calculateGreyscale(color: Color, referenceColor: Color): Double = {
+  @inline private def calculateGreyscale(rgb: Int, referenceRgb: Int): Double = {
     sqrt(
-      pow(color.getRed - referenceColor.getRed, 2)
+      pow(extractRed(rgb) - extractRed(referenceRgb), 2)
     ) / MaxEuclideanDistanceGreyscale
   }
 }

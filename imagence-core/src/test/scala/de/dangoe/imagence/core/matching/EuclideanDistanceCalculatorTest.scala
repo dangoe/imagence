@@ -98,6 +98,7 @@ class EuclideanDistanceCalculatorTest extends WordSpec with Matchers {
 
   private def round(deviation: Double) = BigDecimal.valueOf(deviation).setScale(2, RoundingMode.HALF_UP)
 
-
   private def createSinglePixelImage(color: Color, imageType: Int) = createImage(Dimension(1, 1), color, imageType)
+
+  private implicit def colorToRgb(color: Color): Int = color.getRGB
 }
