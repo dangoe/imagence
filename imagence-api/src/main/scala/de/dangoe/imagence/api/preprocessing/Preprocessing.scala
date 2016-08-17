@@ -31,13 +31,10 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 30.07.16
   */
-object Preprocessing {
-
-  object Implicits {
-    implicit def toPreprocessor(op: BufferedImage => BufferedImage)
-                               (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
-      Preprocessor(op)
-  }
+object Implicits {
+  implicit def toPreprocessor(op: BufferedImage => BufferedImage)
+                             (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
+    Preprocessor(op)
 }
 
 class Preprocessor private(op: BufferedImage => BufferedImage)
