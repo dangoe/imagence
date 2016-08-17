@@ -20,8 +20,6 @@
   */
 package de.dangoe.imagence.api.matching
 
-import java.awt.Color
-
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.ProcessingInput
 
