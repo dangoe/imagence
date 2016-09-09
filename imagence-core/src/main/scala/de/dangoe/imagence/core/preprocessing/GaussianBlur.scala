@@ -28,9 +28,6 @@ import com.jhlabs.image.GaussianFilter
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 17.08.16
   */
-/*
- * TODO Implement own gaussian blur filter to eliminate dependency.
- */
 class GaussianBlur private(radius: Int) extends (BufferedImage => BufferedImage) {
 
   private val filter = new GaussianFilter(radius)
