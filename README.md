@@ -16,11 +16,11 @@ It does not provide any kind of pattern recognition or pattern similarity analys
 * Difference image visualization.
 * A flexible API that supports linkable preprocessors and matchers.
 * Full multi-core support.
-* Build in PDF conversion support for PDF comparison.
+* Build-in PDF conversion support for PDF comparison.
 
 ## Example usage
 
-```
+```scala
 val imageToBeChecked = ImageIO.read(new File("/home/user/image_to_be_checked.png"))
 val referenceImage = ImageIO.read(new File("/home/user/reference_image.png"))
 
