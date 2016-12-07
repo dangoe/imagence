@@ -31,16 +31,16 @@ import scala.concurrent.{ExecutionContext, Future}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 17.08.16
   */
-class GaussianBlur private(radius: Int)(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {
+class GaussianBlur private(radius: Int) extends Conversion[BufferedImage] {
 
   private val filter = new GaussianFilter(radius)
 
-  override def apply(image: BufferedImage) = Future {
+  override def apply(image: BufferedImage)(implicit ec: ExecutionContext) = Future {
     val destImage = filter.createCompatibleDestImage(image, image.getColorModel)
     filter.filter(image, destImage)
   }
 }
 
 object GaussianBlur {
-  def apply(radius: Int)(implicit ec: ExecutionContext): GaussianBlur = new GaussianBlur(radius)
+  def apply(radius: Int): GaussianBlur = new GaussianBlur(radius)
 }

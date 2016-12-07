@@ -25,45 +25,45 @@ import java.awt.Color
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.testsupport._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 24.07.16
   */
-class GreyscaleConversionTest extends WordSpec with Matchers with ImageFactory {
+class GreyscaleConversionTest extends WordSpec with Matchers with ScalaFutures with ImageFactory {
 
-  implicit val executionContext = ExecutionContext.global
-  implicit val timeout = 15 seconds
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val color = new Color(50, 100, 150, 200)
 
   "Any color" can {
     "be converted to greyscale using averaging method." in {
-      val image = GreyscaleConversion.using(Averaging).apply(createImage(OnePixel, Fill(color)))
-      val backgroundColor = new Color(image.getRGB(0, 0), true)
+      whenReady(GreyscaleConversion.using(Averaging).apply(createImage(OnePixel, Fill(color)))) { image =>
+        val backgroundColor = new Color(image.getRGB(0, 0), true)
 
-      image.dimension shouldBe Dimension(1, 1)
-      backgroundColor.getRGB shouldBe -6908266
+        image.dimension shouldBe Dimension(1, 1)
+        backgroundColor.getRGB shouldBe -6908266
+      }
     }
 
     "be converted to greyscale using desaturation method." in {
-      val image = GreyscaleConversion.using(Desaturation).apply(createImage(OnePixel, Fill(color)))
-      val backgroundColor = new Color(image.getRGB(0, 0), true)
+      whenReady(GreyscaleConversion.using(Desaturation).apply(createImage(OnePixel, Fill(color)))) { image =>
+        val backgroundColor = new Color(image.getRGB(0, 0), true)
 
-      image.dimension shouldBe Dimension(1, 1)
-      backgroundColor.getRGB shouldBe -6908266
+        image.dimension shouldBe Dimension(1, 1)
+        backgroundColor.getRGB shouldBe -6908266
+      }
     }
 
     "be converted to greyscale using luma method." in {
-      val image = GreyscaleConversion.using(Luma).apply(createImage(OnePixel, Fill(color)))
-      val backgroundColor = new Color(image.getRGB(0, 0), true)
+      whenReady(GreyscaleConversion.using(Luma).apply(createImage(OnePixel, Fill(color)))) { image =>
+        val backgroundColor = new Color(image.getRGB(0, 0), true)
 
-      image.dimension shouldBe Dimension(1, 1)
-      backgroundColor.getRGB shouldBe -7303024
+        image.dimension shouldBe Dimension(1, 1)
+        backgroundColor.getRGB shouldBe -7303024
+      }
     }
   }
 }

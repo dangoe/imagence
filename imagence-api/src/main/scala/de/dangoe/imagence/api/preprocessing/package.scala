@@ -30,15 +30,17 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 package object preprocessing {
 
-  type Conversion[T] = (T => Future[T])
-
-  object Implicits {
-    implicit def toPreprocessor(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = Preprocessor(conv)
+  trait Conversion[T] {
+    def apply(value: T)(implicit ec: ExecutionContext): Future[T]
   }
 
-  class Preprocessor private(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext) extends Conversion[ProcessingInput] {
+  object Implicits {
+    implicit def toPreprocessor(conv: Conversion[BufferedImage]): Preprocessor = Preprocessor(conv)
+  }
 
-    override def apply(input: ProcessingInput) = {
+  class Preprocessor private(conv: Conversion[BufferedImage]) extends Conversion[ProcessingInput] {
+
+    override def apply(input: ProcessingInput)(implicit ec: ExecutionContext) = {
       for {
         processedImage <- conv(input.image)
         processedReference <- conv(input.reference)
@@ -47,6 +49,6 @@ package object preprocessing {
   }
 
   object Preprocessor {
-    def apply(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = new Preprocessor(conv)
+    def apply(conv: Conversion[BufferedImage]): Preprocessor = new Preprocessor(conv)
   }
 }
