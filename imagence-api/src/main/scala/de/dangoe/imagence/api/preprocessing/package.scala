@@ -18,37 +18,35 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.api.preprocessing
+package de.dangoe.imagence.api
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.api.ProcessingInput
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 30.07.16
   */
-object Implicits {
-  implicit def toPreprocessor(op: BufferedImage => BufferedImage)
-                             (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
-    Preprocessor(op)
-}
+package object preprocessing {
 
-class Preprocessor private(op: BufferedImage => BufferedImage)
-                          (implicit executionContext: ExecutionContext, timeout: Duration)
-  extends (ProcessingInput => ProcessingInput) {
+  type Conversion[T] = (T => Future[T])
 
-  override def apply(input: ProcessingInput): ProcessingInput = {
-    val processingResults = Await.result(Future.sequence(Seq(Future(op(input.image)), Future(op(input.reference)))), timeout)
-    ProcessingInput(processingResults.head, processingResults.last)
+  object Implicits {
+    implicit def toPreprocessor(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = Preprocessor(conv)
   }
-}
 
-object Preprocessor {
-  def apply(op: BufferedImage => BufferedImage)
-           (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
-    new Preprocessor(op)
+  class Preprocessor private(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext) extends Conversion[ProcessingInput] {
+
+    override def apply(input: ProcessingInput) = {
+      for {
+        processedImage <- conv(input.image)
+        processedReference <- conv(input.reference)
+      } yield ProcessingInput(processedImage, processedReference)
+    }
+  }
+
+  object Preprocessor {
+    def apply(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = new Preprocessor(conv)
+  }
 }

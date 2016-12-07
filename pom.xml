@@ -45,7 +45,7 @@
     <properties>
         <jdk.version>1.8</jdk.version>
         <scala.version>2.11.8</scala.version>
-        <scalatest.version>2.2.6</scalatest.version>
+        <scalatest.version>3.0.0</scalatest.version>
     </properties>
 
     <build>
