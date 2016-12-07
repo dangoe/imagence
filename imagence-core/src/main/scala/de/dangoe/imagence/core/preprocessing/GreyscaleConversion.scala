@@ -54,16 +54,16 @@ case object Luma extends GreyscaleMethod {
     createColor(math.round(color.getRed * 0.299 + color.getGreen * 0.587 + color.getBlue * 0.114).toInt, color.getAlpha)
 }
 
-class GreyscaleConversion private(method: GreyscaleMethod) extends Conversion[BufferedImage] {
+class GreyscaleConversion private(method: GreyscaleMethod)(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {
 
-  override def apply(image: BufferedImage)(implicit ec: ExecutionContext) = {
+  override def apply(image: BufferedImage) = {
     val greyscaleImage = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_BYTE_GRAY)
     Future.sequence {
       for (y <- 0 until image.getHeight) yield processLine(image, greyscaleImage.getSubimage(0, y, image.getWidth, 1), y)
     }.transform(_ => greyscaleImage, identity)
   }
 
-  private def processLine(source: BufferedImage, target: BufferedImage, y: Int)(implicit ec: ExecutionContext): Future[Unit] = Future {
+  private def processLine(source: BufferedImage, target: BufferedImage, y: Int): Future[Unit] = Future {
     val graphics = target.getGraphics.asInstanceOf[Graphics2D]
     0 until target.getWidth foreach { x =>
       graphics.setColor(method(new Color(source.getRGB(x, y), true)))
@@ -73,18 +73,22 @@ class GreyscaleConversion private(method: GreyscaleMethod) extends Conversion[Bu
 }
 
 object GreyscaleConversion {
-  def using(method: GreyscaleMethod): GreyscaleConversion = new GreyscaleConversion(method)
+  def using(method: GreyscaleMethod)(implicit ec: ExecutionContext): GreyscaleConversion = new GreyscaleConversion(method)
 }
 
-object NativeGreyscaleConversion extends Conversion[BufferedImage] {
+class NativeGreyscaleConversion()(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {
 
   import collection.JavaConverters._
 
   val EmptyRenderingHints = new RenderingHints(Map.empty[Key, AnyRef].asJava)
 
-  override def apply(image: BufferedImage)(implicit ec: ExecutionContext) = Future {
+  override def apply(image: BufferedImage) = Future {
     val greyscale = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_BYTE_GRAY)
     new ColorConvertOp(image.getColorModel.getColorSpace, greyscale.getColorModel.getColorSpace, EmptyRenderingHints).filter(image, greyscale)
     greyscale
   }
+}
+
+object NativeGreyscaleConversion {
+  def apply()(implicit ec: ExecutionContext): NativeGreyscaleConversion = new NativeGreyscaleConversion
 }

@@ -38,7 +38,7 @@ class NativeGreyscaleConversionTest extends WordSpec with Matchers with ScalaFut
 
   "NativeGreyscaleConversion" should {
     "convert a color to greyscale." in {
-      whenReady(NativeGreyscaleConversion.apply(createImage(OnePixel, Fill(new Color(120, 255, 160))))) { image =>
+      whenReady(NativeGreyscaleConversion().apply(createImage(OnePixel, Fill(new Color(120, 255, 160))))) { image =>
         val backgroundColor = new Color(image.getRGB(0, 0), true)
 
         image.dimension shouldBe Dimension(1, 1)
