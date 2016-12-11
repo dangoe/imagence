@@ -41,7 +41,9 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers with ScalaFutures 
 
   "HarmonizeResolutions" should {
     "scale a smaller image to the reference image's size while the reference image remains unchanged." in {
-      whenReady(HarmonizeResolutions.byScalingToReference().apply(ProcessingInput(smallerImage, reference))) { processed =>
+      val sut = HarmonizeResolutions.byScalingToReference()
+
+      whenReady(sut(ProcessingInput(smallerImage, reference))) { processed =>
         processed.image.getWidth shouldBe 800
         processed.image.getHeight shouldBe 600
         processed.reference.getWidth shouldBe 800
@@ -50,7 +52,9 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers with ScalaFutures 
     }
 
     "scale a larger image to the reference image's size while the reference image remains unchanged." in {
-      whenReady(HarmonizeResolutions.byScalingToReference().apply(ProcessingInput(largerImage, reference))) { processed =>
+      val sut = HarmonizeResolutions.byScalingToReference()
+
+      whenReady(sut(ProcessingInput(largerImage, reference))) { processed =>
         processed.image.getWidth shouldBe 800
         processed.image.getHeight shouldBe 600
         processed.reference.getWidth shouldBe 800
@@ -60,7 +64,9 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers with ScalaFutures 
 
     "allow to pass a target bounding box that is used to resize both images to am matching size within these bounds" when {
       "the image is smaller than the reference image." in {
-        whenReady(HarmonizeResolutions.using(Scaling.toBoundingBox(square(400))).apply(ProcessingInput(smallerImage, reference))) { processed =>
+        val sut = HarmonizeResolutions(Scaling.toBoundingBox(square(400)))
+
+        whenReady(sut(ProcessingInput(smallerImage, reference))) { processed =>
           processed.image.getWidth shouldBe 400
           processed.image.getHeight shouldBe 300
           processed.reference.getWidth shouldBe 400
@@ -69,7 +75,9 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers with ScalaFutures 
       }
 
       "the image is larger than the reference image." in {
-        whenReady(HarmonizeResolutions.using(Scaling.toBoundingBox(square(400))).apply(ProcessingInput(largerImage, reference))) { processed =>
+        val sut = HarmonizeResolutions(Scaling.toBoundingBox(square(400)))
+
+        whenReady(sut(ProcessingInput(largerImage, reference))) { processed =>
           processed.image.getWidth shouldBe 400
           processed.image.getHeight shouldBe 300
           processed.reference.getWidth shouldBe 400

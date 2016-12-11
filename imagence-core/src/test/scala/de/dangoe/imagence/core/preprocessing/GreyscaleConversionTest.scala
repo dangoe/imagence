@@ -40,7 +40,9 @@ class GreyscaleConversionTest extends WordSpec with Matchers with ScalaFutures w
 
   "Any color" can {
     "be converted to greyscale using averaging method." in {
-      whenReady(GreyscaleConversion.using(Averaging).apply(createImage(OnePixel, Fill(color)))) { image =>
+      val sut = GreyscaleConversion(Averaging)
+
+      whenReady(sut(createImage(OnePixel, Fill(color)))) { image =>
         val backgroundColor = new Color(image.getRGB(0, 0), true)
 
         image.dimension shouldBe Dimension(1, 1)
@@ -49,7 +51,9 @@ class GreyscaleConversionTest extends WordSpec with Matchers with ScalaFutures w
     }
 
     "be converted to greyscale using desaturation method." in {
-      whenReady(GreyscaleConversion.using(Desaturation).apply(createImage(OnePixel, Fill(color)))) { image =>
+      val sut = GreyscaleConversion(Desaturation)
+
+      whenReady(sut(createImage(OnePixel, Fill(color)))) { image =>
         val backgroundColor = new Color(image.getRGB(0, 0), true)
 
         image.dimension shouldBe Dimension(1, 1)
@@ -58,7 +62,9 @@ class GreyscaleConversionTest extends WordSpec with Matchers with ScalaFutures w
     }
 
     "be converted to greyscale using luma method." in {
-      whenReady(GreyscaleConversion.using(Luma).apply(createImage(OnePixel, Fill(color)))) { image =>
+      val sut = GreyscaleConversion(Luma)
+
+      whenReady(sut(createImage(OnePixel, Fill(color)))) { image =>
         val backgroundColor = new Color(image.getRGB(0, 0), true)
 
         image.dimension shouldBe Dimension(1, 1)

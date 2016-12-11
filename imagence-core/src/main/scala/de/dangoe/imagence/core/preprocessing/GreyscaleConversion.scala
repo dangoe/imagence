@@ -73,7 +73,7 @@ class GreyscaleConversion private(method: GreyscaleMethod)(implicit ec: Executio
 }
 
 object GreyscaleConversion {
-  def using(method: GreyscaleMethod)(implicit ec: ExecutionContext): GreyscaleConversion = new GreyscaleConversion(method)
+  def apply(method: GreyscaleMethod)(implicit ec: ExecutionContext): GreyscaleConversion = new GreyscaleConversion(method)
 }
 
 class NativeGreyscaleConversion()(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {

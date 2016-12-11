@@ -114,6 +114,6 @@ object HarmonizeResolutions {
 
   def byScalingToReference()(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
     new HarmonizeResolutions(None)
-  def using(referenceScaling: Scaling)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
+  def apply(referenceScaling: Scaling)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
     new HarmonizeResolutions(Some(referenceScaling))
 }

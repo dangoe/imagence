@@ -30,6 +30,7 @@ import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching._
 import de.dangoe.imagence.core.matching.{DefaultSlicer, RegionalImageMatcher}
 import de.dangoe.imagence.core.preprocessing.HarmonizeResolutions
 import de.dangoe.imagence.testsupport._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.duration._
@@ -39,7 +40,7 @@ import scala.concurrent.{Await, ExecutionContext}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 03.08.16
   */
-class DifferenceImageWriterTest extends WordSpec with Matchers with ImageReader {
+class DifferenceImageWriterTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -50,24 +51,25 @@ class DifferenceImageWriterTest extends WordSpec with Matchers with ImageReader 
       "a specific erroneous image und reference image is used." in {
         val processingInput = ProcessingInput(readImage("pattern_erroneous.png"), readImage("pattern.png"))
 
-        val normalized = Await.result(HarmonizeResolutions.byScalingToReference().apply(processingInput), 5 seconds)
-        val result = RegionalImageMatcher(
-          DefaultSlicer.withFixedSliceSizeOf(Dimension.square(23)),
-          DefaultPixelWiseColorDeviationMatching).apply(normalized)
+        whenReady {
+          for (normalized <- HarmonizeResolutions.byScalingToReference().apply(processingInput)) yield RegionalImageMatcher(
+            DefaultSlicer.withFixedSliceSizeOf(Dimension.square(23)),
+            DefaultPixelWiseColorDeviationMatching).apply(normalized)
+        } { result =>
+          val sut = new DifferenceImageWriter(`png`)
 
-        val sut = new DifferenceImageWriter(`png`)
+          val outputStream = new ByteArrayOutputStream()
+          sut.write(
+            DifferenceImageData(
+              result.processingInput,
+              result.regionalMatchingResults
+            ),
+            outputStream
+          )
+          val differenceImage = ImageIO.read(new ByteArrayInputStream(outputStream.toByteArray))
 
-        val outputStream = new ByteArrayOutputStream()
-        sut.write(
-          DifferenceImageData(
-            result.processingInput,
-            result.regionalMatchingResults
-          ),
-          outputStream
-        )
-        val differenceImage = ImageIO.read(new ByteArrayInputStream(outputStream.toByteArray))
-
-        differenceImage should showTheSameAs(readImage("pattern_diff.png"))
+          differenceImage should showTheSameAs(readImage("pattern_diff.png"))
+        }
       }
     }
   }
