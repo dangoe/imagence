@@ -39,7 +39,7 @@ import scala.concurrent.duration._
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 03.08.16
   */
-class DifferenceImageWriterTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
+class SimpleDifferenceImageWriterTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -54,24 +54,22 @@ class DifferenceImageWriterTest extends WordSpec with Matchers with ScalaFutures
       "a specific erroneous image und reference image is used." in {
         val processingInput = ProcessingInput(readImage("pattern_erroneous.png"), readImage("pattern.png"))
 
-        whenReady{
+        val sut = new SimpleDifferenceImageWriter(`png`)
+
+        whenReady {
           for {
             normalized <- harmonization(processingInput)
             matchingResult <- regionalImageMatcher(normalized)
-          } yield matchingResult
-        } { result =>
-          val sut = new DifferenceImageWriter(`png`)
-
-          val outputStream = new ByteArrayOutputStream()
-          sut.write(
-            DifferenceImageData(
-              result.processingInput,
-              result.regionalMatchingResults
-            ),
-            outputStream
-          )
-          val differenceImage = ImageIO.read(new ByteArrayInputStream(outputStream.toByteArray))
-
+            outputStream = new ByteArrayOutputStream()
+            _ <- sut.write(
+              DifferenceImageData(
+                matchingResult.processingInput,
+                matchingResult.regionalMatchingResults
+              ),
+              outputStream
+            )
+          } yield ImageIO.read(new ByteArrayInputStream(outputStream.toByteArray))
+        } { differenceImage =>
           differenceImage should showTheSameAs(readImage("pattern_diff.png"))
         }
       }
