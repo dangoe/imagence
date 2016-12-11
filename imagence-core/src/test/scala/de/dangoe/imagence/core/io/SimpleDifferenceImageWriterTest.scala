@@ -33,7 +33,7 @@ import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
-import scala.concurrent.duration._
+import scala.concurrent.Future
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -61,13 +61,15 @@ class SimpleDifferenceImageWriterTest extends WordSpec with Matchers with ScalaF
             normalized <- harmonization(processingInput)
             matchingResult <- regionalImageMatcher(normalized)
             outputStream = new ByteArrayOutputStream()
-            _ <- sut.write(
-              DifferenceImageData(
-                matchingResult.processingInput,
-                matchingResult.regionalMatchingResults
-              ),
-              outputStream
-            )
+            _ <- Future {
+              sut.write(
+                DifferenceImageData(
+                  matchingResult.processingInput,
+                  matchingResult.regionalMatchingResults
+                ),
+                outputStream
+              )
+            }
           } yield ImageIO.read(new ByteArrayInputStream(outputStream.toByteArray))
         } { differenceImage =>
           differenceImage should showTheSameAs(readImage("pattern_diff.png"))

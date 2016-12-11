@@ -32,8 +32,8 @@ import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching.DefaultD
 import de.dangoe.imagence.core.matching.{DefaultSlicer, PixelWiseColorDeviationMatching, RegionalImageMatcher}
 import de.dangoe.imagence.core.preprocessing._
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 object TestApp {
 
@@ -44,7 +44,7 @@ object TestApp {
   def main(args: Array[String]): Unit = {
     val imageToBeChecked = ImageIO.read(new File("/home/user/image_to_be_checked.png"))
     val referenceImage = ImageIO.read(new File("/home/user/reference_image.png"))
-
+    
     val scaling = Scaling(Dimension.square(640), ToBoundingBox)
     val slicer = DefaultSlicer.withFixedSliceSizeOf(Dimension.square(4))
     val matchingStrategy = PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
@@ -52,24 +52,29 @@ object TestApp {
     val harmonization = HarmonizeResolutions(scaling)
     val matcher = RegionalImageMatcher(slicer, matchingStrategy)
 
-    val outputStream = new FileOutputStream(new File("/home/user/difference.png"))
-
-    val eventualOperation = for {
+    val eventualMatchingResult = for {
       normalized <- harmonization(ProcessingInput(imageToBeChecked, referenceImage))
       result <- matcher(normalized)
-      _ <- new SimpleDifferenceImageWriter(`png`).write(
-        DifferenceImageData(
-          result.processingInput,
-          result.regionalMatchingResults
-        ),
-        outputStream
-      )
+      _ <- Future {
+        val outputStream = new FileOutputStream(new File("/home/user/difference.png"))
+        try {
+          new SimpleDifferenceImageWriter(`png`).write(
+            DifferenceImageData(
+              result.processingInput,
+              result.regionalMatchingResults
+            ),
+            outputStream
+          )
+        } finally {
+          outputStream.close()
+        }
+      }
     } yield ()
-    eventualOperation.onComplete(_ => outputStream.close())
 
-    Await.ready(eventualOperation, 30 seconds)
+    Await.ready(eventualMatchingResult, 30 seconds)
   }
 }
+
 ```
 
 ## Contributing
