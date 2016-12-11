@@ -25,6 +25,7 @@ import de.dangoe.imagence.api.matching.Deviation.NoDeviation
 import de.dangoe.imagence.api.matching._
 import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Future
@@ -34,6 +35,8 @@ import scala.concurrent.Future
   * @since 23.07.16
   */
 class BaseMatcherTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
+
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(25, Millis))
 
   val sut = new BaseMatcher[MatchingResult] {
     override protected def applyInternal(input: ProcessingInput): Future[MatchingResult] = Future.successful(new MatchingResult {

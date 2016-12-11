@@ -25,6 +25,7 @@ import de.dangoe.imagence.api.matching.Slicing.Implicits._
 import de.dangoe.imagence.api.matching.{Anchor, Slice}
 import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Future
@@ -42,6 +43,8 @@ class DefaultSlicerTest extends WordSpec with Matchers with ScalaFutures with Im
   val quadraticImage = readImage("quadratic.png")
   val rectangularImage = readImage("rectangular.png")
   val rectangularWithOddEdgeLengthsImage = readImage("rectangular_with_odd_edge_lengths.png")
+
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(25, Millis))
 
   "Default slicing with percentage slice size" should {
     "slice an quadratic image in 4 slices" when {

@@ -25,6 +25,7 @@ import java.awt.{Color, Graphics2D}
 
 import de.dangoe.imagence.api.matching.Dimension
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -41,6 +42,8 @@ class ScalingTest extends WordSpec with Matchers with ScalaFutures {
   val landscapeFormatImage = new BufferedImage(160, 120, BufferedImage.TYPE_BYTE_GRAY)
   val portraitFormatImage = new BufferedImage(120, 160, BufferedImage.TYPE_BYTE_GRAY)
   val squareFormatImage = new BufferedImage(120, 120, BufferedImage.TYPE_BYTE_GRAY)
+
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(25, Millis))
 
   "Scaling" should {
     "use to bounding box as default strategy" when {

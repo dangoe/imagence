@@ -31,6 +31,7 @@ import de.dangoe.imagence.core.matching.{DefaultSlicer, PixelWiseColorDeviationM
 import de.dangoe.imagence.core.preprocessing.HarmonizeResolutions
 import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Future
@@ -49,7 +50,9 @@ class SimpleDifferenceImageWriterTest extends WordSpec with Matchers with ScalaF
     PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
   )
 
-  "DifferenceImageWriter" should {
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(25, Millis))
+
+  "SimpleDifferenceImageWriterTest" should {
     "create an expected difference image" when {
       "a specific erroneous image und reference image is used." in {
         val processingInput = ProcessingInput(readImage("pattern_erroneous.png"), readImage("pattern.png"))

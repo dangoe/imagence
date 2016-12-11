@@ -25,6 +25,7 @@ import java.awt.image.BufferedImage
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Dimension.square
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -38,6 +39,8 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers with ScalaFutures 
   val reference = new BufferedImage(800, 600, BufferedImage.TYPE_BYTE_GRAY)
   val smallerImage = new BufferedImage(42, 42, BufferedImage.TYPE_BYTE_GRAY)
   val largerImage = new BufferedImage(4200, 4200, BufferedImage.TYPE_BYTE_GRAY)
+
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(25, Millis))
 
   "HarmonizeResolutions" should {
     "scale a smaller image to the reference image's size while the reference image remains unchanged." in {

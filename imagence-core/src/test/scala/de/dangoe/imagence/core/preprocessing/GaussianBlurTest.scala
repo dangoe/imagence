@@ -27,6 +27,7 @@ import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.testsupport._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -41,6 +42,8 @@ class GaussianBlurTest extends WordSpec with Matchers with MockFactory with Scal
 
   val whiteImage = createImage(imageDimension, Fill(Color.WHITE))
   val blackImage = createImage(imageDimension, Fill(Color.BLACK))
+
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(25, Millis))
 
   "Gaussian blur" should {
     "create an image of same size." in {

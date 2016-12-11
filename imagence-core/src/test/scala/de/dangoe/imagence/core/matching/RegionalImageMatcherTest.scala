@@ -28,6 +28,7 @@ import de.dangoe.imagence.api.matching.Deviation.NoDeviation
 import de.dangoe.imagence.api.matching.{Matcher, _}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Future
@@ -39,6 +40,8 @@ import scala.concurrent.Future
 class RegionalImageMatcherTest extends WordSpec with Matchers with ScalaFutures with MockFactory {
 
   import scala.concurrent.ExecutionContext.Implicits.global
+
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(25, Millis))
 
   "A RegionalImageMatcher" must {
     "not accept processing inputs" when {

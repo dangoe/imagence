@@ -26,6 +26,7 @@ import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -37,6 +38,8 @@ class GreyscaleConversionTest extends WordSpec with Matchers with ScalaFutures w
   import scala.concurrent.ExecutionContext.Implicits.global
 
   val color = new Color(50, 100, 150, 200)
+
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(2, Seconds), interval = Span(25, Millis))
 
   "Any color" can {
     "be converted to greyscale using averaging method." in {
