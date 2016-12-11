@@ -46,16 +46,18 @@ class DifferenceImageWriterTest extends WordSpec with Matchers with ScalaFutures
 
   implicit val timeout = 15 seconds
 
+  val harmonization = HarmonizeResolutions.byScalingToReference()
+  val regionalImageMatcher = RegionalImageMatcher(
+    DefaultSlicer.withFixedSliceSizeOf(Dimension.square(23)),
+    DefaultPixelWiseColorDeviationMatching
+  )
+
   "DifferenceImageWriter" should {
     "create an expected difference image" when {
       "a specific erroneous image und reference image is used." in {
         val processingInput = ProcessingInput(readImage("pattern_erroneous.png"), readImage("pattern.png"))
 
-        whenReady {
-          for (normalized <- HarmonizeResolutions.byScalingToReference().apply(processingInput)) yield RegionalImageMatcher(
-            DefaultSlicer.withFixedSliceSizeOf(Dimension.square(23)),
-            DefaultPixelWiseColorDeviationMatching).apply(normalized)
-        } { result =>
+        whenReady(for (normalized <- harmonization(processingInput)) yield regionalImageMatcher(normalized)) { result =>
           val sut = new DifferenceImageWriter(`png`)
 
           val outputStream = new ByteArrayOutputStream()
