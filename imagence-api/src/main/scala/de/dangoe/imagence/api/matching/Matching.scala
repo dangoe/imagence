@@ -41,9 +41,11 @@ case class RegionalMatchingResult[R <: MatchingResult](region: Region, delegate:
   override def deviation: Deviation = delegate.deviation
 }
 
-trait Matcher[R <: MatchingResult] extends (ProcessingInput => Future[R]) {
+trait Matcher[R <: MatchingResult] extends (ProcessingInput => Future[R])
 
-  def apply(input: ProcessingInput): Future[R] = {
+abstract class BaseMatcher[R <: MatchingResult] extends Matcher[R] {
+
+  final def apply(input: ProcessingInput): Future[R] = {
     if (input.image.dimension != input.reference.dimension) {
       return Future.failed(MatchingNotPossible("Image dimension differs from reference image!"))
     }

@@ -23,7 +23,7 @@ package de.dangoe.imagence.core.matching
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Deviation.NoDeviation
-import de.dangoe.imagence.api.matching.{Deviation, Matcher, MatchingResult, NormalizedDeviationCalculator}
+import de.dangoe.imagence.api.matching._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * @since 23.07.16
   */
 class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))(implicit ec: ExecutionContext)
-  extends Matcher[PixelWiseColorDeviationMatchingResult] {
+  extends BaseMatcher[PixelWiseColorDeviationMatchingResult] {
 
   private class DeviationAggregate {
 

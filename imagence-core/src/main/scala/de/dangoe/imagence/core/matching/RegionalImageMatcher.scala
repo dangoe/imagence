@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class RegionalImageMatcher[R <: MatchingResult] private(slicer: Slicer, matcher: Matcher[R])(implicit ec: ExecutionContext) extends Matcher[RegionalImageMatcherResult[R]] {
+class RegionalImageMatcher[R <: MatchingResult] private(slicer: Slicer, matcher: Matcher[R])(implicit ec: ExecutionContext) extends BaseMatcher[RegionalImageMatcherResult[R]] {
 
   override def applyInternal(input: ProcessingInput): Future[RegionalImageMatcherResult[R]] =
     process(input).map(RegionalImageMatcherResult(input, _))

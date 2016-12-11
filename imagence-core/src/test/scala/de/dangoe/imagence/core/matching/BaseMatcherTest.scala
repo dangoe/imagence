@@ -22,7 +22,7 @@ package de.dangoe.imagence.core.matching
 
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Deviation.NoDeviation
-import de.dangoe.imagence.api.matching.{Deviation, Matcher, MatchingNotPossible, MatchingResult}
+import de.dangoe.imagence.api.matching._
 import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
@@ -33,9 +33,9 @@ import scala.concurrent.Future
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class MatcherTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
+class BaseMatcherTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
 
-  val sut = new Matcher[MatchingResult] {
+  val sut = new BaseMatcher[MatchingResult] {
     override protected def applyInternal(input: ProcessingInput): Future[MatchingResult] = Future.successful(new MatchingResult {
       override def deviation: Deviation = NoDeviation
     })
