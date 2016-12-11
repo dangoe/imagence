@@ -24,18 +24,21 @@ import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Deviation.NoDeviation
 import de.dangoe.imagence.api.matching.{Deviation, Matcher, MatchingNotPossible, MatchingResult}
 import de.dangoe.imagence.testsupport._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
+
+import scala.concurrent.Future
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class MatcherTest extends WordSpec with Matchers with ImageReader {
+class MatcherTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
 
   val sut = new Matcher[MatchingResult] {
-    override protected def applyInternal(input: ProcessingInput): MatchingResult = new MatchingResult {
+    override protected def applyInternal(input: ProcessingInput): Future[MatchingResult] = Future.successful(new MatchingResult {
       override def deviation: Deviation = NoDeviation
-    }
+    })
   }
 
   "Any matcher" must {
@@ -46,8 +49,8 @@ class MatcherTest extends WordSpec with Matchers with ImageReader {
 
         val processingInput = ProcessingInput(quadraticImage, rectangularImage)
 
-        intercept[MatchingNotPossible] {
-          sut(processingInput)
+        whenReady(sut(processingInput).failed) { failure =>
+          failure shouldBe a[MatchingNotPossible]
         }
       }
     }

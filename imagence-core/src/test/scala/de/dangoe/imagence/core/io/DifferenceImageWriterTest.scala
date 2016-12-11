@@ -27,7 +27,7 @@ import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.io.DifferenceImageData
 import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching._
-import de.dangoe.imagence.core.matching.{DefaultSlicer, RegionalImageMatcher}
+import de.dangoe.imagence.core.matching.{DefaultSlicer, PixelWiseColorDeviationMatching, RegionalImageMatcher}
 import de.dangoe.imagence.core.preprocessing.HarmonizeResolutions
 import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
@@ -49,7 +49,7 @@ class DifferenceImageWriterTest extends WordSpec with Matchers with ScalaFutures
   val harmonization = HarmonizeResolutions.byScalingToReference()
   val regionalImageMatcher = RegionalImageMatcher(
     DefaultSlicer.withFixedSliceSizeOf(Dimension.square(23)),
-    DefaultPixelWiseColorDeviationMatching
+    PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
   )
 
   "DifferenceImageWriter" should {
@@ -57,7 +57,12 @@ class DifferenceImageWriterTest extends WordSpec with Matchers with ScalaFutures
       "a specific erroneous image und reference image is used." in {
         val processingInput = ProcessingInput(readImage("pattern_erroneous.png"), readImage("pattern.png"))
 
-        whenReady(for (normalized <- harmonization(processingInput)) yield regionalImageMatcher(normalized)) { result =>
+        whenReady{
+          for {
+            normalized <- harmonization(processingInput)
+            matchingResult <- regionalImageMatcher(normalized)
+          } yield matchingResult
+        } { result =>
           val sut = new DifferenceImageWriter(`png`)
 
           val outputStream = new ByteArrayOutputStream()

@@ -27,11 +27,13 @@ import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Deviation.NoDeviation
 import de.dangoe.imagence.api.matching.{Deviation, Matcher, MatchingResult, NormalizedDeviationCalculator}
 
+import scala.concurrent.{ExecutionContext, Future}
+
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))
+class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))(implicit ec: ExecutionContext)
   extends Matcher[PixelWiseColorDeviationMatchingResult] {
 
   private class DeviationAggregate {
@@ -54,7 +56,7 @@ class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (Proce
     }
   }
 
-  override protected def applyInternal(input: ProcessingInput): PixelWiseColorDeviationMatchingResult = {
+  override protected def applyInternal(input: ProcessingInput): Future[PixelWiseColorDeviationMatchingResult] = Future {
     val deviationCalculator = deviationCalculatorFactory(input)
     val imageSize = input.image.dimension
     val aggregate = new DeviationAggregate
@@ -68,13 +70,10 @@ class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (Proce
 
 object PixelWiseColorDeviationMatching {
 
-  private final val DefaultDeviationCalculatorFactory: (ProcessingInput) => EuclideanDistanceCalculator =
-    input => new EuclideanDistanceCalculator(input)
+  final val DefaultDeviationCalculatorFactory: (ProcessingInput) => EuclideanDistanceCalculator = input => new EuclideanDistanceCalculator(input)
 
-  final val DefaultPixelWiseColorDeviationMatching = new PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
-
-  def apply(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator)): PixelWiseColorDeviationMatching =
-    new PixelWiseColorDeviationMatching(deviationCalculatorFactory)
+  def apply(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))
+           (implicit ec: ExecutionContext): PixelWiseColorDeviationMatching = new PixelWiseColorDeviationMatching(deviationCalculatorFactory)
 }
 
 case class PixelWiseColorDeviationMatchingResult(deviation: Deviation,

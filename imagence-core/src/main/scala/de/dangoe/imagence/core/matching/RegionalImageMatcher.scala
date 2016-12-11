@@ -28,7 +28,7 @@ import de.dangoe.imagence.api.matching.Slicing.Implicits._
 import de.dangoe.imagence.api.matching._
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.math.max
 
 /**
@@ -36,35 +36,35 @@ import scala.math.max
   * @since 23.07.16
   */
 class RegionalImageMatcher[R <: MatchingResult] private(slicer: Slicer, matcher: Matcher[R])
-                                                       (implicit executionContext: ExecutionContext, timeout: Duration)
+                                                       (implicit ec: ExecutionContext, timeout: Duration)
   extends Matcher[RegionalImageMatcherResult[R]] {
 
   private final val LevelOfParallelism = Runtime.getRuntime.availableProcessors()
 
-  override def applyInternal(input: ProcessingInput): RegionalImageMatcherResult[R] = {
-    val slicesToBeMatched = slice(input.image) zip slice(input.reference)
-    val result = RegionalImageMatcherResult(input, Await.result(Future.sequence {
-      for (partition <- partitionByLevelOfParallelism(slicesToBeMatched)) yield Future(processPartition(partition))
-    }, timeout).flatten.toSeq)
-    result
-  }
+  override def applyInternal(input: ProcessingInput): Future[RegionalImageMatcherResult[R]] =
+    process(input).map(RegionalImageMatcherResult(input, _))
+
+  private def process(input: ProcessingInput) = Future.sequence {
+    for (partition <- partitionByLevelOfParallelism(slice(input.image) zip slice(input.reference)))
+      yield processPartition(partition)
+  }.map(_.flatten)
 
   private def slice(image: BufferedImage): Seq[Slice] = image.slice(slicer)
 
-  @inline private def partitionByLevelOfParallelism(slices: Seq[(Slice, Slice)]): Iterator[Seq[(Slice, Slice)]] =
-    slices.grouped(max(1, slices.length / LevelOfParallelism))
+  private def partitionByLevelOfParallelism(slices: Seq[(Slice, Slice)]): Seq[Seq[(Slice, Slice)]] =
+    slices.grouped(max(1, slices.length / LevelOfParallelism)).toSeq
 
-  @inline private def processPartition(slicesToBeCompared: Seq[(Slice, Slice)]): Seq[RegionalMatchingResult[R]] = {
+  @inline private def processPartition(slicesToBeCompared: Seq[(Slice, Slice)]): Future[Seq[RegionalMatchingResult[R]]] = Future.sequence {
     for (current <- slicesToBeCompared) yield {
       val matchingResult = matcher(ProcessingInput(current._1, current._2))
-      RegionalMatchingResult(current._1.region, matchingResult)
+      matchingResult.map(RegionalMatchingResult(current._1.region, _))
     }
   }
 }
 
 object RegionalImageMatcher {
   def apply[R <: MatchingResult](slicer: Slicer, matcher: Matcher[R])
-                                (implicit executionContext: ExecutionContext, timeout: Duration): RegionalImageMatcher[R] =
+                                (implicit ec: ExecutionContext, timeout: Duration): RegionalImageMatcher[R] =
     new RegionalImageMatcher[R](slicer, matcher)
 }
 

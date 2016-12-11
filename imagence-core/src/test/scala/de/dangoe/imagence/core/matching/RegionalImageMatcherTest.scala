@@ -23,34 +23,34 @@ package de.dangoe.imagence.core.matching
 import java.awt.image.BufferedImage
 
 import de.dangoe.imagence.api.ProcessingInput
-import de.dangoe.imagence.api.matching._
+import de.dangoe.imagence.api.matching.Anchor.PointOfOrigin
+import de.dangoe.imagence.api.matching.Deviation.NoDeviation
+import de.dangoe.imagence.api.matching.{Matcher, _}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
-import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 02.08.16
   */
-class RegionalImageMatcherTest extends WordSpec with Matchers with MockitoSugar {
+class RegionalImageMatcherTest extends WordSpec with Matchers with ScalaFutures with MockFactory {
 
   implicit val executionContext = ExecutionContext.global
   implicit val timeout = 15 seconds
 
-  val slicer = mock[Slicer]
-  val matcher = mock[Matcher[MatchingResult]]
-
   "A RegionalImageMatcher" must {
     "not accept processing inputs" when {
       "image size differs from reference image size." in {
-        intercept[MatchingNotPossible] {
-          val input = ProcessingInput(mockImage(320, 240), mockImage(640, 480))
+        val sut = RegionalImageMatcher(stub[Slicer], stub[Matcher[MatchingResult]])
 
-          RegionalImageMatcher(slicer, matcher).apply(input)
+        whenReady(sut(ProcessingInput(emptyImage(320, 240), emptyImage(640, 480))).failed) {
+          _ shouldBe a[MatchingNotPossible]
         }
       }
     }
@@ -58,79 +58,95 @@ class RegionalImageMatcherTest extends WordSpec with Matchers with MockitoSugar 
 
   it should {
     "slice images using the passed slicing strategy." in {
-      when(slicer.slice(any(classOf[BufferedImage]))).thenReturn(Nil)
+      val image = emptyImage(320, 240)
+      val reference = emptyImage(320, 240)
 
-      val image = mockImage(320, 240)
-      val reference = mockImage(320, 240)
+      val slicer = mock[Slicer]
+      (slicer.slice(_: BufferedImage)).expects(image).once().returns(Nil)
+      (slicer.slice(_: BufferedImage)).expects(reference).once().returns(Nil)
 
       val input = ProcessingInput(image, reference)
 
-      RegionalImageMatcher(slicer, matcher).apply(input)
+      val sut = RegionalImageMatcher(slicer, stub[Matcher[MatchingResult]])
 
-      verify(slicer).slice(image)
-      verify(slicer).slice(reference)
+      whenReady(sut(input)) { result =>
+        result.processingInput shouldBe input
+        result.deviation shouldBe NoDeviation
+      }
     }
 
     "match all created slice pairs using the passed matcher." in {
-      val image = mockImage(320, 240)
-      val reference = mockImage(320, 240)
+      val image = emptyImage(320, 240)
+      val reference = emptyImage(320, 240)
 
-      val imageSlice1 = mockSlice(mockImage(160, 240), None)
-      val imageSlice2 = mockSlice(mockImage(160, 240), None)
-      val referenceSlice1 = mockSlice(mockImage(160, 240), None)
-      val referenceSlice2 = mockSlice(mockImage(160, 240), None)
+      val imageSlice1 = Slice(emptyImage(160, 240), PointOfOrigin)
+      val imageSlice2 = Slice(emptyImage(160, 240), PointOfOrigin)
+      val referenceSlice1 = Slice(emptyImage(160, 240), PointOfOrigin)
+      val referenceSlice2 = Slice(emptyImage(160, 240), PointOfOrigin)
 
-      when(slicer.slice(image)).thenReturn(Seq(imageSlice1, imageSlice2))
-      when(slicer.slice(reference)).thenReturn(Seq(referenceSlice1, referenceSlice2))
+      val slicer = stub[Slicer]
+      (slicer.slice(_: BufferedImage)).when(image).once().returns(Seq(imageSlice1, imageSlice2))
+      (slicer.slice(_: BufferedImage)).when(reference).once().returns(Seq(referenceSlice1, referenceSlice2))
+
+      val matchingResult1 = stub[MatchingResult]
+      (matchingResult1.deviation _).when().returns(NoDeviation)
+
+      val matchingResult2 = stub[MatchingResult]
+      (matchingResult2.deviation _).when().returns(NoDeviation)
+
+      val matcher = mock[Matcher[MatchingResult]]
+      (matcher.apply(_: ProcessingInput))
+        .expects(ProcessingInput(imageSlice1.image, referenceSlice1.image)).once()
+        .returns(Future.successful(matchingResult1))
+      (matcher.apply(_: ProcessingInput))
+        .expects(ProcessingInput(imageSlice2.image, referenceSlice2.image)).once()
+        .returns(Future.successful(matchingResult2))
 
       val input = ProcessingInput(image, reference)
 
-      RegionalImageMatcher(slicer, matcher).apply(input)
+      val sut = RegionalImageMatcher(slicer, matcher)
 
-      verify(matcher).apply(ProcessingInput(imageSlice1.image, referenceSlice1.image))
-      verify(matcher).apply(ProcessingInput(imageSlice2.image, referenceSlice2.image))
+      whenReady(sut(input)) { result =>
+        result.processingInput shouldBe input
+        result.deviation shouldBe NoDeviation
+      }
     }
 
     "return the matching results generated by the passed matcher." in {
-      val image = mockImage(320, 240)
-      val reference = mockImage(320, 240)
+      val image = emptyImage(320, 240)
+      val reference = emptyImage(320, 240)
 
-      val imageSlice1 = mockSlice(mockImage(160, 240), Some(Region(Anchor.PointOfOrigin, Dimension(160, 240))))
-      val imageSlice2 = mockSlice(mockImage(160, 240), Some(Region(Anchor(160, 240), Dimension(160, 240))))
-      val referenceSlice1 = mockSlice(mockImage(160, 240), Some(Region(Anchor.PointOfOrigin, Dimension(160, 240))))
-      val referenceSlice2 = mockSlice(mockImage(160, 240), Some(Region(Anchor(160, 240), Dimension(160, 240))))
+      val imageSlice1 = Slice(emptyImage(160, 240), PointOfOrigin)
+      val imageSlice2 = Slice(emptyImage(160, 240), Anchor(160, 240))
+      val referenceSlice1 = Slice(emptyImage(160, 240), PointOfOrigin)
+      val referenceSlice2 = Slice(emptyImage(160, 240), Anchor(160, 240))
 
-      val matchingResult1 = mock[MatchingResult]
-      val matchingResult2 = mock[MatchingResult]
+      val matchingResult1 = stub[MatchingResult]
+      val matchingResult2 = stub[MatchingResult]
 
-      when(slicer.slice(image)).thenReturn(Seq(imageSlice1, imageSlice2))
-      when(slicer.slice(reference)).thenReturn(Seq(referenceSlice1, referenceSlice2))
-      when(matcher.apply(ProcessingInput(imageSlice1.image, referenceSlice1.image))).thenReturn(matchingResult1)
-      when(matcher.apply(ProcessingInput(imageSlice2.image, referenceSlice2.image))).thenReturn(matchingResult2)
+      val slicer = stub[Slicer]
+      (slicer.slice(_: BufferedImage)).when(image).once().returns(Seq(imageSlice1, imageSlice2))
+      (slicer.slice(_: BufferedImage)).when(reference).once().returns(Seq(referenceSlice1, referenceSlice2))
 
-      val input = ProcessingInput(image, reference)
+      val matcher = stub[Matcher[MatchingResult]]
+      (matcher.apply(_: ProcessingInput))
+        .when(ProcessingInput(imageSlice1.image, referenceSlice1.image))
+        .returns(Future.successful(matchingResult1))
+      (matcher.apply(_: ProcessingInput))
+        .when(ProcessingInput(imageSlice2.image, referenceSlice2.image))
+        .returns(Future.successful(matchingResult2))
 
-      val matchingResult = RegionalImageMatcher(slicer, matcher).apply(input)
+      val sut = RegionalImageMatcher(slicer, matcher)
 
-      matchingResult.processingInput shouldBe input
-      matchingResult.regionalMatchingResults.length shouldBe 2
-      matchingResult.regionalMatchingResults.head shouldBe RegionalMatchingResult(imageSlice1.region, matchingResult1)
-      matchingResult.regionalMatchingResults.last shouldBe RegionalMatchingResult(imageSlice2.region, matchingResult2)
+      whenReady(sut.apply(ProcessingInput(image, reference))) { result =>
+        result.processingInput shouldBe ProcessingInput(image, reference)
+        result.regionalMatchingResults.length shouldBe 2
+        result.regionalMatchingResults.head shouldBe RegionalMatchingResult(imageSlice1.region, matchingResult1)
+        result.regionalMatchingResults.last shouldBe RegionalMatchingResult(imageSlice2.region, matchingResult2)
+      }
     }
   }
 
-  private def mockSlice(image: BufferedImage, maybeRegion: Option[Region]): Slice = {
-    val region = maybeRegion.getOrElse(Region(Anchor.PointOfOrigin, Dimension(image.getWidth, image.getHeight)))
-    val slice = mock[Slice]
-    when(slice.image).thenReturn(image)
-    when(slice.region).thenReturn(region)
-    slice
-  }
-
-  private def mockImage(width: Int, height: Int): BufferedImage = {
-    val reference = mock[BufferedImage]
-    when(reference.getWidth).thenReturn(width)
-    when(reference.getHeight).thenReturn(height)
-    reference
-  }
+  private def emptyImage(width: Int, height: Int): BufferedImage =
+    new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
 }
