@@ -25,38 +25,37 @@ import java.awt.image.BufferedImage
 
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
-import org.mockito.Mockito.verify
-import org.scalatest.mock.MockitoSugar
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 16.08.16
   */
-class ImageFactoryTest extends WordSpec with Matchers with MockitoSugar with ImageFactory {
+class ImageFactoryTest extends WordSpec with Matchers with MockFactory with ImageFactory {
 
   "ImageFactory" should {
     "allow to create an image of a given size." in {
-      val image = createImage(OnePixel, mock[DrawingStrategy], BufferedImage.TYPE_INT_ARGB)
+      val image = createImage(OnePixel, stub[DrawingStrategy], BufferedImage.TYPE_INT_ARGB)
 
       image.dimension shouldBe OnePixel
     }
 
     "allow to create an image using a given drawing strategy." in {
       val drawingStrategy = mock[DrawingStrategy]
-      val image = createImage(Dimension(20, 10), drawingStrategy, BufferedImage.TYPE_INT_ARGB)
+      (drawingStrategy.draw(_: BufferedImage)).expects(*).once()
 
-      verify(drawingStrategy).draw(image)
+      val image = createImage(Dimension(20, 10), drawingStrategy, BufferedImage.TYPE_INT_ARGB)
     }
 
     "allow to create an image of type ARGB." in {
-      val image = createImage(OnePixel, mock[DrawingStrategy], BufferedImage.TYPE_INT_ARGB)
+      val image = createImage(OnePixel, stub[DrawingStrategy], BufferedImage.TYPE_INT_ARGB)
 
       image.getType shouldBe BufferedImage.TYPE_INT_ARGB
     }
 
     "allow to create an image of type gray." in {
-      val image = createImage(OnePixel, mock[DrawingStrategy], BufferedImage.TYPE_BYTE_GRAY)
+      val image = createImage(OnePixel, stub[DrawingStrategy], BufferedImage.TYPE_BYTE_GRAY)
 
       image.getType shouldBe BufferedImage.TYPE_BYTE_GRAY
     }

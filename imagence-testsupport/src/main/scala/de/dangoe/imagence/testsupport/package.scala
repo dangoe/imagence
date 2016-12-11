@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 import javax.imageio.ImageIO
 
+import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
 import org.scalatest.matchers.{MatchResult, Matcher}
 
