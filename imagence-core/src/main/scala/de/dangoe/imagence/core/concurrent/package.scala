@@ -22,18 +22,13 @@ package de.dangoe.imagence.core
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 11.12.16
-  */
 package object concurrent {
 
   object Implicits {
 
-    implicit def reducePairOfFuturesOfSameType[T](pair: Tuple2[Future[T], Future[T]])
+    implicit def reducePairOfFuturesOfSameType[T](pair: (Future[T], Future[T]))
                                                  (implicit ec: ExecutionContext): Future[(T, T)] = {
       Future.sequence(Seq(pair._1, pair._2)).map(seq => (seq.head, seq.last))
     }
   }
-
 }

@@ -28,10 +28,6 @@ import de.dangoe.imagence.api.matching._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.math.{ceil, min}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 15.07.16
-  */
 class DefaultSlicer private(sliceSizeCalculation: SliceSizeCalculation)(implicit ec: ExecutionContext) extends Slicer {
 
   override def slice(image: BufferedImage): Seq[Future[Slice]] = {

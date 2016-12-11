@@ -27,12 +27,8 @@ import de.dangoe.imagence.api.matching._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 23.07.16
-  */
-class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))(implicit ec: ExecutionContext)
-  extends BaseMatcher[PixelWiseColorDeviationMatchingResult] {
+class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (ProcessingInput => NormalizedDeviationCalculator))
+                                             (implicit ec: ExecutionContext) extends BaseMatcher[PixelWiseColorDeviationMatchingResult] {
 
   private class DeviationAggregate {
 

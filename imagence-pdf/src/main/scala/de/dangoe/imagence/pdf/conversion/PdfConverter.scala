@@ -29,10 +29,6 @@ import org.apache.pdfbox.rendering.{PDFRenderer, ImageType => PdfBoxImageType}
 
 import scala.util.control.NonFatal
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 12.08.16
-  */
 class PdfConverter(config: PdfConverterConfiguration = PdfConverterConfiguration.default) {
 
   import PdfConverter._

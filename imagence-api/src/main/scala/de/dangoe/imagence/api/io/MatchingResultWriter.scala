@@ -25,10 +25,6 @@ import java.io.OutputStream
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.MatchingResult
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 03.08.16
-  */
 trait MatchingResultWriter[R <: MatchingResult] {
   def write(input: DifferenceImageData[R], outputStream: OutputStream): Unit
 }

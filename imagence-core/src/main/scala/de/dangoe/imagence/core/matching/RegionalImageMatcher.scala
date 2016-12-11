@@ -29,10 +29,6 @@ import de.dangoe.imagence.api.matching._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 23.07.16
-  */
 class RegionalImageMatcher[R <: MatchingResult] private(slicer: Slicer, matcher: Matcher[R])(implicit ec: ExecutionContext) extends BaseMatcher[RegionalImageMatcherResult[R]] {
 
   override def applyInternal(input: ProcessingInput): Future[RegionalImageMatcherResult[R]] =
@@ -62,8 +58,8 @@ object RegionalImageMatcher {
     new RegionalImageMatcher[R](slicer, matcher)
 }
 
-case class RegionalImageMatcherResult[R <: MatchingResult](processingInput: ProcessingInput,
-                                                           regionalMatchingResults: Seq[RegionalMatchingResult[R]]) extends MatchingResult {
+case class RegionalImageMatcherResult[R <: MatchingResult](processingInput: ProcessingInput, regionalMatchingResults: Seq[RegionalMatchingResult[R]])
+  extends MatchingResult {
 
   import RegionalImageMatcherResult._
 

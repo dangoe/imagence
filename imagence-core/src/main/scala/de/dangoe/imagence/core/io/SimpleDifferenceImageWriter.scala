@@ -28,10 +28,6 @@ import javax.imageio.ImageIO
 import de.dangoe.imagence.api.io.{DifferenceImageData, MatchingResultWriter}
 import de.dangoe.imagence.api.matching.{MatchingResult, Regional}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 24.07.16
-  */
 class SimpleDifferenceImageWriter(imageFormat: ImageFormat) extends MatchingResultWriter[MatchingResult with Regional] {
 
   def write(input: DifferenceImageData[MatchingResult with Regional], outputStream: OutputStream): Unit = {

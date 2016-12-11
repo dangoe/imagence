@@ -24,10 +24,6 @@ import java.awt.image.BufferedImage
 
 import de.dangoe.imagence.api.matching.Dimension
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 05.08.16
-  */
 package object api {
 
   case class ProcessingInput(image: BufferedImage, reference: BufferedImage)

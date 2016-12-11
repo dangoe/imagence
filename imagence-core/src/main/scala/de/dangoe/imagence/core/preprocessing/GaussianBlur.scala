@@ -27,10 +27,6 @@ import de.dangoe.imagence.api.preprocessing.Conversion
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 17.08.16
-  */
 class GaussianBlur private(radius: Int)(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {
 
   private val filter = new GaussianFilter(radius)

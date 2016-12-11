@@ -31,10 +31,6 @@ import org.imgscalr.Scalr.{Method, Mode}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 30.07.16
-  */
 sealed trait ScalingQuality
 case object VeryHigh extends ScalingQuality
 case object High extends ScalingQuality

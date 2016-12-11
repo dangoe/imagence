@@ -24,10 +24,6 @@ import java.awt.image.BufferedImage
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 30.07.16
-  */
 package object preprocessing {
 
   type Conversion[T] = T => Future[T]

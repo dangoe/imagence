@@ -28,10 +28,6 @@ import de.dangoe.imagence.api.preprocessing.Conversion
 
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 25.07.16
-  */
 trait GreyscaleMethod extends (Color => Color) {
   protected def createColor(luminance: Int, alpha: Int): Color = new Color(luminance, luminance, luminance, alpha)
 }

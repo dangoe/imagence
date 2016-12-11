@@ -25,10 +25,6 @@ import de.dangoe.imagence.api.ProcessingInput
 
 import scala.concurrent.Future
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 31.07.16
-  */
 trait MatchingResult {
   def deviation: Deviation
 }

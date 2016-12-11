@@ -22,21 +22,37 @@ package de.dangoe.imagence.api.matching
 
 import java.awt.image.BufferedImage
 
+import de.dangoe.imagence.api.matching.Anchor.PointOfOrigin
+
 import scala.concurrent.Future
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 31.07.16
-  */
 object Slicing {
   object Implicits {
-    implicit def toSlice(image: BufferedImage): Slice = Slice(image, Anchor.PointOfOrigin)
+    implicit def toSlice(image: BufferedImage): Slice = Slice(image, PointOfOrigin)
     implicit def extractBufferedImage(slice: Slice): BufferedImage = slice.image
     implicit def toSliceable(image: BufferedImage): Sliceable = new Sliceable(image)
   }
 }
 
-class Slice private(val image: BufferedImage, val region: Region)
+class Slice private(val image: BufferedImage, val region: Region) {
+
+  override def toString = s"Slice($image, $region)"
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Slice]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Slice =>
+      (that canEqual this) &&
+        image == that.image &&
+        region == that.region
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(image, region)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
 
 object Slice {
   def apply(image: BufferedImage, anchor: Anchor): Slice = new Slice(image, Region(anchor, Dimension(image.getWidth, image.getHeight)))
