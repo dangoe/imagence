@@ -24,7 +24,6 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 
 import de.dangoe.imagence.api.ProcessingInput
-import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 

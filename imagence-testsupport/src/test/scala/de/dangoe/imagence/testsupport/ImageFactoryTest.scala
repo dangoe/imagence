@@ -25,9 +25,7 @@ import java.awt.image.BufferedImage
 
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
-import de.dangoe.imagence.testsupport._
-import org.mockito.Mockito
-import org.mockito.Mockito.{times, verify}
+import org.mockito.Mockito.verify
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 

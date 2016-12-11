@@ -24,11 +24,8 @@ import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching._
 import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
 import scala.math.BigDecimal.RoundingMode
 
 /**
