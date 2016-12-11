@@ -26,22 +26,26 @@ val referenceImage = ImageIO.read(new File("/home/user/reference_image.png"))
 
 val scaling = Scaling(Dimension.square(640), ToBoundingBox)
 val slicer = DefaultSlicer.withFixedSliceSizeOf(Dimension.square(4))
-val matchingStrategy = DefaultPixelWiseColorDeviationMatching
+val matchingStrategy = PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
 
-val result = HarmonizeResolutions.using(scaling)
-  .andThen(RegionalImageMatcher(slicer, matchingStrategy))
-  .apply(ProcessingInput(imageToBeChecked, referenceImage))
+val harmonization = HarmonizeResolutions(scaling)
+val matcher = RegionalImageMatcher(slicer, matchingStrategy)
+
+val result = Await.result(for {
+  normalized <- harmonization(ProcessingInput(imageToBeChecked, referenceImage))
+  matchingResult <- matcher(normalized)
+} yield matchingResult, 30 seconds)
 
 val outputStream = new FileOutputStream(new File("/home/user/difference.png"))
 
 try {
-    new DifferenceImageWriter(`png`).write(
-        DifferenceImageData(
-            result.processingInput,
-            result.regionalMatchingResults
-        ),
-        outputStream
-    )
+  new DifferenceImageWriter(`png`).write(
+    DifferenceImageData(
+      result.processingInput,
+      result.regionalMatchingResults
+    ),
+    outputStream
+  )
 } finally outputStream.close()
 ```
 
