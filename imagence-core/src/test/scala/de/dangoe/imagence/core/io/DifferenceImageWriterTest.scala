@@ -34,7 +34,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
