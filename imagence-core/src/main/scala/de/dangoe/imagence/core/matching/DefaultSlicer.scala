@@ -25,43 +25,38 @@ import java.awt.image.BufferedImage
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching._
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.math.{ceil, min}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
   */
-class DefaultSlicer private(sliceSizeCalculation: SliceSizeCalculation)
-                           (implicit executionContext: ExecutionContext, timeout:Duration) extends Slicer {
+class DefaultSlicer private(sliceSizeCalculation: SliceSizeCalculation)(implicit ec: ExecutionContext) extends Slicer {
 
-  override def slice(image: BufferedImage): Seq[Slice] = {
+  override def slice(image: BufferedImage): Seq[Future[Slice]] = {
     implicit val sliceSize = sliceSizeCalculation(image.dimension)
-    Await.result(Future.sequence(
-      for (verticalOffset <- calculateOffsets(image.dimension, _.height)) yield createSlice(verticalOffset, image)
-    ), timeout).flatten
-  }
-
-  private def calculateOffsets(dimension: Dimension, edgeLength: Dimension => Int)(implicit sliceSize: Dimension with SliceSize) =
-    0 until ceil(edgeLength(dimension).toDouble / edgeLength(sliceSize)).toInt map (_ * edgeLength(sliceSize))
-
-  private def createSlice(verticalOffset: Int, image: BufferedImage)(implicit sliceSize: Dimension with SliceSize): Future[Seq[Slice]] = Future {
-    for (horizontalOffset <- calculateOffsets(image.dimension, _.width)) yield {
+    for {
+      verticalOffset <- calculateOffsets(image.dimension, _.height)
+      horizontalOffset <- calculateOffsets(image.dimension, _.width)
+    } yield Future {
       val width = min(sliceSize.width, image.getWidth - horizontalOffset)
       val height = min(sliceSize.height, image.getHeight - verticalOffset)
       Slice(image.getSubimage(horizontalOffset, verticalOffset, width, height), Anchor(horizontalOffset, verticalOffset))
     }
   }
+
+  private def calculateOffsets(dimension: Dimension, edgeLength: Dimension => Int)(implicit sliceSize: Dimension with SliceSize) =
+    0 until ceil(edgeLength(dimension).toDouble / edgeLength(sliceSize)).toInt map (_ * edgeLength(sliceSize))
 }
 
 object DefaultSlicer {
-  def apply(sliceSizeCalculation: SliceSizeCalculation)(implicit executionContext: ExecutionContext, timeout: Duration): DefaultSlicer =
+  def apply(sliceSizeCalculation: SliceSizeCalculation)(implicit ec: ExecutionContext): DefaultSlicer =
     new DefaultSlicer(sliceSizeCalculation)
 
-  def withFixedSliceSizeOf(dimension: Dimension)(implicit executionContext: ExecutionContext, timeout: Duration): DefaultSlicer =
+  def withFixedSliceSizeOf(dimension: Dimension)(implicit ec: ExecutionContext): DefaultSlicer =
     new DefaultSlicer(FixedSliceSize(dimension))
-  def withPercentageSliceSizeOf(factor: Double)(implicit executionContext: ExecutionContext, timeout: Duration): DefaultSlicer =
+  def withPercentageSliceSizeOf(factor: Double)(implicit ec: ExecutionContext): DefaultSlicer =
     new DefaultSlicer(PercentageSliceSize(factor))
 }
 

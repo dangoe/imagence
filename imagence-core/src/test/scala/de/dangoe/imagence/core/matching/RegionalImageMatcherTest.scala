@@ -26,14 +26,12 @@ import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Anchor.PointOfOrigin
 import de.dangoe.imagence.api.matching.Deviation.NoDeviation
 import de.dangoe.imagence.api.matching.{Matcher, _}
-import org.mockito.Matchers._
-import org.mockito.Mockito._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -41,8 +39,7 @@ import scala.concurrent.duration._
   */
 class RegionalImageMatcherTest extends WordSpec with Matchers with ScalaFutures with MockFactory {
 
-  implicit val executionContext = ExecutionContext.global
-  implicit val timeout = 15 seconds
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   "A RegionalImageMatcher" must {
     "not accept processing inputs" when {
@@ -85,8 +82,8 @@ class RegionalImageMatcherTest extends WordSpec with Matchers with ScalaFutures 
       val referenceSlice2 = Slice(emptyImage(160, 240), PointOfOrigin)
 
       val slicer = stub[Slicer]
-      (slicer.slice(_: BufferedImage)).when(image).once().returns(Seq(imageSlice1, imageSlice2))
-      (slicer.slice(_: BufferedImage)).when(reference).once().returns(Seq(referenceSlice1, referenceSlice2))
+      (slicer.slice(_: BufferedImage)).when(image).once().returns(Seq(Future.successful(imageSlice1), Future.successful(imageSlice2)))
+      (slicer.slice(_: BufferedImage)).when(reference).once().returns(Seq(Future.successful(referenceSlice1), Future.successful(referenceSlice2)))
 
       val matchingResult1 = stub[MatchingResult]
       (matchingResult1.deviation _).when().returns(NoDeviation)
@@ -125,8 +122,8 @@ class RegionalImageMatcherTest extends WordSpec with Matchers with ScalaFutures 
       val matchingResult2 = stub[MatchingResult]
 
       val slicer = stub[Slicer]
-      (slicer.slice(_: BufferedImage)).when(image).once().returns(Seq(imageSlice1, imageSlice2))
-      (slicer.slice(_: BufferedImage)).when(reference).once().returns(Seq(referenceSlice1, referenceSlice2))
+      (slicer.slice(_: BufferedImage)).when(image).once().returns(Seq(Future.successful(imageSlice1), Future.successful(imageSlice2)))
+      (slicer.slice(_: BufferedImage)).when(reference).once().returns(Seq(Future.successful(referenceSlice1), Future.successful(referenceSlice2)))
 
       val matcher = stub[Matcher[MatchingResult]]
       (matcher.apply(_: ProcessingInput))
