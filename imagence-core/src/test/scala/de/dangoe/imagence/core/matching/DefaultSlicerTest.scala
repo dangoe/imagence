@@ -38,8 +38,7 @@ class DefaultSlicerTest extends WordSpec with Matchers with ScalaFutures with Im
 
   import DefaultSlicerTest._
 
-  implicit val executionContext = ExecutionContext.global
-  implicit val timeout = 15 seconds
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val quadraticImage = readImage("quadratic.png")
   val rectangularImage = readImage("rectangular.png")

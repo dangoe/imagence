@@ -43,8 +43,6 @@ class DifferenceImageWriterTest extends WordSpec with Matchers with ScalaFutures
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  implicit val timeout = 15 seconds
-
   val harmonization = HarmonizeResolutions.byScalingToReference()
   val regionalImageMatcher = RegionalImageMatcher(
     DefaultSlicer.withFixedSliceSizeOf(Dimension.square(23)),
