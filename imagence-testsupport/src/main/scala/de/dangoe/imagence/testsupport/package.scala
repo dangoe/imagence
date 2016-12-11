@@ -8,10 +8,6 @@ import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
 import org.scalatest.matchers.{MatchResult, Matcher}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 16.08.16
-  */
 package object testsupport {
 
   final val OnePixel = Dimension(1, 1)

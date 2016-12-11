@@ -25,21 +25,25 @@ import java.awt.Color
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.testsupport._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 31.07.16
   */
-class NativeGreyscaleConversionTest extends WordSpec with Matchers with ImageFactory {
+class NativeGreyscaleConversionTest extends WordSpec with Matchers with ScalaFutures with ImageFactory {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   "NativeGreyscaleConversion" should {
     "convert a color to greyscale." in {
-      val image = NativeGreyscaleConversion.apply(createImage(OnePixel, Fill(new Color(120, 255, 160))))
-      val backgroundColor = new Color(image.getRGB(0, 0), true)
+      whenReady(NativeGreyscaleConversion().apply(createImage(OnePixel, Fill(new Color(120, 255, 160))))) { image =>
+        val backgroundColor = new Color(image.getRGB(0, 0), true)
 
-      image.dimension shouldBe Dimension(1, 1)
-      backgroundColor.getRGB shouldBe -1710619
+        image.dimension shouldBe Dimension(1, 1)
+        backgroundColor.getRGB shouldBe -1710619
+      }
     }
   }
 }

@@ -20,10 +20,6 @@
   */
 package de.dangoe.imagence.core.matching
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 17.08.16
-  */
 private[matching] object RgbChannels {
 
   @inline def extractRed(rgb: Int): Int = rgb >> 16 & 0xFF

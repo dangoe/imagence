@@ -23,21 +23,20 @@ package de.dangoe.imagence.core.preprocessing
 import java.awt.image.BufferedImage
 
 import com.jhlabs.image.GaussianFilter
+import de.dangoe.imagence.api.preprocessing.Conversion
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 17.08.16
-  */
-class GaussianBlur private(radius: Int) extends (BufferedImage => BufferedImage) {
+import scala.concurrent.{ExecutionContext, Future}
+
+class GaussianBlur private(radius: Int)(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {
 
   private val filter = new GaussianFilter(radius)
 
-  override def apply(image: BufferedImage): BufferedImage = {
+  override def apply(image: BufferedImage) = Future {
     val destImage = filter.createCompatibleDestImage(image, image.getColorModel)
     filter.filter(image, destImage)
   }
 }
 
 object GaussianBlur {
-  def apply(radius: Int): GaussianBlur = new GaussianBlur(radius)
+  def apply(radius: Int)(implicit ec: ExecutionContext): GaussianBlur = new GaussianBlur(radius)
 }

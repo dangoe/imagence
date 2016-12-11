@@ -24,13 +24,10 @@ import java.awt.RenderingHints.Key
 import java.awt.image.{BufferedImage, ColorConvertOp}
 import java.awt.{Color, Graphics2D, RenderingHints}
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import de.dangoe.imagence.api.preprocessing.Conversion
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 25.07.16
-  */
+import scala.concurrent.{ExecutionContext, Future}
+
 trait GreyscaleMethod extends (Color => Color) {
   protected def createColor(luminance: Int, alpha: Int): Color = new Color(luminance, luminance, luminance, alpha)
 }
@@ -53,17 +50,13 @@ case object Luma extends GreyscaleMethod {
     createColor(math.round(color.getRed * 0.299 + color.getGreen * 0.587 + color.getBlue * 0.114).toInt, color.getAlpha)
 }
 
-class GreyscaleConversion private(method: GreyscaleMethod)
-                                 (implicit executionContext: ExecutionContext, timeout: Duration)
-  extends (BufferedImage => BufferedImage) {
+class GreyscaleConversion private(method: GreyscaleMethod)(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {
 
-  override def apply(image: BufferedImage): BufferedImage = {
+  override def apply(image: BufferedImage) = {
     val greyscaleImage = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_BYTE_GRAY)
-    Await.ready(Future.sequence {
-      for (y <- 0 until image.getHeight)
-        yield processLine(image, greyscaleImage.getSubimage(0, y, image.getWidth, 1), y)
-    }, timeout)
-    greyscaleImage
+    Future.sequence {
+      for (y <- 0 until image.getHeight) yield processLine(image, greyscaleImage.getSubimage(0, y, image.getWidth, 1), y)
+    }.transform(_ => greyscaleImage, identity)
   }
 
   private def processLine(source: BufferedImage, target: BufferedImage, y: Int): Future[Unit] = Future {
@@ -76,18 +69,22 @@ class GreyscaleConversion private(method: GreyscaleMethod)
 }
 
 object GreyscaleConversion {
-  def using(method: GreyscaleMethod)(implicit executionContext: ExecutionContext, timeout: Duration): GreyscaleConversion = new GreyscaleConversion(method)
+  def apply(method: GreyscaleMethod)(implicit ec: ExecutionContext): GreyscaleConversion = new GreyscaleConversion(method)
 }
 
-object NativeGreyscaleConversion extends (BufferedImage => BufferedImage) {
+class NativeGreyscaleConversion()(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {
 
   import collection.JavaConverters._
 
   val EmptyRenderingHints = new RenderingHints(Map.empty[Key, AnyRef].asJava)
 
-  override def apply(image: BufferedImage): BufferedImage = {
+  override def apply(image: BufferedImage) = Future {
     val greyscale = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_BYTE_GRAY)
     new ColorConvertOp(image.getColorModel.getColorSpace, greyscale.getColorModel.getColorSpace, EmptyRenderingHints).filter(image, greyscale)
     greyscale
   }
+}
+
+object NativeGreyscaleConversion {
+  def apply()(implicit ec: ExecutionContext): NativeGreyscaleConversion = new NativeGreyscaleConversion
 }

@@ -28,10 +28,6 @@ import de.dangoe.imagence.core.matching.RgbChannels._
 
 import scala.math._
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 31.07.16
-  */
 class EuclideanDistanceCalculator(input: ProcessingInput) extends NormalizedDeviationCalculator {
 
   import EuclideanDistanceCalculator._

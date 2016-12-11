@@ -25,96 +25,99 @@ import java.awt.Color
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.testsupport._
-import org.scalatest.mock.MockitoSugar
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 17.08.16
   */
-class GaussianBlurTest extends WordSpec with Matchers with MockitoSugar with ImageReader with ImageFactory {
+class GaussianBlurTest extends WordSpec with Matchers with MockFactory with ScalaFutures with ImageReader with ImageFactory {
 
-  private final val ImageDimension = Dimension(42, 23)
+  import scala.concurrent.ExecutionContext.Implicits.global
 
-  private final val WhiteImage = createImage(ImageDimension, Fill(Color.WHITE))
-  private final val BlackImage = createImage(ImageDimension, Fill(Color.BLACK))
+  val imageDimension = Dimension(42, 23)
+
+  val whiteImage = createImage(imageDimension, Fill(Color.WHITE))
+  val blackImage = createImage(imageDimension, Fill(Color.BLACK))
 
   "Gaussian blur" should {
     "create an image of same size." in {
-      val blurredImage = GaussianBlur(1).apply(createImage(ImageDimension, mock[DrawingStrategy]))
-
-      blurredImage.dimension shouldBe ImageDimension
+      whenReady(GaussianBlur(1).apply(createImage(imageDimension, stub[DrawingStrategy]))) { blurredImage =>
+        blurredImage.dimension shouldBe imageDimension
+      }
     }
 
     "create a white image" when {
       "the input image is white." in {
-        val blurredImage = GaussianBlur(1).apply(WhiteImage)
-
-        blurredImage should showTheSameAs(WhiteImage)
+        whenReady(GaussianBlur(1).apply(whiteImage)) { blurredImage =>
+          blurredImage should showTheSameAs(whiteImage)
+        }
       }
     }
 
     "create a black image" when {
       "the input image is black." in {
-        val blurredImage = GaussianBlur(1).apply(BlackImage)
-
-        blurredImage should showTheSameAs(BlackImage)
+        whenReady(GaussianBlur(1).apply(blackImage)) { blurredImage =>
+          blurredImage should showTheSameAs(blackImage)
+        }
       }
     }
 
     "create a blurred version" when {
       "filter radius is 1 pixel." in {
-        val blurredImage = GaussianBlur(1).apply(readImage("pattern.png"))
-
-        blurredImage should showTheSameAs(readImage("pattern_blurred_r1.png"))
+        whenReady(GaussianBlur(1).apply(readImage("pattern.png"))) { blurredImage =>
+          blurredImage should showTheSameAs(readImage("pattern_blurred_r1.png"))
+        }
       }
 
       "filter radius is 2 pixels." in {
-        val blurredImage = GaussianBlur(2).apply(readImage("pattern.png"))
-
-        blurredImage should showTheSameAs(readImage("pattern_blurred_r2.png"))
+        whenReady(GaussianBlur(2).apply(readImage("pattern.png"))) { blurredImage =>
+          blurredImage should showTheSameAs(readImage("pattern_blurred_r2.png"))
+        }
       }
 
       "filter radius is 3 pixels." in {
-        val blurredImage = GaussianBlur(3).apply(readImage("pattern.png"))
-
-        blurredImage should showTheSameAs(readImage("pattern_blurred_r3.png"))
+        whenReady(GaussianBlur(3).apply(readImage("pattern.png"))) { blurredImage =>
+          blurredImage should showTheSameAs(readImage("pattern_blurred_r3.png"))
+        }
       }
 
       "filter radius is 5 pixels." in {
-        val blurredImage = GaussianBlur(5).apply(readImage("pattern.png"))
-
-        blurredImage should showTheSameAs(readImage("pattern_blurred_r5.png"))
+        whenReady(GaussianBlur(5).apply(readImage("pattern.png"))) { blurredImage =>
+          blurredImage should showTheSameAs(readImage("pattern_blurred_r5.png"))
+        }
       }
 
       "filter radius is 7 pixels." in {
-        val blurredImage = GaussianBlur(7).apply(readImage("pattern.png"))
-
-        blurredImage should showTheSameAs(readImage("pattern_blurred_r7.png"))
+        whenReady(GaussianBlur(7).apply(readImage("pattern.png"))) { blurredImage =>
+          blurredImage should showTheSameAs(readImage("pattern_blurred_r7.png"))
+        }
       }
 
       "filter radius is 11 pixels." in {
-        val blurredImage = GaussianBlur(11).apply(readImage("pattern.png"))
-
-        blurredImage should showTheSameAs(readImage("pattern_blurred_r11.png"))
+        whenReady(GaussianBlur(11).apply(readImage("pattern.png"))) { blurredImage =>
+          blurredImage should showTheSameAs(readImage("pattern_blurred_r11.png"))
+        }
       }
 
       "filter radius is 29 pixels." in {
-        val blurredImage = GaussianBlur(29).apply(readImage("pattern.png"))
-
-        blurredImage should showTheSameAs(readImage("pattern_blurred_r29.png"))
+        whenReady(GaussianBlur(29).apply(readImage("pattern.png"))) { blurredImage =>
+          blurredImage should showTheSameAs(readImage("pattern_blurred_r29.png"))
+        }
       }
 
       "filter radius is 47 pixels." in {
-        val blurredImage = GaussianBlur(47).apply(readImage("pattern.png"))
-
-        blurredImage should showTheSameAs(readImage("pattern_blurred_r47.png"))
+        whenReady(GaussianBlur(47).apply(readImage("pattern.png"))) { blurredImage =>
+          blurredImage should showTheSameAs(readImage("pattern_blurred_r47.png"))
+        }
       }
 
       "filter radius is 71 pixels." in {
-        val blurredImage = GaussianBlur(71).apply(readImage("pattern.png"))
-
-        blurredImage should showTheSameAs(readImage("pattern_blurred_r71.png"))
+        whenReady(GaussianBlur(71).apply(readImage("pattern.png"))) { blurredImage =>
+          blurredImage should showTheSameAs(readImage("pattern_blurred_r71.png"))
+        }
       }
     }
   }

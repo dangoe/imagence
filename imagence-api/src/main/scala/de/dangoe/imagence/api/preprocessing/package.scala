@@ -18,20 +18,31 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence
+package de.dangoe.imagence.api
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.api.matching.Dimension
+import scala.concurrent.{ExecutionContext, Future}
 
-package object api {
+package object preprocessing {
 
-  case class ProcessingInput(image: BufferedImage, reference: BufferedImage)
+  type Conversion[T] = T => Future[T]
 
   object Implicits {
-    implicit class RichBufferedImage(delegate: BufferedImage) {
-      def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
-      def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)
+    implicit def toPreprocessor(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = Preprocessor(conv)
+  }
+
+  class Preprocessor private(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext) extends Conversion[ProcessingInput] {
+
+    override def apply(input: ProcessingInput) = {
+      for {
+        processedImage <- conv(input.image)
+        processedReference <- conv(input.reference)
+      } yield ProcessingInput(processedImage, processedReference)
     }
+  }
+
+  object Preprocessor {
+    def apply(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = new Preprocessor(conv)
   }
 }

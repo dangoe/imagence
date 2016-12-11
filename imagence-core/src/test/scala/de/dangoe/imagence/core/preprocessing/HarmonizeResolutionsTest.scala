@@ -24,19 +24,16 @@ import java.awt.image.BufferedImage
 
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Dimension.square
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 30.07.16
   */
-class HarmonizeResolutionsTest extends WordSpec with Matchers {
+class HarmonizeResolutionsTest extends WordSpec with Matchers with ScalaFutures {
 
-  implicit val executionContext = ExecutionContext.global
-  implicit val timeout = 15 seconds
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val reference = new BufferedImage(800, 600, BufferedImage.TYPE_BYTE_GRAY)
   val smallerImage = new BufferedImage(42, 42, BufferedImage.TYPE_BYTE_GRAY)
@@ -44,40 +41,48 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers {
 
   "HarmonizeResolutions" should {
     "scale a smaller image to the reference image's size while the reference image remains unchanged." in {
-      val processed = HarmonizeResolutions.byScalingToReference().apply(ProcessingInput(smallerImage, reference))
+      val sut = HarmonizeResolutions.byScalingToReference()
 
-      processed.image.getWidth shouldBe 800
-      processed.image.getHeight shouldBe 600
-      processed.reference.getWidth shouldBe 800
-      processed.reference.getHeight shouldBe 600
+      whenReady(sut(ProcessingInput(smallerImage, reference))) { processed =>
+        processed.image.getWidth shouldBe 800
+        processed.image.getHeight shouldBe 600
+        processed.reference.getWidth shouldBe 800
+        processed.reference.getHeight shouldBe 600
+      }
     }
 
     "scale a larger image to the reference image's size while the reference image remains unchanged." in {
-      val processed = HarmonizeResolutions.byScalingToReference().apply(ProcessingInput(largerImage, reference))
+      val sut = HarmonizeResolutions.byScalingToReference()
 
-      processed.image.getWidth shouldBe 800
-      processed.image.getHeight shouldBe 600
-      processed.reference.getWidth shouldBe 800
-      processed.reference.getHeight shouldBe 600
+      whenReady(sut(ProcessingInput(largerImage, reference))) { processed =>
+        processed.image.getWidth shouldBe 800
+        processed.image.getHeight shouldBe 600
+        processed.reference.getWidth shouldBe 800
+        processed.reference.getHeight shouldBe 600
+      }
     }
 
     "allow to pass a target bounding box that is used to resize both images to am matching size within these bounds" when {
       "the image is smaller than the reference image." in {
-        val processed = HarmonizeResolutions.using(Scaling.toBoundingBox(square(400))).apply(ProcessingInput(smallerImage, reference))
+        val sut = HarmonizeResolutions(Scaling.toBoundingBox(square(400)))
 
-        processed.image.getWidth shouldBe 400
-        processed.image.getHeight shouldBe 300
-        processed.reference.getWidth shouldBe 400
-        processed.reference.getHeight shouldBe 300
+        whenReady(sut(ProcessingInput(smallerImage, reference))) { processed =>
+          processed.image.getWidth shouldBe 400
+          processed.image.getHeight shouldBe 300
+          processed.reference.getWidth shouldBe 400
+          processed.reference.getHeight shouldBe 300
+        }
       }
 
       "the image is larger than the reference image." in {
-        val processed = HarmonizeResolutions.using(Scaling.toBoundingBox(square(400))).apply(ProcessingInput(largerImage, reference))
+        val sut = HarmonizeResolutions(Scaling.toBoundingBox(square(400)))
 
-        processed.image.getWidth shouldBe 400
-        processed.image.getHeight shouldBe 300
-        processed.reference.getWidth shouldBe 400
-        processed.reference.getHeight shouldBe 300
+        whenReady(sut(ProcessingInput(largerImage, reference))) { processed =>
+          processed.image.getWidth shouldBe 400
+          processed.image.getHeight shouldBe 300
+          processed.reference.getWidth shouldBe 400
+          processed.reference.getHeight shouldBe 300
+        }
       }
     }
   }

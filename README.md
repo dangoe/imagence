@@ -21,28 +21,60 @@ It does not provide any kind of pattern recognition or pattern similarity analys
 ## Example usage
 
 ```scala
-val imageToBeChecked = ImageIO.read(new File("/home/user/image_to_be_checked.png"))
-val referenceImage = ImageIO.read(new File("/home/user/reference_image.png"))
+import java.io.{File, FileOutputStream}
+import javax.imageio.ImageIO
 
-val scaling = Scaling(Dimension.square(640), ToBoundingBox)
-val slicer = DefaultSlicer.withFixedSliceSizeOf(Dimension.square(4))
-val matchingStrategy = DefaultPixelWiseColorDeviationMatching
+import de.dangoe.imagence.api.ProcessingInput
+import de.dangoe.imagence.api.io.DifferenceImageData
+import de.dangoe.imagence.api.matching.Dimension
+import de.dangoe.imagence.core.io.{SimpleDifferenceImageWriter, `png`}
+import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching.DefaultDeviationCalculatorFactory
+import de.dangoe.imagence.core.matching.{DefaultSlicer, PixelWiseColorDeviationMatching, RegionalImageMatcher}
+import de.dangoe.imagence.core.preprocessing._
 
-val result = HarmonizeResolutions.using(scaling)
-  .andThen(RegionalImageMatcher(slicer, matchingStrategy))
-  .apply(ProcessingInput(imageToBeChecked, referenceImage))
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
-val outputStream = new FileOutputStream(new File("/home/user/difference.png"))
+object TestApp {
 
-try {
-    new DifferenceImageWriter(`png`).write(
-        DifferenceImageData(
-            result.processingInput,
-            result.regionalMatchingResults
-        ),
-        outputStream
-    )
-} finally outputStream.close()
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  implicit val scalingQuality = Speed
+
+  def main(args: Array[String]): Unit = {
+    val imageToBeChecked = ImageIO.read(new File("/home/user/image_to_be_checked.png"))
+    val referenceImage = ImageIO.read(new File("/home/user/reference_image.png"))
+    
+    val scaling = Scaling(Dimension.square(640), ToBoundingBox)
+    val slicer = DefaultSlicer.withFixedSliceSizeOf(Dimension.square(4))
+    val matchingStrategy = PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
+
+    val harmonization = HarmonizeResolutions(scaling)
+    val matcher = RegionalImageMatcher(slicer, matchingStrategy)
+
+    val eventualMatchingResult = for {
+      normalized <- harmonization(ProcessingInput(imageToBeChecked, referenceImage))
+      result <- matcher(normalized)
+      _ <- Future {
+        val outputStream = new FileOutputStream(new File("/home/user/difference.png"))
+        try {
+          new SimpleDifferenceImageWriter(`png`).write(
+            DifferenceImageData(
+              result.processingInput,
+              result.regionalMatchingResults
+            ),
+            outputStream
+          )
+        } finally {
+          outputStream.close()
+        }
+      }
+    } yield ()
+
+    Await.ready(eventualMatchingResult, 30 seconds)
+  }
+}
+
 ```
 
 ## Contributing

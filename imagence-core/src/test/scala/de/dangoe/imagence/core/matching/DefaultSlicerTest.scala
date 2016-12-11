@@ -24,21 +24,20 @@ import de.dangoe.imagence.api.matching.Anchor._
 import de.dangoe.imagence.api.matching.Slicing.Implicits._
 import de.dangoe.imagence.api.matching.{Anchor, Slice}
 import de.dangoe.imagence.testsupport._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
+import scala.concurrent.Future
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 15.07.16
   */
-class DefaultSlicerTest extends WordSpec with Matchers with ImageReader {
+class DefaultSlicerTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
 
   import DefaultSlicerTest._
 
-  implicit val executionContext = ExecutionContext.global
-  implicit val timeout = 15 seconds
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val quadraticImage = readImage("quadratic.png")
   val rectangularImage = readImage("rectangular.png")
@@ -47,37 +46,37 @@ class DefaultSlicerTest extends WordSpec with Matchers with ImageReader {
   "Default slicing with percentage slice size" should {
     "slice an quadratic image in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = quadraticImage.slice(DefaultSlicer(PercentageSliceSize(0.5)))
-
-        slices.length shouldBe 4
-        slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("quadratic_11.png"))
-        slices.sliceAt(Anchor(16, 0)) should showTheSameAs(readImage("quadratic_12.png"))
-        slices.sliceAt(Anchor(0, 16)) should showTheSameAs(readImage("quadratic_21.png"))
-        slices.sliceAt(Anchor(16, 16)) should showTheSameAs(readImage("quadratic_22.png"))
+        whenReady(Future.sequence(quadraticImage.slice(DefaultSlicer(PercentageSliceSize(0.5))))) { slices =>
+          slices.length shouldBe 4
+          slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("quadratic_11.png"))
+          slices.sliceAt(Anchor(16, 0)) should showTheSameAs(readImage("quadratic_12.png"))
+          slices.sliceAt(Anchor(0, 16)) should showTheSameAs(readImage("quadratic_21.png"))
+          slices.sliceAt(Anchor(16, 16)) should showTheSameAs(readImage("quadratic_22.png"))
+        }
       }
     }
 
     "slice an rectangular image with even edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = rectangularImage.slice(DefaultSlicer(PercentageSliceSize(0.5)))
-
-        slices.length shouldBe 4
-        slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_11.png"))
-        slices.sliceAt(Anchor(64, 0)) should showTheSameAs(readImage("rectangular_12.png"))
-        slices.sliceAt(Anchor(0, 32)) should showTheSameAs(readImage("rectangular_21.png"))
-        slices.sliceAt(Anchor(64, 32)) should showTheSameAs(readImage("rectangular_22.png"))
+        whenReady(Future.sequence(rectangularImage.slice(DefaultSlicer(PercentageSliceSize(0.5))))) { slices =>
+          slices.length shouldBe 4
+          slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_11.png"))
+          slices.sliceAt(Anchor(64, 0)) should showTheSameAs(readImage("rectangular_12.png"))
+          slices.sliceAt(Anchor(0, 32)) should showTheSameAs(readImage("rectangular_21.png"))
+          slices.sliceAt(Anchor(64, 32)) should showTheSameAs(readImage("rectangular_22.png"))
+        }
       }
     }
 
     "slice an rectangular image with odd edge lengths in 4 slices" when {
       "slice edge length is one-half image edge length." in {
-        val slices = rectangularWithOddEdgeLengthsImage.slice(DefaultSlicer(PercentageSliceSize(0.5)))
-
-        slices.length shouldBe 4
-        slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))
-        slices.sliceAt(Anchor(64, 0)) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_12.png"))
-        slices.sliceAt(Anchor(0, 32)) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_21.png"))
-        slices.sliceAt(Anchor(64, 32)) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_22.png"))
+        whenReady(Future.sequence(rectangularWithOddEdgeLengthsImage.slice(DefaultSlicer(PercentageSliceSize(0.5))))) { slices =>
+          slices.length shouldBe 4
+          slices.sliceAt(PointOfOrigin) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_11.png"))
+          slices.sliceAt(Anchor(64, 0)) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_12.png"))
+          slices.sliceAt(Anchor(0, 32)) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_21.png"))
+          slices.sliceAt(Anchor(64, 32)) should showTheSameAs(readImage("rectangular_with_odd_edge_lengths_22.png"))
+        }
       }
     }
   }
@@ -88,4 +87,5 @@ object DefaultSlicerTest {
   implicit class SliceSequence(delegate: Seq[Slice]) {
     def sliceAt(anchor: Anchor) = delegate.find(_.region.anchor == anchor).get.image
   }
+
 }

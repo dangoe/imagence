@@ -18,37 +18,41 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.api.preprocessing
-
-import java.awt.image.BufferedImage
+package de.dangoe.imagence.core.matching
 
 import de.dangoe.imagence.api.ProcessingInput
+import de.dangoe.imagence.api.matching.Deviation.NoDeviation
+import de.dangoe.imagence.api.matching._
+import de.dangoe.imagence.testsupport._
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{Matchers, WordSpec}
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.Future
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 30.07.16
+  * @since 23.07.16
   */
-object Implicits {
-  implicit def toPreprocessor(op: BufferedImage => BufferedImage)
-                             (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
-    Preprocessor(op)
-}
+class BaseMatcherTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
 
-class Preprocessor private(op: BufferedImage => BufferedImage)
-                          (implicit executionContext: ExecutionContext, timeout: Duration)
-  extends (ProcessingInput => ProcessingInput) {
-
-  override def apply(input: ProcessingInput): ProcessingInput = {
-    val processingResults = Await.result(Future.sequence(Seq(Future(op(input.image)), Future(op(input.reference)))), timeout)
-    ProcessingInput(processingResults.head, processingResults.last)
+  val sut = new BaseMatcher[MatchingResult] {
+    override protected def applyInternal(input: ProcessingInput): Future[MatchingResult] = Future.successful(new MatchingResult {
+      override def deviation: Deviation = NoDeviation
+    })
   }
-}
 
-object Preprocessor {
-  def apply(op: BufferedImage => BufferedImage)
-           (implicit executionContext: ExecutionContext, timeout: Duration): Preprocessor =
-    new Preprocessor(op)
+  "Any matcher" must {
+    "throw an MatchingNotPossible exception" when {
+      "image size differs from reference image size." in {
+        val quadraticImage = readImage("quadratic.png")
+        val rectangularImage = readImage("rectangular.png")
+
+        val processingInput = ProcessingInput(quadraticImage, rectangularImage)
+
+        whenReady(sut(processingInput).failed) { failure =>
+          failure shouldBe a[MatchingNotPossible]
+        }
+      }
+    }
+  }
 }

@@ -23,20 +23,20 @@ package de.dangoe.imagence.core.matching
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching._
 import de.dangoe.imagence.testsupport._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
 import scala.math.BigDecimal.RoundingMode
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
   * @since 23.07.16
   */
-class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers with ImageReader {
+class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers with ScalaFutures with ImageReader {
 
-  implicit val executionContext = ExecutionContext.global
-  implicit val timeout = 15 seconds
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  val defaultMatching = PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
 
   "PixelWiseColorDeviationMatching" should {
     "calculate a deviation of zero" when {
@@ -45,9 +45,9 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers with Im
 
         val processingInput = ProcessingInput(image, image)
 
-        val result = DefaultPixelWiseColorDeviationMatching.apply(processingInput)
-
-        result.deviation.value shouldBe 0
+        whenReady(defaultMatching(processingInput)) { result =>
+          result.deviation.value shouldBe 0
+        }
       }
     }
 
@@ -58,10 +58,10 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers with Im
 
         val processingInput = ProcessingInput(image, referenceImage)
 
-        val result = DefaultPixelWiseColorDeviationMatching.apply(processingInput)
-
-        BigDecimal.valueOf(result.deviation.value).setScale(2, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(0.71)
-        result.deviantPixelCount shouldBe 169
+        whenReady(defaultMatching(processingInput)) { result =>
+          BigDecimal.valueOf(result.deviation.value).setScale(2, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(0.71)
+          result.deviantPixelCount shouldBe 169
+        }
       }
     }
 
@@ -72,10 +72,10 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers with Im
 
         val processingInput = ProcessingInput(image, referenceImage)
 
-        val result = DefaultPixelWiseColorDeviationMatching.apply(processingInput)
-
-        result.deviation.value shouldBe 1
-        result.deviantPixelCount shouldBe 4096
+        whenReady(defaultMatching(processingInput)) { result =>
+          result.deviation.value shouldBe 1
+          result.deviantPixelCount shouldBe 4096
+        }
       }
     }
 
@@ -86,10 +86,10 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers with Im
 
         val processingInput = ProcessingInput(image, referenceImage)
 
-        val result = DefaultPixelWiseColorDeviationMatching.apply(processingInput)
-
-        result.deviation.value shouldBe 1
-        result.deviantPixelCount shouldBe 4096
+        whenReady(defaultMatching(processingInput)) { result =>
+          result.deviation.value shouldBe 1
+          result.deviantPixelCount shouldBe 4096
+        }
       }
     }
 
@@ -100,10 +100,10 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers with Im
 
         val processingInput = ProcessingInput(image, referenceImage)
 
-        val result = DefaultPixelWiseColorDeviationMatching.apply(processingInput)
-
-        BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
-        result.deviantPixelCount shouldBe 4096
+        whenReady(defaultMatching(processingInput)) { result =>
+          BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
+          result.deviantPixelCount shouldBe 4096
+        }
       }
     }
 
@@ -114,10 +114,10 @@ class PixelWiseColorDeviationMatchingTest extends WordSpec with Matchers with Im
 
         val processingInput = ProcessingInput(image, referenceImage)
 
-        val result = DefaultPixelWiseColorDeviationMatching.apply(processingInput)
-
-        BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
-        result.deviantPixelCount shouldBe 4096
+        whenReady(defaultMatching(processingInput)) { result =>
+          BigDecimal.valueOf(result.deviation.value).setScale(1, RoundingMode.HALF_UP) shouldBe BigDecimal.valueOf(.5)
+          result.deviantPixelCount shouldBe 4096
+        }
       }
     }
   }

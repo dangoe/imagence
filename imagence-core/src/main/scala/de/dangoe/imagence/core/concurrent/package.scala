@@ -18,38 +18,17 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.core.matching
+package de.dangoe.imagence.core
 
-import de.dangoe.imagence.api.ProcessingInput
-import de.dangoe.imagence.api.matching.Deviation.NoDeviation
-import de.dangoe.imagence.api.matching.{Deviation, Matcher, MatchingNotPossible, MatchingResult}
-import de.dangoe.imagence.testsupport._
-import org.scalatest.{Matchers, WordSpec}
+import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 23.07.16
-  */
-class MatcherTest extends WordSpec with Matchers with ImageReader {
+package object concurrent {
 
-  val sut = new Matcher[MatchingResult] {
-    override protected def applyInternal(input: ProcessingInput): MatchingResult = new MatchingResult {
-      override def deviation: Deviation = NoDeviation
-    }
-  }
+  object Implicits {
 
-  "Any matcher" must {
-    "throw an MatchingNotPossible exception" when {
-      "image size differs from reference image size." in {
-        val quadraticImage = readImage("quadratic.png")
-        val rectangularImage = readImage("rectangular.png")
-
-        val processingInput = ProcessingInput(quadraticImage, rectangularImage)
-
-        intercept[MatchingNotPossible] {
-          sut(processingInput)
-        }
-      }
+    implicit def reducePairOfFuturesOfSameType[T](pair: (Future[T], Future[T]))
+                                                 (implicit ec: ExecutionContext): Future[(T, T)] = {
+      Future.sequence(Seq(pair._1, pair._2)).map(seq => (seq.head, seq.last))
     }
   }
 }

@@ -23,10 +23,8 @@ package de.dangoe.imagence.api.matching
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.ProcessingInput
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 31.07.16
-  */
+import scala.concurrent.Future
+
 trait MatchingResult {
   def deviation: Deviation
 }
@@ -39,16 +37,18 @@ case class RegionalMatchingResult[R <: MatchingResult](region: Region, delegate:
   override def deviation: Deviation = delegate.deviation
 }
 
-trait Matcher[R <: MatchingResult] extends (ProcessingInput => R) {
+trait Matcher[R <: MatchingResult] extends (ProcessingInput => Future[R])
 
-  final def apply(input: ProcessingInput): R = {
+abstract class BaseMatcher[R <: MatchingResult] extends Matcher[R] {
+
+  final def apply(input: ProcessingInput): Future[R] = {
     if (input.image.dimension != input.reference.dimension) {
-      throw MatchingNotPossible("Image dimension differs from reference image!")
+      return Future.failed(MatchingNotPossible("Image dimension differs from reference image!"))
     }
     applyInternal(input)
   }
 
-  protected def applyInternal(input: ProcessingInput): R
+  protected def applyInternal(input: ProcessingInput): Future[R]
 }
 
 case class MatchingNotPossible(message: String) extends RuntimeException(message)

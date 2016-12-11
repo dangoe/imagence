@@ -28,12 +28,7 @@ import javax.imageio.ImageIO
 import de.dangoe.imagence.api.io.{DifferenceImageData, MatchingResultWriter}
 import de.dangoe.imagence.api.matching.{MatchingResult, Regional}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 24.07.16
-  */
-class DifferenceImageWriter(imageFormat: ImageFormat)
-  extends MatchingResultWriter[MatchingResult with Regional] {
+class SimpleDifferenceImageWriter(imageFormat: ImageFormat) extends MatchingResultWriter[MatchingResult with Regional] {
 
   def write(input: DifferenceImageData[MatchingResult with Regional], outputStream: OutputStream): Unit = {
     val processingInput = input.processingInput
@@ -64,5 +59,7 @@ class DifferenceImageWriter(imageFormat: ImageFormat)
 trait ImageFormat {
   def productPrefix: String
 }
+
 case object `jpg` extends ImageFormat
+
 case object `png` extends ImageFormat

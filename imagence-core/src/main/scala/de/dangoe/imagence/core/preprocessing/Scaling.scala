@@ -25,16 +25,12 @@ import java.awt.image.BufferedImage
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Dimension
+import de.dangoe.imagence.api.preprocessing.Conversion
 import org.imgscalr.Scalr
 import org.imgscalr.Scalr.{Method, Mode}
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.Duration
+import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 30.07.16
-  */
 sealed trait ScalingQuality
 case object VeryHigh extends ScalingQuality
 case object High extends ScalingQuality
@@ -68,21 +64,23 @@ case object Exact extends ScalingMethod {
 }
 
 class Scaling private(bounds: Dimension, method: ScalingMethod)
-                     (implicit scalingQuality: ScalingQuality) extends (BufferedImage => BufferedImage) {
+                     (implicit ec: ExecutionContext, scalingQuality: ScalingQuality) extends Conversion[BufferedImage] {
 
   import Scaling._
 
-  override def apply(image: BufferedImage): BufferedImage = {
+  override def apply(image: BufferedImage) = Future {
     val scaledSize = method.scale(Dimension(image.getWidth, image.getHeight), bounds)
     Scalr.resize(image, toScalingMethod(scalingQuality), Mode.FIT_EXACT, scaledSize.width, scaledSize.height)
   }
 }
 
 object Scaling {
-  def toBoundingBox(bounds: Dimension)(implicit scalingQuality: ScalingQuality = Speed): Scaling = Scaling(bounds, ToBoundingBox)
-  def apply(bounds: Dimension, method: ScalingMethod)(implicit scalingQuality: ScalingQuality = Speed): Scaling = new Scaling(bounds, method)
+  def toBoundingBox(bounds: Dimension)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): Scaling =
+    Scaling(bounds, ToBoundingBox)
+  def apply(bounds: Dimension, method: ScalingMethod)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): Scaling =
+    new Scaling(bounds, method)
 
-  private def toScalingMethod(scalingQuality: ScalingQuality) : Method = scalingQuality match {
+  private def toScalingMethod(scalingQuality: ScalingQuality): Method = scalingQuality match {
     case VeryHigh => Method.ULTRA_QUALITY
     case High => Method.QUALITY
     case Normal => Method.BALANCED
@@ -91,21 +89,27 @@ object Scaling {
 }
 
 class HarmonizeResolutions private(maybeReferenceScaling: Option[Scaling])
-                                  (implicit scalingQuality: ScalingQuality) extends (ProcessingInput => ProcessingInput) {
+                                  (implicit ec: ExecutionContext, scalingQuality: ScalingQuality) extends Conversion[ProcessingInput] {
 
-  override def apply(input: ProcessingInput): ProcessingInput = {
-    val scaledReference = maybeReferenceScaling match {
+  override def apply(input: ProcessingInput) = {
+    for {
+      scaledReference <- scaleReferenceImage(input)
+      scaledImage <- Scaling(scaledReference.dimension, Exact).apply(input.image)
+    } yield ProcessingInput(scaledImage, scaledReference)
+  }
+
+  private def scaleReferenceImage(input: ProcessingInput) = {
+    maybeReferenceScaling match {
       case Some(referenceScaling) => referenceScaling.apply(input.reference)
-      case None => input.reference
+      case None => Future.successful(input.reference)
     }
-    ProcessingInput(Scaling(scaledReference.dimension, Exact).apply(input.image), scaledReference)
   }
 }
 
 object HarmonizeResolutions {
 
-  def byScalingToReference()(implicit executionContext: ExecutionContext, timeout: Duration, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
+  def byScalingToReference()(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
     new HarmonizeResolutions(None)
-  def using(referenceScaling: Scaling)(implicit executionContext: ExecutionContext, timeout: Duration, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
+  def apply(referenceScaling: Scaling)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
     new HarmonizeResolutions(Some(referenceScaling))
 }
