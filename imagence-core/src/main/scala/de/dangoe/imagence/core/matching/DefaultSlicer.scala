@@ -21,6 +21,7 @@
 package de.dangoe.imagence.core.matching
 
 import java.awt.image.BufferedImage
+import java.time.LocalDateTime
 
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching._
@@ -61,8 +62,27 @@ case class FixedSliceSize(value: Dimension) extends SliceSizeCalculation {
   override def apply(dimension: Dimension): Dimension with SliceSize = new Dimension(value.width, value.height) with SliceSize
 }
 
+case class RelativeSliceSize(factor: Int) extends SliceSizeCalculation {
+
+  require(factor > 0, "Factor must be larger than zero.")
+
+  override def apply(dimension: Dimension): Dimension with SliceSize = {
+    val reciprocal = 1d / factor
+    new Dimension(ceil(reciprocal * dimension.width).toInt, ceil(reciprocal * dimension.height).toInt) with SliceSize
+  }
+}
+
+object RelativeSliceSize {
+  final val OneHalf = 2
+  final val OneQuater = 4
+  final val OneEighth = 8
+  final val OneSixteenth = 16
+}
+
+@deprecated(message = s"Use ${classOf[RelativeSliceSize].getSimpleName} instead.", since = LocalDateTime.now().toString)
 case class PercentageSliceSize(factor: Double) extends SliceSizeCalculation {
 
+  //noinspection ScalaDeprecation
   import PercentageSliceSize._
 
   require(factor > 0, "Factor must be larger than zero.")
@@ -76,6 +96,7 @@ case class PercentageSliceSize(factor: Double) extends SliceSizeCalculation {
   }
 }
 
+@deprecated(message = s"Use ${classOf[RelativeSliceSize].getSimpleName} instead.", since = LocalDateTime.now().toString)
 object PercentageSliceSize {
   val MinSliceSize = new Dimension(1, 1) with SliceSize
 }
