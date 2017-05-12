@@ -34,10 +34,12 @@ package object preprocessing {
 
   class Preprocessor private(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext) extends Conversion[ProcessingInput] {
 
-    override def apply(input: ProcessingInput) = {
+    override def apply(input: ProcessingInput): Future[ProcessingInput] = {
+      val referenceConversion = conv(input.reference)
+      val imageConversion = conv(input.image)
       for {
-        processedImage <- conv(input.image)
-        processedReference <- conv(input.reference)
+        processedImage <- imageConversion
+        processedReference <- referenceConversion
       } yield ProcessingInput(processedImage, processedReference)
     }
   }
