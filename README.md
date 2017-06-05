@@ -41,10 +41,6 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.reflectiveCalls
 
-/**
-  * @author Daniel Götten <daniel.goetten@googlemail.com>
-  * @since 13.09.16
-  */
 object TestApp {
 
   import scala.concurrent.ExecutionContext.Implicits.global
