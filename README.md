@@ -21,20 +21,28 @@ It does not provide any kind of pattern recognition or pattern similarity analys
 ## Example usage
 
 ```scala
+package de.dangoe.imagence.core
+
+import java.awt.image.BufferedImage
 import java.io.{File, FileOutputStream}
 import javax.imageio.ImageIO
 
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.io.DifferenceImageData
-import de.dangoe.imagence.api.matching.Dimension
-import de.dangoe.imagence.core.io.{SimpleDifferenceImageWriter, `png`}
+import de.dangoe.imagence.api.matching.{Deviation, Dimension}
+import de.dangoe.imagence.api.preprocessing.{Conversion, Preprocessor}
+import de.dangoe.imagence.core.io._
 import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching.DefaultDeviationCalculatorFactory
-import de.dangoe.imagence.core.matching.{DefaultSlicer, PixelWiseColorDeviationMatching, RegionalImageMatcher}
-import de.dangoe.imagence.core.preprocessing._
+import de.dangoe.imagence.core.matching.{DefaultSlicer, PixelWiseColorDeviationMatching, PixelWiseColorDeviationMatchingResult, RegionalImageMatcher}
+import de.dangoe.imagence.core.preprocessing.{GaussianBlur, HarmonizeResolutions, Scaling, Speed}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
+/**
+  * @author Daniel Götten <daniel.goetten@googlemail.com>
+  * @since 13.09.16
+  */
 object TestApp {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,26 +50,31 @@ object TestApp {
   implicit val scalingQuality = Speed
 
   def main(args: Array[String]): Unit = {
-    val imageToBeChecked = ImageIO.read(new File("/home/user/image_to_be_checked.png"))
-    val referenceImage = ImageIO.read(new File("/home/user/reference_image.png"))
-    
-    val scaling = Scaling(Dimension.square(640), ToBoundingBox)
-    val slicer = DefaultSlicer.withFixedSliceSizeOf(Dimension.square(4))
-    val matchingStrategy = PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
+    val imageToBeChecked: BufferedImage = ImageIO.read(new File("/home/user/image_to_be_checked.png"))
+    val referenceImage: BufferedImage = ImageIO.read(new File("/home/user/reference_image.png"))
 
-    val harmonization = HarmonizeResolutions(scaling)
-    val matcher = RegionalImageMatcher(slicer, matchingStrategy)
+    val slicer: DefaultSlicer = DefaultSlicer.withFixedSliceSizeOf(Dimension.square(8))
+    val matchingStrategy: PixelWiseColorDeviationMatching = PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
 
-    val eventualMatchingResult = for {
-      normalized <- harmonization(ProcessingInput(imageToBeChecked, referenceImage))
-      result <- matcher(normalized)
-      _ <- Future {
+    val input: ProcessingInput = ProcessingInput(imageToBeChecked, referenceImage)
+
+    val harmonization: Conversion[ProcessingInput] = HarmonizeResolutions(Scaling.toBoundingBox(Dimension.square(2000)))
+    val gaussianBlur: Conversion[ProcessingInput] = Preprocessor.fromSingleImageConversion(GaussianBlur(4))
+
+    val imageMatcher: RegionalImageMatcher[PixelWiseColorDeviationMatchingResult] = RegionalImageMatcher(slicer, matchingStrategy)
+
+    val eventualMatchingResult: Future[Unit] = {
+      for {
+        harmonized <- harmonization(input)
+        blurred <- gaussianBlur(harmonized)
+        matcherResult <- imageMatcher(blurred)
+      } yield {
         val outputStream = new FileOutputStream(new File("/home/user/difference.png"))
         try {
           new SimpleDifferenceImageWriter(`png`).write(
             DifferenceImageData(
-              result.processingInput,
-              result.regionalMatchingResults
+              harmonized,
+              matcherResult.regionalMatchingResults.filter(_.deviation > Deviation(0.3))
             ),
             outputStream
           )
@@ -69,12 +82,11 @@ object TestApp {
           outputStream.close()
         }
       }
-    } yield ()
+    }
 
-    Await.ready(eventualMatchingResult, 30 seconds)
+    Await.result(eventualMatchingResult, 15.seconds)
   }
 }
-
 ```
 
 ## Contributing

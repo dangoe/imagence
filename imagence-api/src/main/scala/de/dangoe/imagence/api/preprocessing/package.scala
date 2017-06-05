@@ -41,6 +41,6 @@ package object preprocessing {
   }
 
   object Preprocessor {
-    def apply(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = new Preprocessor(conv)
+    def fromSingleImageConversion(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = new Preprocessor(conv)
   }
 }

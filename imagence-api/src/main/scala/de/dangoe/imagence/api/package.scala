@@ -35,7 +35,7 @@ package object api {
 
     import scala.language.implicitConversions
 
-    implicit def toPreprocessor(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = Preprocessor(conv)
+    implicit def toPreprocessor(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = Preprocessor.fromSingleImageConversion(conv)
     implicit def toBufferedImage(slice: Slice): BufferedImage = slice.image
 
     implicit class RichBufferedImage(delegate: BufferedImage) {
