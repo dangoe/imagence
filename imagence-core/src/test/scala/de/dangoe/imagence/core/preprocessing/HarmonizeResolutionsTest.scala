@@ -44,7 +44,7 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers with ScalaFutures 
 
   "HarmonizeResolutions" should {
     "scale a smaller image to the reference image's size while the reference image remains unchanged." in {
-      val sut = HarmonizeResolutions.byScalingToReference()
+      val sut = HarmonizeResolutions.byScalingToReference
 
       whenReady(sut(ProcessingInput(smallerImage, reference))) { processed =>
         processed.image.getWidth shouldBe 800
@@ -55,7 +55,7 @@ class HarmonizeResolutionsTest extends WordSpec with Matchers with ScalaFutures 
     }
 
     "scale a larger image to the reference image's size while the reference image remains unchanged." in {
-      val sut = HarmonizeResolutions.byScalingToReference()
+      val sut = HarmonizeResolutions.byScalingToReference
 
       whenReady(sut(ProcessingInput(largerImage, reference))) { processed =>
         processed.image.getWidth shouldBe 800

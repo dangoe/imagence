@@ -18,21 +18,12 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.api.matching
+package de.dangoe.imagence.api
+package matching
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.api.matching.Anchor.PointOfOrigin
-
 import scala.concurrent.Future
-
-object Slicing {
-  object Implicits {
-    implicit def toSlice(image: BufferedImage): Slice = Slice(image, PointOfOrigin)
-    implicit def extractBufferedImage(slice: Slice): BufferedImage = slice.image
-    implicit def toSliceable(image: BufferedImage): Sliceable = new Sliceable(image)
-  }
-}
 
 class Slice private(val image: BufferedImage, val region: Region) {
 
@@ -56,10 +47,6 @@ class Slice private(val image: BufferedImage, val region: Region) {
 
 object Slice {
   def apply(image: BufferedImage, anchor: Anchor): Slice = new Slice(image, Region(anchor, Dimension(image.getWidth, image.getHeight)))
-}
-
-class Sliceable(image: BufferedImage) {
-  def slice(strategy: Slicer): Seq[Future[Slice]] = strategy.slice(image)
 }
 
 trait SliceSize

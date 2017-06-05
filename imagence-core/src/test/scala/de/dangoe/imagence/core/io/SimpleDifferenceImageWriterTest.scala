@@ -44,8 +44,8 @@ class SimpleDifferenceImageWriterTest extends WordSpec with Matchers with ScalaF
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val harmonization = HarmonizeResolutions.byScalingToReference()
-  val regionalImageMatcher = RegionalImageMatcher(
+  private val harmonization = HarmonizeResolutions.byScalingToReference
+  private val regionalImageMatcher = RegionalImageMatcher(
     DefaultSlicer.withFixedSliceSizeOf(Dimension.square(23)),
     PixelWiseColorDeviationMatching(DefaultDeviationCalculatorFactory)
   )

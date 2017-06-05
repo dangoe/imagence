@@ -28,10 +28,6 @@ package object preprocessing {
 
   type Conversion[T] = T => Future[T]
 
-  object Implicits {
-    implicit def toPreprocessor(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = Preprocessor(conv)
-  }
-
   class Preprocessor private(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext) extends Conversion[ProcessingInput] {
 
     override def apply(input: ProcessingInput): Future[ProcessingInput] = {

@@ -18,11 +18,11 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.api.io
+package de.dangoe.imagence.api
+package io
 
 import java.io.OutputStream
 
-import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.MatchingResult
 
 trait MatchingResultWriter[R <: MatchingResult] {

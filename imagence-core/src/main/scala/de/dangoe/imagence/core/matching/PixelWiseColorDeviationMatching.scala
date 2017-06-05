@@ -20,7 +20,6 @@
   */
 package de.dangoe.imagence.core.matching
 
-import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Deviation.NoDeviation
 import de.dangoe.imagence.api.matching._
@@ -50,15 +49,20 @@ class PixelWiseColorDeviationMatching private(deviationCalculatorFactory: (Proce
     }
   }
 
-  override protected def applyInternal(input: ProcessingInput): Future[PixelWiseColorDeviationMatchingResult] = Future {
-    val deviationCalculator = deviationCalculatorFactory(input)
-    val imageSize = input.image.dimension
-    val aggregate = new DeviationAggregate
-    for (x <- 0 until imageSize.width;
-         y <- 0 until imageSize.height;
-         deviation <- deviationCalculator.calculate(input.image.getRGB(x, y), input.reference.getRGB(x, y)))
-      yield aggregate.add(deviation)
-    aggregate.asMatchingResult
+  override protected def applyInternal(input: ProcessingInput): Future[PixelWiseColorDeviationMatchingResult] = {
+
+    import de.dangoe.imagence.api.Implicits._
+
+    Future {
+      val deviationCalculator = deviationCalculatorFactory(input)
+      val imageSize = input.image.dimension
+      val aggregate = new DeviationAggregate
+      for (x <- 0 until imageSize.width;
+           y <- 0 until imageSize.height;
+           deviation <- deviationCalculator.calculate(input.image.getRGB(x, y), input.reference.getRGB(x, y)))
+        yield aggregate.add(deviation)
+      aggregate.asMatchingResult
+    }
   }
 }
 

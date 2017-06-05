@@ -52,7 +52,7 @@ case object Luma extends GreyscaleMethod {
 
 class GreyscaleConversion private(method: GreyscaleMethod)(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {
 
-  override def apply(image: BufferedImage) = {
+  override def apply(image: BufferedImage): Future[BufferedImage] = {
     val greyscaleImage = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_BYTE_GRAY)
     Future.sequence {
       for (y <- 0 until image.getHeight) yield processLine(image, greyscaleImage.getSubimage(0, y, image.getWidth, 1), y)
@@ -76,7 +76,7 @@ class NativeGreyscaleConversion()(implicit ec: ExecutionContext) extends Convers
 
   import collection.JavaConverters._
 
-  val EmptyRenderingHints = new RenderingHints(Map.empty[Key, AnyRef].asJava)
+  final val EmptyRenderingHints = new RenderingHints(Map.empty[Key, AnyRef].asJava)
 
   override def apply(image: BufferedImage) = Future {
     val greyscale = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_BYTE_GRAY)

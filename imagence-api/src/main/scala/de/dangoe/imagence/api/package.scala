@@ -22,13 +22,22 @@ package de.dangoe.imagence
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.api.matching.Dimension
+import de.dangoe.imagence.api.matching.{Dimension, Slice}
+import de.dangoe.imagence.api.preprocessing.{Conversion, Preprocessor}
+
+import scala.concurrent.ExecutionContext
 
 package object api {
 
   case class ProcessingInput(image: BufferedImage, reference: BufferedImage)
 
   object Implicits {
+
+    import scala.language.implicitConversions
+
+    implicit def toPreprocessor(conv: Conversion[BufferedImage])(implicit ec: ExecutionContext): Preprocessor = Preprocessor(conv)
+    implicit def toBufferedImage(slice: Slice): BufferedImage = slice.image
+
     implicit class RichBufferedImage(delegate: BufferedImage) {
       def aspectRatio: Double = delegate.getWidth.toDouble / delegate.getHeight.toDouble
       def dimension: Dimension = Dimension(delegate.getWidth, delegate.getHeight)

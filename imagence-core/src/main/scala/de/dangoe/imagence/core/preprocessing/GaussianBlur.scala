@@ -31,7 +31,7 @@ class GaussianBlur private(radius: Int)(implicit ec: ExecutionContext) extends C
 
   private val filter = new GaussianFilter(radius)
 
-  override def apply(image: BufferedImage) = Future {
+  override def apply(image: BufferedImage): Future[BufferedImage] = Future {
     val destImage = filter.createCompatibleDestImage(image, image.getColorModel)
     filter.filter(image, destImage)
   }

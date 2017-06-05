@@ -61,5 +61,4 @@ trait ImageFormat {
 }
 
 case object `jpg` extends ImageFormat
-
 case object `png` extends ImageFormat

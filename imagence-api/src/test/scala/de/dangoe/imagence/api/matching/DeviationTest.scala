@@ -52,8 +52,6 @@ class DeviationTest extends WordSpec with Matchers {
 
   it when {
 
-    import Implicits._
-
     "sorted" should {
       "be equal to another deviation if its value is equal." in {
         val deviation = Deviation(0.5)

@@ -22,7 +22,6 @@ package de.dangoe.imagence.core.preprocessing
 
 import java.awt.image.BufferedImage
 
-import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.matching.Dimension
 import de.dangoe.imagence.api.preprocessing.Conversion
@@ -68,13 +67,14 @@ class Scaling private(bounds: Dimension, method: ScalingMethod)
 
   import Scaling._
 
-  override def apply(image: BufferedImage) = Future {
+  override def apply(image: BufferedImage): Future[BufferedImage] = Future {
     val scaledSize = method.scale(Dimension(image.getWidth, image.getHeight), bounds)
     Scalr.resize(image, toScalingMethod(scalingQuality), Mode.FIT_EXACT, scaledSize.width, scaledSize.height)
   }
 }
 
 object Scaling {
+
   def toBoundingBox(bounds: Dimension)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): Scaling =
     Scaling(bounds, ToBoundingBox)
   def apply(bounds: Dimension, method: ScalingMethod)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): Scaling =
@@ -91,16 +91,20 @@ object Scaling {
 class HarmonizeResolutions private(maybeReferenceScaling: Option[Scaling])
                                   (implicit ec: ExecutionContext, scalingQuality: ScalingQuality) extends Conversion[ProcessingInput] {
 
-  override def apply(input: ProcessingInput) = {
+  override def apply(input: ProcessingInput): Future[ProcessingInput] = {
+
+    import de.dangoe.imagence.api.Implicits._
+
     for {
       scaledReference <- scaleReferenceImage(input)
-      scaledImage <- Scaling(scaledReference.dimension, Exact).apply(input.image)
+      scaling = Scaling(scaledReference.dimension, Exact)
+      scaledImage <- scaling(input.image)
     } yield ProcessingInput(scaledImage, scaledReference)
   }
 
   private def scaleReferenceImage(input: ProcessingInput) = {
     maybeReferenceScaling match {
-      case Some(referenceScaling) => referenceScaling.apply(input.reference)
+      case Some(referenceScaling) => referenceScaling(input.reference)
       case None => Future.successful(input.reference)
     }
   }
@@ -108,7 +112,7 @@ class HarmonizeResolutions private(maybeReferenceScaling: Option[Scaling])
 
 object HarmonizeResolutions {
 
-  def byScalingToReference()(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
+  def byScalingToReference(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
     new HarmonizeResolutions(None)
   def apply(referenceScaling: Scaling)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
     new HarmonizeResolutions(Some(referenceScaling))

@@ -18,10 +18,8 @@
   * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
   * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   */
-package de.dangoe.imagence.api.matching
-
-import de.dangoe.imagence.api.Implicits._
-import de.dangoe.imagence.api.ProcessingInput
+package de.dangoe.imagence.api
+package matching
 
 import scala.concurrent.Future
 
@@ -40,6 +38,8 @@ case class RegionalMatchingResult[R <: MatchingResult](region: Region, delegate:
 trait Matcher[R <: MatchingResult] extends (ProcessingInput => Future[R])
 
 abstract class BaseMatcher[R <: MatchingResult] extends Matcher[R] {
+
+  import Implicits._
 
   final def apply(input: ProcessingInput): Future[R] = {
     if (input.image.dimension != input.reference.dimension) {
@@ -60,13 +60,19 @@ trait NormalizedDeviationCalculator {
 case class Deviation(value: Double) {
   require(value >= 0, "Value must not be smaller than zero.")
   require(value <= 1, "Value must not be larger than one.")
+
+  def <=(other: Deviation): Boolean = value <= other.value
+  def <(other: Deviation): Boolean = value < other.value
+  def >(other: Deviation): Boolean = value > other.value
+  def >=(other: Deviation): Boolean = value >= other.value
 }
 
 object Deviation {
-  val NoDeviation = Deviation(0)
-  val MaximumDeviation = Deviation(1)
-}
 
-object Implicits {
+  import scala.language.implicitConversions
+
+  final val NoDeviation = Deviation(0)
+  final val MaximumDeviation = Deviation(1)
+
   implicit def deviationOrdering: Ordering[Deviation] = Ordering.fromLessThan(_.value < _.value)
 }

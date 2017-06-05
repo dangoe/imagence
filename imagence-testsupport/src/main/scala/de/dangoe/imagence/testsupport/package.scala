@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage
 import java.awt.{Color, Graphics2D}
 import javax.imageio.ImageIO
 
-import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
 import org.scalatest.matchers.{MatchResult, Matcher}
 
@@ -37,6 +36,8 @@ package object testsupport {
   }
 
   case class ImageShowsTheSameMatcher(image: BufferedImage) extends Matcher[BufferedImage] {
+
+    import de.dangoe.imagence.api.Implicits._
 
     def apply(otherImage: BufferedImage): MatchResult = {
       MatchResult(otherImage.dimension == image.dimension && sameRGBValuesPerPixel(otherImage),

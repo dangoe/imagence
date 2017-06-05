@@ -23,13 +23,14 @@ package de.dangoe.imagence.core.matching
 import java.awt.image.BufferedImage
 import java.time.LocalDateTime
 
-import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.math.{ceil, min}
 
 class DefaultSlicer private(sliceSizeCalculation: SliceSizeCalculation)(implicit ec: ExecutionContext) extends Slicer {
+
+  import de.dangoe.imagence.api.Implicits._
 
   override def slice(image: BufferedImage): Seq[Future[Slice]] = {
     implicit val sliceSize = sliceSizeCalculation(image.dimension)
