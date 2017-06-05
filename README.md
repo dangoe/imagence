@@ -31,13 +31,15 @@ import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.io.DifferenceImageData
 import de.dangoe.imagence.api.matching.{Deviation, Dimension}
 import de.dangoe.imagence.api.preprocessing.{Conversion, Preprocessor}
+import de.dangoe.imagence.api.util.Done
 import de.dangoe.imagence.core.io._
 import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching.DefaultDeviationCalculatorFactory
 import de.dangoe.imagence.core.matching.{DefaultSlicer, PixelWiseColorDeviationMatching, PixelWiseColorDeviationMatchingResult, RegionalImageMatcher}
-import de.dangoe.imagence.core.preprocessing.{GaussianBlur, HarmonizeResolutions, Scaling, Speed}
+import de.dangoe.imagence.core.preprocessing.{GaussianBlur, HarmonizeResolutions, Scaling, ScalingQuality}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.language.reflectiveCalls
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -47,7 +49,7 @@ object TestApp {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  implicit val scalingQuality = Speed
+  implicit val scalingQuality = ScalingQuality.Low
 
   def main(args: Array[String]): Unit = {
     val imageToBeChecked: BufferedImage = ImageIO.read(new File("/home/user/image_to_be_checked.png"))
@@ -63,28 +65,32 @@ object TestApp {
 
     val imageMatcher: RegionalImageMatcher[PixelWiseColorDeviationMatchingResult] = RegionalImageMatcher(slicer, matchingStrategy)
 
-    val eventualMatchingResult: Future[Unit] = {
+    val eventualMatchingResult: Future[Done] = {
       for {
         harmonized <- harmonization(input)
         blurred <- gaussianBlur(harmonized)
         matcherResult <- imageMatcher(blurred)
-      } yield {
-        val outputStream = new FileOutputStream(new File("/home/user/difference.png"))
-        try {
-          new SimpleDifferenceImageWriter(`png`).write(
+        differenceImageWriter = new SimpleDifferenceImageWriter(ImageFormat.`png`)
+        writingResult <- use(new FileOutputStream(new File("/home/user/difference.png"))) { outputStream =>
+          differenceImageWriter.write(
             DifferenceImageData(
               harmonized,
               matcherResult.regionalMatchingResults.filter(_.deviation > Deviation(0.3))
             ),
             outputStream
           )
-        } finally {
-          outputStream.close()
         }
-      }
+      } yield writingResult
     }
 
     Await.result(eventualMatchingResult, 15.seconds)
+  }
+
+  private def use[T, C <: {def close() : Unit}](closeable: => C)(fun: C => Future[T]): Future[T] = {
+    val closeableInstance = closeable
+    val eventualResult = fun(closeableInstance)
+    eventualResult.onComplete(_ => closeableInstance.close())
+    eventualResult
   }
 }
 ```

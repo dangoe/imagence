@@ -26,6 +26,7 @@ import javax.imageio.ImageIO
 import de.dangoe.imagence.api.ProcessingInput
 import de.dangoe.imagence.api.io.DifferenceImageData
 import de.dangoe.imagence.api.matching.Dimension
+import de.dangoe.imagence.core.io.ImageFormat.`png`
 import de.dangoe.imagence.core.matching.PixelWiseColorDeviationMatching._
 import de.dangoe.imagence.core.matching.{DefaultSlicer, PixelWiseColorDeviationMatching, RegionalImageMatcher}
 import de.dangoe.imagence.core.preprocessing.HarmonizeResolutions
@@ -33,8 +34,6 @@ import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
-
-import scala.concurrent.Future
 
 /**
   * @author Daniel Götten <daniel.goetten@googlemail.com>
@@ -64,15 +63,13 @@ class SimpleDifferenceImageWriterTest extends WordSpec with Matchers with ScalaF
             normalized <- harmonization(processingInput)
             matchingResult <- regionalImageMatcher(normalized)
             outputStream = new ByteArrayOutputStream()
-            _ <- Future {
-              sut.write(
-                DifferenceImageData(
-                  matchingResult.processingInput,
-                  matchingResult.regionalMatchingResults
-                ),
-                outputStream
-              )
-            }
+            _ <- sut.write(
+              DifferenceImageData(
+                matchingResult.processingInput,
+                matchingResult.regionalMatchingResults
+              ),
+              outputStream
+            )
           } yield ImageIO.read(new ByteArrayInputStream(outputStream.toByteArray))
         } { differenceImage =>
           differenceImage should showTheSameAs(readImage("pattern_diff.png"))

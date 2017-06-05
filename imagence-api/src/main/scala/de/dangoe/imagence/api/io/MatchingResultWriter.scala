@@ -23,10 +23,13 @@ package io
 
 import java.io.OutputStream
 
-import de.dangoe.imagence.api.matching.MatchingResult
+import util.Done
+import matching.MatchingResult
+
+import scala.concurrent.{ExecutionContext, Future}
 
 trait MatchingResultWriter[R <: MatchingResult] {
-  def write(input: DifferenceImageData[R], outputStream: OutputStream): Unit
+  def write(input: DifferenceImageData[R], outputStream: OutputStream)(implicit ec: ExecutionContext): Future[Done]
 }
 
 case class DifferenceImageData[R <: MatchingResult](processingInput: ProcessingInput, matchingResults: Iterable[R])

@@ -24,6 +24,7 @@ import java.awt.Color
 
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
+import de.dangoe.imagence.core.preprocessing.GreyscaleMethod._
 import de.dangoe.imagence.testsupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}

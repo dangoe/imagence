@@ -26,7 +26,7 @@ import java.io.ByteArrayInputStream
 
 import de.dangoe.imagence.api.Implicits._
 import de.dangoe.imagence.api.matching.Dimension
-import de.dangoe.imagence.pdf.conversion.PdfConverter.{Greyscale, RGB}
+import de.dangoe.imagence.pdf.conversion.PdfConverter.ImageType._
 import de.dangoe.imagence.testsupport._
 import org.scalatest.{Matchers, WordSpec}
 
@@ -54,7 +54,7 @@ class PdfConverterTest extends WordSpec with Matchers with ImageFactory with Ima
     }
 
     "allow to read the document as RGB." in {
-      val sut = new PdfConverter(PdfConverterConfiguration.default.withImageType(RGB))
+      val sut = new PdfConverter(PdfConverterConfiguration.default.withImageType(Rgb))
       val pageAsImage = sut.convert(getClass.getResourceAsStream("empty_din_a4_pdf_with_one_page.pdf")).head
 
       pageAsImage.getType shouldBe BufferedImage.TYPE_INT_RGB

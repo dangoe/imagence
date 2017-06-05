@@ -27,10 +27,13 @@ import javax.imageio.ImageIO
 
 import de.dangoe.imagence.api.io.{DifferenceImageData, MatchingResultWriter}
 import de.dangoe.imagence.api.matching.{MatchingResult, Regional}
+import de.dangoe.imagence.api.util.Done
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class SimpleDifferenceImageWriter(imageFormat: ImageFormat) extends MatchingResultWriter[MatchingResult with Regional] {
 
-  def write(input: DifferenceImageData[MatchingResult with Regional], outputStream: OutputStream): Unit = {
+  def write(input: DifferenceImageData[MatchingResult with Regional], outputStream: OutputStream)(implicit ec: ExecutionContext): Future[Done] = Future {
     val processingInput = input.processingInput
     val matchingResults = input.matchingResults
 
@@ -53,12 +56,13 @@ class SimpleDifferenceImageWriter(imageFormat: ImageFormat) extends MatchingResu
     }
 
     ImageIO.write(resultImage, imageFormat.productPrefix, outputStream)
-  }
+  }.map(_ => Done)
 }
 
-trait ImageFormat {
+sealed trait ImageFormat {
   def productPrefix: String
 }
-
-case object `jpg` extends ImageFormat
-case object `png` extends ImageFormat
+object ImageFormat {
+  case object `jpg` extends ImageFormat
+  case object `png` extends ImageFormat
+}

@@ -31,10 +31,13 @@ import org.imgscalr.Scalr.{Method, Mode}
 import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait ScalingQuality
-case object VeryHigh extends ScalingQuality
-case object High extends ScalingQuality
-case object Normal extends ScalingQuality
-case object Speed extends ScalingQuality
+
+object ScalingQuality {
+  case object VeryHigh extends ScalingQuality
+  case object High extends ScalingQuality
+  case object Normal extends ScalingQuality
+  case object Low extends ScalingQuality
+}
 
 sealed trait ScalingMethod {
   private[preprocessing] def scale(dimension: Dimension, bounds: Dimension): Dimension
@@ -75,16 +78,21 @@ class Scaling private(bounds: Dimension, method: ScalingMethod)
 
 object Scaling {
 
-  def toBoundingBox(bounds: Dimension)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): Scaling =
+  import ScalingQuality._
+
+  def toBoundingBox(bounds: Dimension)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Low): Scaling =
     Scaling(bounds, ToBoundingBox)
-  def apply(bounds: Dimension, method: ScalingMethod)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): Scaling =
+  def apply(bounds: Dimension, method: ScalingMethod)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Low): Scaling =
     new Scaling(bounds, method)
 
-  private def toScalingMethod(scalingQuality: ScalingQuality): Method = scalingQuality match {
-    case VeryHigh => Method.ULTRA_QUALITY
-    case High => Method.QUALITY
-    case Normal => Method.BALANCED
-    case Speed => Method.SPEED
+  private def toScalingMethod(scalingQuality: ScalingQuality): Method = {
+    import ScalingQuality._
+    scalingQuality match {
+      case VeryHigh => Method.ULTRA_QUALITY
+      case High => Method.QUALITY
+      case Normal => Method.BALANCED
+      case Low => Method.SPEED
+    }
   }
 }
 
@@ -112,8 +120,10 @@ class HarmonizeResolutions private(maybeReferenceScaling: Option[Scaling])
 
 object HarmonizeResolutions {
 
-  def byScalingToReference(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
+  import ScalingQuality._
+
+  def byScalingToReference(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Low): HarmonizeResolutions =
     new HarmonizeResolutions(None)
-  def apply(referenceScaling: Scaling)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Speed): HarmonizeResolutions =
+  def apply(referenceScaling: Scaling)(implicit ec: ExecutionContext, scalingQuality: ScalingQuality = Low): HarmonizeResolutions =
     new HarmonizeResolutions(Some(referenceScaling))
 }

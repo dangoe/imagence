@@ -23,7 +23,7 @@ package de.dangoe.imagence.pdf.conversion
 import java.awt.image.BufferedImage
 import java.io.InputStream
 
-import de.dangoe.imagence.pdf.conversion.PdfConverter.{ImageType, RGB}
+import de.dangoe.imagence.pdf.conversion.PdfConverter.ImageType
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.rendering.{PDFRenderer, ImageType => PdfBoxImageType}
 
@@ -49,17 +49,22 @@ class PdfConverter(config: PdfConverterConfiguration = PdfConverterConfiguration
 
 object PdfConverter {
 
-  private def mapImageType(imageType: ImageType): PdfBoxImageType = imageType match {
-    case RGB => PdfBoxImageType.RGB
-    case Greyscale => PdfBoxImageType.GRAY
+  private def mapImageType(imageType: ImageType): PdfBoxImageType = {
+    import ImageType._
+    imageType match {
+      case Rgb => PdfBoxImageType.RGB
+      case Greyscale => PdfBoxImageType.GRAY
+    }
   }
 
   private def process[T](document: PDDocument)(op: PDDocument => T): T =
     try op(document) finally document.close()
 
   sealed trait ImageType
-  object RGB extends ImageType
-  object Greyscale extends ImageType
+  object ImageType {
+    object Rgb extends ImageType
+    object Greyscale extends ImageType
+  }
 }
 
 class PdfConverterConfiguration private(val dpi: Int, val imageType: ImageType) {
@@ -69,8 +74,10 @@ class PdfConverterConfiguration private(val dpi: Int, val imageType: ImageType) 
 
 object PdfConverterConfiguration {
 
+  import ImageType._
+
   private final val DefaultDpi = 300
-  private final val DefaultImageType = RGB
+  private final val DefaultImageType = Rgb
 
   def default: PdfConverterConfiguration = new PdfConverterConfiguration(DefaultDpi, DefaultImageType)
 }

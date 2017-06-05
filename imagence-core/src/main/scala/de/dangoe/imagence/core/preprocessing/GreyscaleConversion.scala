@@ -32,22 +32,24 @@ trait GreyscaleMethod extends (Color => Color) {
   protected def createColor(luminance: Int, alpha: Int): Color = new Color(luminance, luminance, luminance, alpha)
 }
 
-case object Averaging extends GreyscaleMethod {
-  override def apply(color: Color): Color =
-    createColor(math.round((color.getRed + color.getGreen + color.getBlue) / 3d).toInt, color.getAlpha)
-}
-
-case object Desaturation extends GreyscaleMethod {
-  override def apply(color: Color): Color = {
-    val maxChannelValue = color.getRed max color.getGreen max color.getBlue
-    val minChannelValue = color.getRed min color.getGreen min color.getBlue
-    createColor(math.round((maxChannelValue + minChannelValue) / 2d).toInt, color.getAlpha)
+object GreyscaleMethod {
+  case object Averaging extends GreyscaleMethod {
+    override def apply(color: Color): Color =
+      createColor(math.round((color.getRed + color.getGreen + color.getBlue) / 3d).toInt, color.getAlpha)
   }
-}
 
-case object Luma extends GreyscaleMethod {
-  override def apply(color: Color): Color =
-    createColor(math.round(color.getRed * 0.299 + color.getGreen * 0.587 + color.getBlue * 0.114).toInt, color.getAlpha)
+  case object Desaturation extends GreyscaleMethod {
+    override def apply(color: Color): Color = {
+      val maxChannelValue = color.getRed max color.getGreen max color.getBlue
+      val minChannelValue = color.getRed min color.getGreen min color.getBlue
+      createColor(math.round((maxChannelValue + minChannelValue) / 2d).toInt, color.getAlpha)
+    }
+  }
+
+  case object Luma extends GreyscaleMethod {
+    override def apply(color: Color): Color =
+      createColor(math.round(color.getRed * 0.299 + color.getGreen * 0.587 + color.getBlue * 0.114).toInt, color.getAlpha)
+  }
 }
 
 class GreyscaleConversion private(method: GreyscaleMethod)(implicit ec: ExecutionContext) extends Conversion[BufferedImage] {
